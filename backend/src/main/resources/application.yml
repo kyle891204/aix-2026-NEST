@@ -1,0 +1,17 @@
+spring:
+  config:
+    import: "optional:file:./.env[.properties]"
+  application:
+    name: team03-backend
+
+server:
+  address: ${SERVER_ADDRESS:127.0.0.1}
+  port: ${SERVER_PORT:8081}
+  error:
+    include-message: never
+    include-stacktrace: never
+
+app:
+  lms:
+    api-base-url: ${LMS_API_BASE_URL:https://learning.hanyang.ac.kr/api/v1}
+    api-token: ${LMS_API_TOKEN:}
