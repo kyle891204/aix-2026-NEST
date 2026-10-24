@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -134,5 +135,125 @@ class HanyangLmsClientTests {
         var result = client().courses();
         assertThat(requests.get()).isEqualTo(5);
         assertThat(result.truncated()).isTrue();
+    }
+
+    @Test
+    void courseDetailsRequestSyllabusAndKeepMissingFieldsUnknown() {
+        server.createContext("/api/v1/courses/42", exchange -> {
+            assertThat(exchange.getRequestURI().getQuery()).contains("include[]=syllabus_body");
+            respond(exchange, 200, """
+                    {"id":42,"name":"AIX","course_code":"AIX-2026",
+                     "syllabus_body":"<p>Project course</p>","time_zone":"Asia/Seoul"}
+                    """);
+        });
+        var result = client().course(42);
+        assertThat(result.syllabusBody()).isEqualTo("<p>Project course</p>");
+        assertThat(result.publicDescription()).isNull();
+        assertThat(result.timeZone()).isEqualTo("Asia/Seoul");
+    }
+
+    @Test
+    void assignmentsKeepDueAndLockDatesSeparateAndFollowPagination() {
+        server.createContext("/api/v1/courses/42/assignments", exchange -> {
+            String query = exchange.getRequestURI().getQuery();
+            if (query.contains("page=2")) {
+                respond(exchange, 200, "[{\"id\":2,\"name\":\"No API deadline\",\"course_id\":42,\"due_at\":null}]");
+            } else {
+                assertThat(query).contains("override_assignment_dates=true", "order_by=due_at", "per_page=50");
+                exchange.getResponseHeaders().set("Link", "<" + base() + "/api/v1/courses/42/assignments?page=2>; rel=\"next\"");
+                respond(exchange, 200, """
+                        [{"id":1,"name":"Report","course_id":42,"description":"<p>Upload PDF</p>",
+                          "due_at":"2026-10-25T14:59:00Z","lock_at":"2026-10-26T14:59:00Z",
+                          "submission_types":["online_upload"],"points_possible":12.5,"locked_for_user":false}]
+                        """);
+            }
+        });
+        var result = client().assignments(42);
+        assertThat(result.pagesFetched()).isEqualTo(2);
+        assertThat(result.items()).hasSize(2);
+        assertThat(result.items().getFirst().dueAt()).isEqualTo("2026-10-25T14:59:00Z");
+        assertThat(result.items().getFirst().lockAt()).isEqualTo("2026-10-26T14:59:00Z");
+        assertThat(result.items().getFirst().pointsPossible()).isEqualByComparingTo("12.5");
+        assertThat(result.items().get(1).dueAt()).isNull();
+    }
+
+    @Test
+    void modulesAndTheirItemsUseSeparatePaginatedEndpoints() {
+        server.createContext("/api/v1/courses/42/modules", exchange -> {
+            if (exchange.getRequestURI().getPath().endsWith("/items")) {
+                assertThat(exchange.getRequestURI().getQuery()).contains("include[]=content_details");
+                respond(exchange, 200, """
+                        [{"id":10,"title":"Week 7 task","type":"Assignment","content_id":1,
+                          "content_details":{"due_at":"2026-10-25T14:59:00Z","locked_for_user":false}}]
+                        """);
+            } else {
+                respond(exchange, 200, "[{\"id\":8,\"name\":\"Week 7\",\"position\":1,\"items_count\":1,\"state\":\"unlocked\"}]");
+            }
+        });
+        assertThat(client().modules(42).items().getFirst().itemsCount()).isEqualTo(1);
+        var item = client().moduleItems(42, 8).items().getFirst();
+        assertThat(item.type()).isEqualTo("Assignment");
+        assertThat(item.contentDetails().dueAt()).isEqualTo("2026-10-25T14:59:00Z");
+    }
+
+    @Test
+    void invalidResourceIdsStopBeforeNetwork() {
+        assertThatThrownBy(() -> client().course(0)).isInstanceOf(LmsIntegrationException.class);
+        assertThatThrownBy(() -> client().assignments(-1)).isInstanceOf(LmsIntegrationException.class);
+        assertThatThrownBy(() -> client().modules(0)).isInstanceOf(LmsIntegrationException.class);
+        assertThatThrownBy(() -> client().moduleItems(42, -8)).isInstanceOf(LmsIntegrationException.class);
+        assertThat(requests.get()).isZero();
+    }
+
+    @Test
+    void unexpectedCourseAndAssignmentShapesAreRejected() {
+        server.createContext("/api/v1/courses/42", exchange -> {
+            if (exchange.getRequestURI().getPath().endsWith("assignments")) {
+                respond(exchange, 200, "[{\"id\":1,\"name\":\"Other course\",\"course_id\":99}]");
+            } else {
+                respond(exchange, 200, "{\"id\":99,\"name\":\"Other course\"}");
+            }
+        });
+        assertThatThrownBy(() -> client().course(42)).isInstanceOfSatisfying(LmsIntegrationException.class,
+                error -> assertThat(error.getCode()).isEqualTo("LMS_INVALID_RESPONSE"));
+        assertThatThrownBy(() -> client().assignments(42)).isInstanceOfSatisfying(LmsIntegrationException.class,
+                error -> assertThat(error.getCode()).isEqualTo("LMS_INVALID_RESPONSE"));
+    }
+
+    @Test
+    void nullListEntryIsAnInvalidResponseInsteadOfAnInternalError() {
+        server.createContext("/api/v1/courses/42/assignments", exchange -> respond(exchange, 200, "[null]"));
+        assertThatThrownBy(() -> client().assignments(42)).isInstanceOfSatisfying(LmsIntegrationException.class,
+                error -> assertThat(error.getCode()).isEqualTo("LMS_INVALID_RESPONSE"));
+    }
+
+    @Test
+    void deniedAndRateLimitedResourcesRemainErrorsRatherThanEmptyLists() {
+        server.createContext("/api/v1/courses/42/assignments", exchange -> respond(exchange, 403, "{}"));
+        server.createContext("/api/v1/courses/42/modules", exchange -> respond(exchange, 429, "{}"));
+        assertThatThrownBy(() -> client().assignments(42)).isInstanceOfSatisfying(LmsIntegrationException.class,
+                error -> assertThat(error.getCode()).isEqualTo("LMS_PERMISSION_DENIED"));
+        assertThatThrownBy(() -> client().modules(42)).isInstanceOfSatisfying(LmsIntegrationException.class,
+                error -> assertThat(error.getCode()).isEqualTo("LMS_RATE_LIMITED"));
+    }
+
+    @Test
+    void developmentRoutesReturnCourseAssignmentsAndModuleItems() throws Exception {
+        server.createContext("/api/v1/courses/42", exchange -> {
+            String path = exchange.getRequestURI().getPath();
+            if (path.endsWith("assignments")) respond(exchange, 200, "[{\"id\":1,\"name\":\"Task\",\"course_id\":42,\"due_at\":null}]");
+            else if (path.endsWith("items")) respond(exchange, 200, "[{\"id\":10,\"title\":\"Read\",\"type\":\"Page\"}]");
+            else if (path.endsWith("modules")) respond(exchange, 200, "[{\"id\":8,\"name\":\"Week 7\"}]");
+            else respond(exchange, 200, "{\"id\":42,\"name\":\"AIX\",\"syllabus_body\":\"<p>Course</p>\"}");
+        });
+        var mvc = org.springframework.test.web.servlet.setup.MockMvcBuilders
+                .standaloneSetup(new LmsDevController(client())).build();
+        for (String suffix : List.of("/42", "/42/assignments", "/42/modules", "/42/modules/8/items")) {
+            mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/v1/dev/lms/courses" + suffix))
+                    .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk());
+        }
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/v1/dev/lms/courses/42/assignments"))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.items[0].due_at").doesNotExist())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.items[0].course_id").value(42));
     }
 }

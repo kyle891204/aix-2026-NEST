@@ -63,7 +63,62 @@ public class HanyangLmsClient {
                 .queryParam("start_date", start).queryParam("end_date", end.plusDays(1))
                 .queryParam("active_only", true).queryParam("per_page", 50)
                 .build().encode().toUri();
-        return pages(uri, new ParameterizedTypeReference<List<Announcement>>() {});
+        var result = pages(uri, new ParameterizedTypeReference<List<Announcement>>() {});
+        for (Announcement item : result.items()) {
+            if (item.id() == null || item.title() == null) throw invalidResponse();
+        }
+        return result;
+    }
+
+    public CourseDetail course(long courseId) {
+        var uri = builder(coursePath(courseId)).queryParam("include[]", "syllabus_body")
+                .build().encode().toUri();
+        var result = get(uri, new ParameterizedTypeReference<CourseDetail>() {}).getBody();
+        if (result.id() == null || result.id() != courseId || result.name() == null) throw invalidResponse();
+        return result;
+    }
+
+    public Page<Assignment> assignments(long courseId) {
+        var uri = builder(coursePath(courseId) + "/assignments")
+                .queryParam("override_assignment_dates", true).queryParam("order_by", "due_at")
+                .queryParam("per_page", 50).build().encode().toUri();
+        var result = pages(uri, new ParameterizedTypeReference<List<Assignment>>() {});
+        for (Assignment item : result.items()) {
+            if (item.id() == null || item.name() == null || item.courseId() == null
+                    || item.courseId() != courseId) throw invalidResponse();
+        }
+        return result;
+    }
+
+    public Page<CourseModule> modules(long courseId) {
+        var uri = builder(coursePath(courseId) + "/modules").queryParam("per_page", 50)
+                .build().encode().toUri();
+        var result = pages(uri, new ParameterizedTypeReference<List<CourseModule>>() {});
+        for (CourseModule item : result.items()) {
+            if (item.id() == null || item.name() == null) throw invalidResponse();
+        }
+        return result;
+    }
+
+    public Page<ModuleItem> moduleItems(long courseId, long moduleId) {
+        requirePositiveId(moduleId);
+        var uri = builder(coursePath(courseId) + "/modules/" + moduleId + "/items")
+                .queryParam("include[]", "content_details").queryParam("per_page", 50)
+                .build().encode().toUri();
+        var result = pages(uri, new ParameterizedTypeReference<List<ModuleItem>>() {});
+        for (ModuleItem item : result.items()) {
+            if (item.id() == null || item.title() == null || item.type() == null) throw invalidResponse();
+        }
+        return result;
+    }
+
+    private String coursePath(long courseId) {
+        requirePositiveId(courseId);
+        return "/courses/" + courseId;
+    }
+
+    private void requirePositiveId(long id) {
+        if (id <= 0) throw new LmsIntegrationException("INVALID_LMS_QUERY", "과목·학습 항목 ID는 양수여야 합니다.", HttpStatus.BAD_REQUEST, null);
     }
 
     private <T> Page<T> pages(URI initial, ParameterizedTypeReference<List<T>> type) {
@@ -75,6 +130,7 @@ public class HanyangLmsClient {
             validateNext(initial, next);
             if (!seen.add(next)) throw unsafePagination();
             var response = get(next, type);
+            if (response.getBody().stream().anyMatch(Objects::isNull)) throw invalidResponse();
             items.addAll(response.getBody());
             count++;
             next = nextLink(response.getHeaders().get(HttpHeaders.LINK), next);

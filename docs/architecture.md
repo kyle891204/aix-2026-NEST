@@ -9,8 +9,11 @@ React는 표현 계층, Spring Boot의 서비스는 로직 계층, 저장소·�
 | 데이터·외부 연동 | 기능별 `repository`, `integrations/lms`, `school`, `ai` | 저장·조회·공지 수집·외부 AI 요청 |
 
 현재 연결된 기능은 `BackendStatus → HealthController`와 `LmsTestPage → LmsDevController → HanyangLmsClient`다.
-LMS는 개발자 본인의 `.env` 토큰으로 읽기 검사를 수행하며 실제 한양대 데이터 반환은 아직 미검증이다.
+LMS는 개발자 본인의 `.env` 토큰으로 과목 설명·공지·과제·마감·모듈/학습 항목을 읽기 검사하며 실제 한양대 데이터 반환은 아직 미검증이다.
 사용자 인증·DB·AI 공급자 연동은 구현하지 않았다.
+
+초기 폴더 구성은 `initial-structure.md`, 검사 코드의 요청 흐름은 `lms-code-walkthrough.md`,
+화면 초안은 `wireframes.md`를 참고한다. 제안된 제품 기능과 현재 개발 검사 도구를 구분한다.
 
 기능별 패키지와 폴더:
 

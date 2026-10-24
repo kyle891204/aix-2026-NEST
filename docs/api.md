@@ -35,11 +35,21 @@ timestamp는 실행 시각을 UTC ISO 8601 형식으로 반환한다. 인증 없
 
 - GET `/dev/lms/profile`: 토큰 소유자 정보.
 - GET `/dev/lms/courses`: 활성 과목 목록.
+- GET `/dev/lms/courses/{courseId}`: 과목 코드·설명·강의계획 원본 HTML·시간대.
+- GET `/dev/lms/courses/{courseId}/assignments`: 과제 설명·마감·제출 가능 시작·제출 차단·제출 방식.
+- GET `/dev/lms/courses/{courseId}/modules`: 주차별 학습 모듈.
+- GET `/dev/lms/courses/{courseId}/modules/{moduleId}/items`: 모듈 내부 항목·종류·원문 링크.
 - GET `/dev/lms/announcements?courseId=...&startDate=...&endDate=...`: 과목 공지.
 
 목록 응답: `{ "items": [], "pagesFetched": 1, "truncated": false }`.
 오류 응답: `{ "code": "LMS_NOT_CONFIGURED", "message": "...", "upstreamStatus": null }`.
 Course의 `course_code`, Announcement의 `posted_at`, `html_url`, `context_code`는 LMS 필드명을 유지한다.
+추가 응답도 `syllabus_body`, `time_zone`, `course_id`, `due_at`, `unlock_at`, `lock_at`,
+`submission_types`, `points_possible`, `locked_for_user`, `items_count`, `content_details` 등 Canvas 필드명을 유지한다.
+ID는 양수여야 한다. 선택 필드가 누락되면 `null`을 유지한다. 날짜는 LMS 원본 ISO 8601 문자열이며
+화면에서 한국 시간과 원본 값을 함께 보여준다. `due_at`와 `lock_at`는 서로 다른 의미다.
+과제는 `override_assignment_dates=true`로 현재 조회 계정에 적용되는 날짜를 요청한다.
+공지 조회 기간은 과제·모듈 조회를 제한하지 않는다. 각 API 실패는 해당 영역의 오류로 표시한다.
 개발용 검사 API는 `prod` 프로필에서는 비활성화한다. 자세한 설정은 `lms-testing.md`를 참고한다.
 
 ## 다음 구현 후보 - 아직 호출하지 말 것

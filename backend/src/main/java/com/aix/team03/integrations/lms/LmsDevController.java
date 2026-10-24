@@ -7,6 +7,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import static com.aix.team03.integrations.lms.LmsModels.*;
 
@@ -23,6 +24,20 @@ public class LmsDevController {
 
     @GetMapping("/courses")
     public Page<Course> courses() { return client.courses(); }
+
+    @GetMapping("/courses/{courseId}")
+    public CourseDetail course(@PathVariable long courseId) { return client.course(courseId); }
+
+    @GetMapping("/courses/{courseId}/assignments")
+    public Page<Assignment> assignments(@PathVariable long courseId) { return client.assignments(courseId); }
+
+    @GetMapping("/courses/{courseId}/modules")
+    public Page<CourseModule> modules(@PathVariable long courseId) { return client.modules(courseId); }
+
+    @GetMapping("/courses/{courseId}/modules/{moduleId}/items")
+    public Page<ModuleItem> moduleItems(@PathVariable long courseId, @PathVariable long moduleId) {
+        return client.moduleItems(courseId, moduleId);
+    }
 
     @GetMapping("/announcements")
     public Page<Announcement> announcements(@RequestParam long courseId,
