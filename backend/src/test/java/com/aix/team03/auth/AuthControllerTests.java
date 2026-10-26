@@ -57,6 +57,32 @@ class AuthControllerTests {
     }
 
     @Test
+    void bothLocalViteOriginsReachLoginValidationThroughTheProxy() throws Exception {
+        for (String origin : new String[] {"http://localhost:5173", "http://127.0.0.1:5173"}) {
+            var session = bootstrap();
+            mvc.perform(post("/api/v1/auth/google").session(session)
+                            .header("Origin", origin)
+                            .header("X-CSRF-Token", session.getAttribute(AuthSessions.CSRF))
+                            .contentType(MediaType.APPLICATION_JSON).content("{\"credential\":\"\"}"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(header().string("Access-Control-Allow-Origin", origin))
+                    .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+        }
+    }
+
+    @Test
+    void untrustedOriginCannotSubmitLogin() throws Exception {
+        var session = bootstrap();
+        mvc.perform(post("/api/v1/auth/google").session(session)
+                        .header("Origin", "https://untrusted.example")
+                        .header("X-CSRF-Token", session.getAttribute(AuthSessions.CSRF))
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"credential\":\"fixture\"}"))
+                .andExpect(status().isForbidden())
+                .andExpect(header().doesNotExist("Access-Control-Allow-Origin"));
+        verify(verifier, never()).verify(anyString(), anyString());
+    }
+
+    @Test
     void validLoginRotatesSessionThenLogoutRevokesIt() throws Exception {
         var previous = bootstrap();
         String nonce = (String) previous.getAttribute(AuthSessions.NONCE);

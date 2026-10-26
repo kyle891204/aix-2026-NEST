@@ -48,6 +48,7 @@ Google Identity Services의 JavaScript 콜백 방식을 사용하므로 OAuth �
 ```dotenv
 GOOGLE_CLIENT_ID=<Google Cloud에서 복사한 Client ID 전체>
 AUTH_COOKIE_SECURE=false
+CORS_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
 ```
 
 복사한 Client ID에는 이미 `.apps.googleusercontent.com`이 포함되어 있다. 접미사를 추가하지 않는다.
@@ -64,6 +65,14 @@ npm run dev
 ```
 
 접속 주소는 `http://127.0.0.1:5173` 또는 `http://localhost:5173`이다.
+IntelliJ로 실행할 때 백엔드의 작업 디렉터리는 저장소의 `backend`로 지정한다.
+`.env`를 읽는 기준이 작업 디렉터리이므로 저장소 루트에서 실행하면 설정이 누락될 수 있다.
+
+Google 인증 직후 `API 요청 실패 (403)`이 나타나면 실제 프론트 원본이
+`CORS_ALLOWED_ORIGINS`에 포함되어 있는지 확인한다. Vite 프록시는 Host를 백엔드 주소로
+바꾸지만 브라우저의 Origin은 유지한다. 기본 로컬 설정은 위 두 주소를 허용한다.
+기존 `.env`가 CORS 값을 덮어쓰고 있으면 두 주소를 모두 추가한 뒤 백엔드를 재시작한다.
+허용되지 않은 외부 주소와 CSRF 토큰 없는 로그인 요청은 계속 차단한다.
 
 ## Render / Vercel 반영
 
@@ -130,12 +139,14 @@ API rewrite는 SPA의 `/index.html` fallback보다 먼저 적용되어야 한다
 
 ### 2026-10-27 로컬 검증 기록
 
-- 백엔드 `./mvnw verify`: 34개 테스트 통과(기존 LMS 24개 + 인증/쿠키 10개).
+- 백엔드 `./mvnw verify`: 36개 테스트 통과(기존 LMS 24개 + 인증/쿠키/CORS 12개).
 - 프론트 빌드·Oxlint·Prettier 검사 통과.
 - 실제 로컬 Vite → Spring 프록시: 익명 세션, CSRF/nonce, HttpOnly 및 `/api` 쿠키 경로,
   `no-store` 응답을 확인했다. 토큰·쿠키 원문은 검증 기록에 남기지 않았다.
+- Google 인증 직후 403의 원인이던 `127.0.0.1:5173` CORS 누락을 수정했다.
+  두 로컬 원본의 POST는 빈 자격증명의 DTO 검증 오류(400)까지 도달하고, 미허용 외부 원본은 403으로 차단됨을 실제 프록시로 확인했다.
 - 브라우저: 로그인 화면·설정 미완료·개인정보 안내 펼치기를 확인했다.
 - 임시 테스트 API/Google 버튼 응답으로 보호 경로 → 로그인 → 요청한 프로필 복귀,
   새로고침 복원, 로그아웃, 인증 실패 후 재시도를 확인했다. 테스트 응답은 배포 코드에 포함하지 않는다.
 
-클라이언트 ID가 아직 없으므로 실제 Google 로그인과 운영 Vercel 쿠키 전달은 미검증이다.
+로컬 클라이언트 ID 설정과 Google 로그인 버튼 표시는 확인했다. 실제 Google 인증 후 NEST 세션 생성과 운영 Vercel 쿠키 전달은 추가 검증이 필요하다.
