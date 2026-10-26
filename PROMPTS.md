@@ -1,5 +1,17 @@
 # AI 활용 기록
 
+## 2026-10-27 — Google 로그인 1차 구현
+
+- 도구: Codex, Figma design-to-code.
+- 요청 요지: 배포 프론트 링크에서 시작할 수 있도록 로그인부터 구현. 별도 기능 브랜치 사용.
+- 작업 브랜치: `feat/login-page` (`develop` 기준).
+- 참고: 기존 A00 로그인 Figma 시안, Google Identity Services 및 Spring JWT 검증 공식 문서.
+- 작업: 로그인 화면, Google 토큰 서버 검증, CSRF/nonce, HttpOnly 세션, 보호 경로, 내 계정·로그아웃, Vercel API 프록시, 설정 문서.
+- 범위: 회원가입·동의 이력·프로필 DB 저장은 후속 작업. 기존 공통 계정 LMS 데모 암호는 유지.
+- 검증: 로컬 RSA/JWKS 토큰 테스트와 세션/API 테스트, 기존 LMS 회귀 검사 및 프론트 품질 검사. 상세는 `docs/authentication.md`.
+- 미검증: Google 클라이언트 ID 미발급으로 실제 Google 인증 및 운영 배포 후 쿠키 동작은 후속 확인 필요.
+- 비밀정보: 실제 Google 토큰·Canvas 토큰·비밀번호는 기록하지 않음.
+
 ## 2026-10-24 — LMS 검증 도구 확장 및 초기 설계
 
 - 도구: Codex.

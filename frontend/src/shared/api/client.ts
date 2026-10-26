@@ -25,10 +25,11 @@ export class ApiError extends Error {
 export async function requestJson(
   path: string,
   options: RequestInit = {},
+  baseUrl = API_BASE_URL,
 ): Promise<unknown> {
   const headers = new Headers(options.headers)
   if (!headers.has('Accept')) headers.set('Accept', 'application/json')
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const response = await fetch(`${baseUrl}${path}`, {
     ...options,
     headers,
   })

@@ -5,6 +5,26 @@ API 접두사: `/api/v1`.
 
 ## 현재 구현
 
+### Google 로그인 / 세션
+
+모든 인증 요청은 프론트와 같은 원본의 `/api/v1/auth/*`로 보낸다.
+Google 토큰이나 세션 ID를 URL/브라우저 저장소에 넣지 않는다. 응답은 `Cache-Control: no-store`다.
+
+| 메서드·경로 | 요청 | 응답 |
+| --- | --- | --- |
+| GET `/auth/session` | 없음 | `{ user: null 또는 { id, email }, googleClientId, csrfToken, nonce }` |
+| POST `/auth/google` | JSON `{ credential }` + `X-CSRF-Token` | 인증 후 새 세션과 위와 같은 응답 |
+| GET `/auth/me` | 세션 쿠키 | `{ id, email }`; 비로그인 401 |
+| POST `/auth/logout` | 세션 쿠키 + `X-CSRF-Token` | `{ loggedOut: true }`; 세션 폐기 |
+
+`id`는 Google `sub`이며 회원 DB의 가입 완료 여부를 뜻하지 않는다.
+`googleClientId`가 비어 있으면 로그인이 아직 설정되지 않은 상태다.
+오류 형식은 `{ code, message, fields: {} }`다. 대표 코드는 `AUTH_REQUIRED`(401),
+`AUTH_INVALID_CREDENTIAL`(401), `AUTH_CHALLENGE_EXPIRED`(401), `AUTH_CSRF_INVALID`(403),
+`AUTH_NOT_CONFIGURED`(503), `AUTH_PROVIDER_UNAVAILABLE`(503)다.
+10분이 지난 로그인 시도는 `/auth/session`을 다시 읽어 새 nonce로 재시도한다.
+설정·배포·한계는 [로그인 문서](authentication.md)를 참고한다.
+
 ### GET /api/v1/health
 
 ```json
@@ -67,4 +87,5 @@ ID는 양수여야 한다. 선택 필드가 누락되면 `null`을 유지한다.
 대상 판별은 `APPLICABLE / NOT_APPLICABLE / NEEDS_REVIEW`, 번역은 `PENDING / SUCCEEDED / FAILED`로 구분하는 안을 제안한다.
 번역 실패여도 `originalContent`를 제공하고 원문을 숨기지 않는다.
 
-비공개 기능을 추가하기 전에 인증·본인 소유권·과목 열람 권한을 구현한다. 현재 시작 프로젝트에는 인증 시스템이 없다.
+제품 API의 서버 세션 인증 경로 보호를 추가했다. 각 비공개 기능 구현 시 본인 소유권·과목 열람 권한을 추가 검증한다.
+기존 공통 계정 LMS 데모는 별도 데모 암호로 보호하며 Google 로그인이 사용자별 LMS 권한을 부여하지 않는다.

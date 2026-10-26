@@ -1,6 +1,7 @@
 package com.aix.team03.global.error;
 
 import java.util.LinkedHashMap;
+import com.aix.team03.auth.AuthException;
 import com.aix.team03.integrations.lms.LmsIntegrationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +11,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    @ExceptionHandler(AuthException.class)
+    public ResponseEntity<ApiError> authError(AuthException exception) {
+        return ResponseEntity.status(exception.getStatus())
+                .body(new ApiError(exception.getCode(), exception.getMessage(), java.util.Map.of()));
+    }
+
     @ExceptionHandler(LmsIntegrationException.class)
     public ResponseEntity<LmsError> lmsError(LmsIntegrationException exception) {
         return ResponseEntity.status(exception.getStatus()).body(
