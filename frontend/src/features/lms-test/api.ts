@@ -1,5 +1,19 @@
 import { requestJson } from '../../shared/api/client'
 
+// Kept only in this page session. This is a demo password, never a Canvas API token.
+let demoPassword = ''
+
+export function setLmsDemoPassword(value: string) {
+  demoPassword = value
+}
+
+function requestLms(path: string) {
+  return requestJson(path, {
+    headers: demoPassword ? { 'X-LMS-Demo-Password': demoPassword } : {},
+    cache: 'no-store',
+  })
+}
+
 export interface LmsProfile {
   id: number
   name: string
@@ -65,25 +79,25 @@ export interface LmsPage<T> {
 }
 
 export async function getLmsProfile(): Promise<LmsProfile> {
-  return (await requestJson('/dev/lms/profile')) as LmsProfile
+  return (await requestLms('/dev/lms/profile')) as LmsProfile
 }
 export async function getLmsCourses(): Promise<LmsPage<LmsCourse>> {
-  return (await requestJson('/dev/lms/courses')) as LmsPage<LmsCourse>
+  return (await requestLms('/dev/lms/courses')) as LmsPage<LmsCourse>
 }
 export async function getLmsCourse(courseId: number): Promise<LmsCourseDetail> {
-  return (await requestJson(`/dev/lms/courses/${courseId}`)) as LmsCourseDetail
+  return (await requestLms(`/dev/lms/courses/${courseId}`)) as LmsCourseDetail
 }
 export async function getLmsAssignments(
   courseId: number,
 ): Promise<LmsPage<LmsAssignment>> {
-  return (await requestJson(
+  return (await requestLms(
     `/dev/lms/courses/${courseId}/assignments`,
   )) as LmsPage<LmsAssignment>
 }
 export async function getLmsModules(
   courseId: number,
 ): Promise<LmsPage<LmsModule>> {
-  return (await requestJson(
+  return (await requestLms(
     `/dev/lms/courses/${courseId}/modules`,
   )) as LmsPage<LmsModule>
 }
@@ -91,7 +105,7 @@ export async function getLmsModuleItems(
   courseId: number,
   moduleId: number,
 ): Promise<LmsPage<LmsModuleItem>> {
-  return (await requestJson(
+  return (await requestLms(
     `/dev/lms/courses/${courseId}/modules/${moduleId}/items`,
   )) as LmsPage<LmsModuleItem>
 }
@@ -105,7 +119,7 @@ export async function getLmsAnnouncements(
     startDate,
     endDate,
   })
-  return (await requestJson(
+  return (await requestLms(
     `/dev/lms/announcements?${query}`,
   )) as LmsPage<LmsAnnouncement>
 }

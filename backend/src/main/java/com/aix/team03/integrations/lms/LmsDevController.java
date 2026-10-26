@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import static com.aix.team03.integrations.lms.LmsModels.*;
 
-/** Developer-only reads using the configured owner's token. Not a multi-user auth API. */
+/** Reads using the configured demo owner's token. Not a multi-user auth API. */
 @RestController
-@Profile("!prod")
+@Profile("!prod | lms-demo")
 @RequestMapping("/api/v1/dev/lms")
 public class LmsDevController {
     private final HanyangLmsClient client;
