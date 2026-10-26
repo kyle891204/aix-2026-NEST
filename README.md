@@ -5,6 +5,18 @@
 
 **배포 URL / Live URL:** (13주차에 작성 / add in Week 13)
 
+## 현재 개발 도구
+
+React + TypeScript + Vite / Java 21 + Spring Boot로 구성되어 있습니다.
+`/lms-test`에서 서버 `.env`의 본인 LMS 토큰으로 과목·공지·과제·마감·학습 목록을 읽기 검사할 수 있습니다.
+실제 한양대 계정 데이터 반환은 별도 검증이 필요하며, 제품의 로그인·DB·AI 분석은 아직 구현하지 않았습니다.
+
+- [LMS 실행·테스트 방법](docs/lms-testing.md)
+- [코드 구성과 호출 흐름](docs/lms-code-walkthrough.md)
+- [검증 기록](docs/lms-verification.md)
+- [초기 디렉터리 구성안](docs/initial-structure.md)
+- [와이어프레임 초안](docs/wireframes.md)
+
 ## 1. 문제 정의 / Problem Definition
 - 사용자 / Users:
 - 상황 / Situation:
