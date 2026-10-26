@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import { ApiError } from '../../shared/api/client'
 import {
@@ -9,6 +9,7 @@ import {
   getLmsModuleItems,
   getLmsModules,
   getLmsProfile,
+  setLmsDemoPassword,
 } from './api'
 import type {
   LmsAnnouncement,
@@ -102,6 +103,8 @@ function Panel<T>({
 }
 
 export function LmsTestPage() {
+  const [demoPassword, setDemoPassword] = useState('')
+  useEffect(() => () => setLmsDemoPassword(''), [])
   const [profile, setProfile] = useState<Result<LmsProfile>>(null)
   const [courses, setCourses] = useState<Result<LmsPage<LmsCourse>>>(null)
   const [course, setCourse] = useState<Result<LmsCourseDetail>>(null)
@@ -138,6 +141,7 @@ export function LmsTestPage() {
   }
 
   async function loadCourses() {
+    setLmsDemoPassword(demoPassword)
     setBusy(true)
     setProfile(null)
     setCourses(null)
@@ -194,14 +198,32 @@ export function LmsTestPage() {
 
   return (
     <section className="page-intro">
-      <h1>LMS 연동 테스트</h1>
-      <p>개발자 본인의 과목·공지·과제·학습 항목을 읽기 전용으로 검사합니다.</p>
+      <h1>LMS 데모</h1>
+      <p>하나의 데모 계정으로 과목·공지·과제·학습 항목을 조회합니다.</p>
       <p className="result-note">
-        backend/.env에 LMS_API_TOKEN을 설정하고 서버를 재시작하세요. 토큰 입력은
-        서버 설정에서만 합니다.
+        모든 접속자에게 같은 계정의 데이터가 표시됩니다. 개인별 Canvas 로그인은
+        지원하지 않습니다. Canvas API 토큰을 아래 입력란에 넣지 마세요.
       </p>
+      <label>
+        데모 접근 암호
+        <input
+          type="password"
+          autoComplete="off"
+          value={demoPassword}
+          disabled={busy}
+          placeholder="발표자에게 받은 데모 암호"
+          onChange={(event) => {
+            setDemoPassword(event.target.value)
+            setLmsDemoPassword('')
+            setProfile(null)
+            setCourses(null)
+            setCourseId('')
+            clearCourse()
+          }}
+        />
+      </label>
       <button onClick={loadCourses} disabled={busy}>
-        본인 정보·수강 과목 조회
+        데모 계정·수강 과목 조회
       </button>
       <p role="status" aria-live="polite">
         {busy ? 'LMS 조회 중…' : ''}

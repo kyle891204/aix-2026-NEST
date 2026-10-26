@@ -17,3 +17,4 @@ app:
   lms:
     api-base-url: ${LMS_API_BASE_URL:https://learning.hanyang.ac.kr/api/v1}
     api-token: ${LMS_API_TOKEN:}
+    demo-password: ${LMS_DEMO_PASSWORD:}
