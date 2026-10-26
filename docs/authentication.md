@@ -46,10 +46,11 @@ Google Identity Services의 JavaScript 콜백 방식을 사용하므로 OAuth �
 서버는 정상 기동하지만 로그인 화면에는 준비 중을 표시하고 로그인 요청은 503으로 닫힌다.
 
 ```dotenv
-GOOGLE_CLIENT_ID=<웹 클라이언트 ID>.apps.googleusercontent.com
+GOOGLE_CLIENT_ID=<Google Cloud에서 복사한 Client ID 전체>
 AUTH_COOKIE_SECURE=false
 ```
 
+복사한 Client ID에는 이미 `.apps.googleusercontent.com`이 포함되어 있다. 접미사를 추가하지 않는다.
 `false`는 로컬 HTTP 전용이다. 프론트의 기본 API 주소는 `/api/v1`이며 Vite가 백엔드로
 전달한다. 기존 `.env`를 쓰는 경우에도 위 두 값을 추가한다.
 
@@ -69,7 +70,7 @@ npm run dev
 Render Environment:
 
 ```dotenv
-GOOGLE_CLIENT_ID=<웹 클라이언트 ID>.apps.googleusercontent.com
+GOOGLE_CLIENT_ID=<Google Cloud에서 복사한 Client ID 전체>
 AUTH_COOKIE_SECURE=true
 ```
 
