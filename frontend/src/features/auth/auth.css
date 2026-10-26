@@ -1,0 +1,124 @@
+.auth-shell {
+  --auth-ink: #1c2940;
+  --auth-dim: #64748b;
+  --auth-line: #e5eaf2;
+  --auth-blue: #345df2;
+  width: 100%;
+  max-width: 480px;
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding-top: env(safe-area-inset-top);
+  background: #f3f6fb;
+  color: var(--auth-ink);
+}
+.auth-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 72px;
+  padding: 0 24px;
+  background: white;
+}
+.auth-header img {
+  flex: 0 0 36px;
+  object-fit: contain;
+}
+.auth-brand {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 31px;
+}
+.auth-language {
+  margin-left: auto;
+  color: var(--auth-dim);
+  font-size: 11px;
+}
+.auth-content {
+  display: grid;
+  gap: 16px;
+  padding: 24px;
+}
+.auth-content h1 {
+  margin: 0;
+  text-align: center;
+  font-size: 22px;
+  line-height: 31px;
+}
+.auth-content p {
+  margin: 0;
+}
+.auth-eyebrow,
+.auth-caption,
+.auth-footer {
+  font-size: 11px;
+  line-height: 17px;
+  color: var(--auth-dim);
+}
+.auth-notice {
+  border: 1px solid var(--auth-line);
+  border-radius: 12px;
+  background: white;
+  padding: 16px;
+  font-size: 13px;
+}
+.auth-notice p + p,
+.auth-notice strong + p {
+  margin-top: 8px;
+}
+.auth-notice button {
+  width: 100%;
+  margin-top: 12px;
+  border-color: var(--auth-line);
+  border-radius: 12px;
+  color: var(--auth-blue);
+  font-size: 13px;
+}
+.auth-google-field {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.google-sign-in {
+  min-height: 44px;
+}
+.google-sign-in > div {
+  min-height: 44px;
+}
+.auth-button-busy {
+  opacity: 0.5;
+  pointer-events: none;
+}
+.auth-signup-note {
+  border-radius: 12px;
+  background: #e5eaf2;
+  color: #526179;
+  padding: 14px 16px;
+  text-align: center;
+  font-size: 13px;
+}
+.auth-privacy {
+  font-size: 13px;
+}
+.auth-privacy summary {
+  padding: 12px 0;
+  min-height: 44px;
+  color: var(--auth-blue);
+  cursor: pointer;
+}
+.auth-privacy p {
+  margin-bottom: 12px;
+}
+.auth-footer {
+  border: 0;
+  padding: 24px 24px calc(24px + env(safe-area-inset-bottom));
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
