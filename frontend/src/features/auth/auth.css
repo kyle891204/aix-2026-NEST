@@ -208,13 +208,3 @@
   margin: 0 auto;
   padding: 16px 24px;
 }
-
-.signup-home-link {
-  display: block;
-  padding: 12px;
-  border-radius: 10px;
-  background: var(--auth-blue);
-  color: white;
-  text-align: center;
-  text-decoration: none;
-}
