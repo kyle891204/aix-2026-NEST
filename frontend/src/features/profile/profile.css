@@ -1,0 +1,20 @@
+.account-profile-details {
+  display: grid;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.account-profile-details > div {
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr);
+  gap: 12px;
+}
+
+.account-profile-details dt {
+  color: #657795;
+}
+
+.account-profile-details dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
