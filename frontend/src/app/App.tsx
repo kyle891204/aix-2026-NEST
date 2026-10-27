@@ -15,12 +15,14 @@ import { NoticePage } from '../features/notices/pages/NoticePage'
 import { ProfilePage } from '../features/profile/pages/ProfilePage'
 import { WelcomePage } from '../pages/WelcomePage'
 import { EmptyState } from '../shared/ui/EmptyState'
+import { ConsentPage } from '../features/auth/ConsentPage'
 
 export default function App() {
   return (
     <AuthProvider>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup/consent" element={<ConsentPage />} />
         <Route element={<ProtectedApp />}>
           <Route path="/" element={<WelcomePage />} />
           <Route path="/notices" element={<NoticePage />} />
