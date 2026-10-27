@@ -49,7 +49,7 @@ public class GoogleTokenVerifier {
 
     public AuthUser verify(String credential, String expectedNonce) {
         if (clientId.isBlank()) {
-            throw new AuthException("AUTH_NOT_CONFIGURED", "Google 로그인이 아직 설정되지 않았습니다.",
+            throw new AuthException("AUTH_NOT_CONFIGURED", "Google 로그인이 준비중입니다.",
                     HttpStatus.SERVICE_UNAVAILABLE);
         }
         try {

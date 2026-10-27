@@ -1,0 +1,62 @@
+/* LIFE 제목 */
+.life-home > h1 {
+    margin: 0;
+    font-size: 26px;
+}
+
+.life-home > .home-description {
+    margin-top: 16px;
+    font-size: 14px;
+}
+
+/* 카드 사이 간격 */
+.life-home > .home-card {
+    margin-top: 18px;
+}
+
+/* 자동 번역 안내 */
+.life-home .translation-card {
+    background: #edf1ff;
+}
+
+.life-home .translation-card h2 {
+    margin: 0 0 12px;
+    color: #3f5fff;
+    font-size: 16px;
+}
+
+.life-home .translation-card p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+/* 게시판·생활안내 목록 */
+.life-home .life-menu-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 60px;
+    padding: 8px 0;
+    color: inherit;
+    text-decoration: none;
+}
+
+.life-home .life-menu-row > span:first-child {
+    min-width: 0;
+}
+
+.life-home .life-menu-row strong {
+    font-size: 15px;
+}
+
+.life-home .life-menu-row > span:last-child[aria-hidden] {
+    flex-shrink: 0;
+    color: #657795;
+    font-size: 26px;
+}
+
+.life-home a.life-menu-row:hover {
+    color: #8671c6;
+}
