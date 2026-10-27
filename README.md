@@ -10,7 +10,10 @@
 React + TypeScript + Vite / Java 21 + Spring Boot로 구성되어 있습니다.
 `/lms-test`에서 서버 `.env`의 본인 LMS 토큰으로 과목·공지·과제·마감·학습 목록을 읽기 검사할 수 있습니다.
 Google 로그인·서버 세션·로그아웃의 1차 코드를 구현했습니다. 실제 로그인에는 Google 웹 클라이언트 ID 설정이 필요합니다.
-회원 DB·가입 동의/프로필 저장·AI 분석은 아직 구현하지 않았습니다. 실제 한양대 계정 데이터 반환은 별도 검증이 필요합니다.
+계정별 Context + sessionStorage로 동의·프로필 입력과 학교 홈 표시를 연결했습니다.
+회원 DB·서버 동의/프로필 저장·AI 분석은 아직 구현하지 않았습니다. 실제 한양대 계정 데이터 반환은 별도 검증이 필요합니다.
+
+- [계정별 프로필 데모와 테스트](docs/demo-profile.md)
 
 - [Google 로그인 설정과 검증 범위](docs/authentication.md)
 

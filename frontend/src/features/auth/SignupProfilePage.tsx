@@ -1,16 +1,8 @@
 import { SUPPORTED_LANGUAGES, type Language } from '../../shared/types/language'
 import { ERICA_SCHOOL, ERICA_COLLEGES } from './erica-academics'
+import type { SignupProfile } from '../profile/demo-profile'
 
-export interface SignupProfile {
-  nickname: string
-  language: Language
-  schoolId: string
-  collegeId: string
-  department: string
-  nationality: string
-  degree: string
-  year: string
-}
+export type { SignupProfile } from '../profile/demo-profile'
 
 interface SignupProfilePageProps {
   profile: SignupProfile
