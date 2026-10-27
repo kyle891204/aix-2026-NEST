@@ -1,101 +1,106 @@
 /* 개인정보 펼치기 버튼 */
+.school-home .profile-summary {
+  display: grid;
+  gap: 4px;
+}
+
 .school-home .profile-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    width: 100%;
-    min-height: 44px;
-    padding: 0;
-    border: 0;
-    background: transparent;
-    color: inherit;
-    text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
 }
 
 .school-home .profile-toggle strong {
-    font-size: 18px;
+  font-size: 18px;
 }
 
 .school-home .profile-toggle > span:last-child {
-    flex-shrink: 0;
-    color: #3f5fff;
-    font-size: 24px;
+  flex-shrink: 0;
+  color: #3f5fff;
+  font-size: 24px;
 }
 
 /* 펼쳐진 개인정보 */
 .school-home .profile-details {
-    display: grid;
-    gap: 14px;
-    margin: 16px 0;
-    padding-top: 16px;
-    border-top: 1px solid #e7ebf3;
+  display: grid;
+  gap: 14px;
+  margin: 16px 0;
+  padding-top: 16px;
+  border-top: 1px solid #e7ebf3;
 }
 
 .school-home .profile-details > div {
-    display: grid;
-    grid-template-columns: 84px minmax(0, 1fr);
-    align-items: baseline;
-    gap: 12px;
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr);
+  align-items: baseline;
+  gap: 12px;
 }
 
 .school-home .profile-details dt {
-    color: #657795;
-    font-size: 12px;
+  color: #657795;
+  font-size: 12px;
 }
 
 .school-home .profile-details dd {
-    margin: 0;
-    overflow-wrap: anywhere;
-    font-size: 14px;
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: 14px;
 }
 
 /* 개인정보 수정 링크 */
 .school-home #dashboard-profile-details > a {
-    display: flex;
-    align-items: center;
-    min-height: 44px;
-    color: #1c2940;
-    font-size: 14px;
-    font-weight: 700;
-    text-decoration: none;
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  color: #1c2940;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
 }
 
 /* 맞춤 공지 */
 .school-notices {
-    margin-top: 24px;
+  margin-top: 24px;
 }
 
 .school-notices .home-card h3 {
-    margin: 14px 0 8px;
-    font-size: 15px;
-    line-height: 1.5;
+  margin: 14px 0 8px;
+  font-size: 15px;
+  line-height: 1.5;
 }
 
 .school-notices .home-card > p:last-child {
-    font-size: 12px;
+  font-size: 12px;
 }
 
 .school-notices > .home-description {
-    margin-top: 18px;
+  margin-top: 18px;
 }
 
 /* 공지 분류 배지 */
 .school-home .notice-badges {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .school-home .notice-badges span {
-    padding: 4px 12px;
-    border-radius: 10px;
-    background: #f4f6fc;
-    color: #657795;
-    font-size: 12px;
+  padding: 4px 12px;
+  border-radius: 10px;
+  background: #f4f6fc;
+  color: #657795;
+  font-size: 12px;
 }
 
 .school-home .notice-badges span:first-child {
-    background: #eef2ff;
-    color: #3f5fff;
+  background: #eef2ff;
+  color: #3f5fff;
 }

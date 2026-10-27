@@ -1,21 +1,20 @@
 import './auth.css'
 
-  interface ConsentPageProps {
-    basicConsent: boolean
-    personalizedConsent: boolean
-    onBasicConsentChange: (checked: boolean) => void
-    onPersonalizedConsentChange: (checked: boolean) => void
-    onNext: () => void
-  }
+interface ConsentPageProps {
+  basicConsent: boolean
+  personalizedConsent: boolean
+  onBasicConsentChange: (checked: boolean) => void
+  onPersonalizedConsentChange: (checked: boolean) => void
+  onNext: () => void
+}
 
-  export function ConsentPage({
-                                basicConsent,
-                                personalizedConsent,
-                                onBasicConsentChange,
-                                onPersonalizedConsentChange,
-                                onNext,
-                              }: ConsentPageProps) {
-
+export function ConsentPage({
+  basicConsent,
+  personalizedConsent,
+  onBasicConsentChange,
+  onPersonalizedConsentChange,
+  onNext,
+}: ConsentPageProps) {
   const canContinue = basicConsent
 
   return (
@@ -62,9 +61,9 @@ import './auth.css'
             <details className="consent-details">
               <summary>내용 보기</summary>
               <p>
-                맞춤 안내를 위해 사용자가 직접 인력한 학교, 단과대학, 학과·학부,
-                국적, 학위과정, 학년 정보를 사용합니다.
-                동의하지 않아도 기본 기능을 이용할 수 있습니다.
+                맞춤 안내를 위해 사용자가 직접 입력한 학교, 단과대학, 학과·학부,
+                국적, 학위과정, 학년 정보를 사용합니다. 동의하지 않아도 기본
+                기능을 이용할 수 있습니다.
               </p>
               <p>개발용 요약입니다. 최종 동의서 내용은 별도로 연결합니다.</p>
             </details>

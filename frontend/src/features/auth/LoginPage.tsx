@@ -3,25 +3,26 @@ import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from './auth-context'
 import { authErrorMessage } from './auth-errors'
 import { GoogleSignInButton } from './GoogleSignInButton'
+import { useDemoProfile } from '../profile/demo-profile-context'
+import { authReturnPath } from './return-path'
 import './auth.css'
 
 export function LoginPage() {
   const { session, loading, error, reload, login } = useAuth()
+  const { savedProfile } = useDemoProfile()
   const [submitting, setSubmitting] = useState(false)
   const [loginError, setLoginError] = useState<string | null>(null)
   const inFlight = useRef(false)
   const location = useLocation()
   const from: unknown = location.state?.from
 
-  if (session?.user) {
-    const target =
-      typeof from === 'string' &&
-      from.startsWith('/') &&
-      !from.startsWith('//') &&
-      !from.startsWith('/login')
-        ? from
-        : '/'
-    return <Navigate to={target} replace />
+  if (session?.user && !loading && !error) {
+    const target = authReturnPath(from)
+    return savedProfile ? (
+      <Navigate to={target} replace />
+    ) : (
+      <Navigate to="/signup/consent" state={{ from: target }} replace />
+    )
   }
 
   async function authenticate(credential: string) {
@@ -105,7 +106,7 @@ export function LoginPage() {
           Google 계정으로 로그인합니다. 학교 계정이나 Canvas는 별도로 연결해요.
         </p>
         <div className="auth-signup-note">
-          회원가입 · 프로필 설정은 준비 중입니다.
+          처음 이용하면 Google 로그인 후 동의와 프로필 설정을 진행해요.
         </div>
         <details className="auth-privacy">
           <summary>개인정보 · 로그인 처리 안내</summary>
@@ -120,7 +121,12 @@ export function LoginPage() {
           </p>
           <p>
             Google 로그인만으로 Canvas나 AI에 연결되지 않습니다. 회원가입과
-            동의·프로필 저장 기능은 준비 중입니다.
+            프로필 설정은 데모로 제공하며, 입력한 프로필은 계정별로 이 탭에만
+            보관합니다.
+          </p>
+          <p>
+            이 탭에 저장한 프로필은 로그아웃해도 유지됩니다. 다른 기기에서는
+            불러올 수 없으며 탭을 닫으면 일반적으로 사라집니다.
           </p>
         </details>
         <p className="auth-caption">

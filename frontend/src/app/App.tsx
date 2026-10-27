@@ -13,6 +13,8 @@ import { LmsTestPage } from '../features/lms-test/LmsTestPage'
 import { CommunityPage } from '../features/community/pages/CommunityPage'
 import { NoticePage } from '../features/notices/pages/NoticePage'
 import { ProfilePage } from '../features/profile/pages/ProfilePage'
+import { DemoProfileProvider } from '../features/profile/DemoProfileProvider'
+import { useDemoProfile } from '../features/profile/demo-profile-context'
 import { EmptyState } from '../shared/ui/EmptyState'
 import { SignupPage } from '../features/auth/SignupPage.tsx'
 import { SchoolHomePage } from '../features/school/pages/SchoolHomePage.tsx'
@@ -39,61 +41,70 @@ const lifeMenus = [
 export default function App() {
   return (
     <AuthProvider>
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup/consent" element={<SignupPage />} />
+      <DemoProfileProvider>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup/consent" element={<SignupPage />} />
 
-        <Route element={<ProtectedApp />}>
-          <Route path="/" element={<SchoolHomePage />} />
-          <Route path="/life" element={<LifeHomePage />} />
-          <Route path="/notices" element={<NoticePage />} />
-          <Route path="/community" element={<CommunityPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/lms-test" element={<LmsTestPage />} />
+          <Route element={<ProtectedApp />}>
+            <Route path="/" element={<SchoolHomePage />} />
+            <Route path="/life" element={<LifeHomePage />} />
+            <Route path="/notices" element={<NoticePage />} />
+            <Route path="/community" element={<CommunityPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/lms-test" element={<LmsTestPage />} />
+            <Route
+              path="*"
+              element={
+                <EmptyState
+                  title="페이지를 찾을 수 없습니다"
+                  description="하단 메뉴에서 이동해 주세요."
+                />
+              }
+            />
+          </Route>
           <Route
-            path="*"
+            path="/entry-exit"
+            element={
+              <EmptyState title="입출국" description="준비 중인 화면입니다." />
+            }
+          />
+
+          <Route
+            path="/course-notices"
             element={
               <EmptyState
-                title="페이지를 찾을 수 없습니다"
-                description="하단 메뉴에서 이동해 주세요."
+                title="과목알림"
+                description="준비 중인 화면입니다."
               />
             }
           />
-        </Route>
-        <Route
-          path="/entry-exit"
-          element={
-            <EmptyState title="입출국" description="준비 중인 화면입니다." />
-          }
-        />
 
-        <Route
-          path="/course-notices"
-          element={
-            <EmptyState title="과목알림" description="준비 중인 화면입니다." />
-          }
-        />
+          <Route
+            path="/schedule"
+            element={
+              <EmptyState
+                title="학사일정"
+                description="준비 중인 화면입니다."
+              />
+            }
+          />
 
-        <Route
-          path="/schedule"
-          element={
-            <EmptyState title="학사일정" description="준비 중인 화면입니다." />
-          }
-        />
-
-        <Route
-          path="/life/*"
-          element={
-            <EmptyState title="LIFE" description="준비 중인 화면입니다." />
-          }
-        />
-      </Routes>
+          <Route
+            path="/life/*"
+            element={
+              <EmptyState title="LIFE" description="준비 중인 화면입니다." />
+            }
+          />
+        </Routes>
+      </DemoProfileProvider>
     </AuthProvider>
   )
 }
 
 function ProtectedApp() {
   const { session, loading, error, reload } = useAuth()
+  const { savedProfile } = useDemoProfile()
   const location = useLocation()
 
   const isLife =
@@ -103,16 +114,8 @@ function ProtectedApp() {
 
   const isHomePreview =
     import.meta.env.DEV &&
+    !session?.user &&
     [...schoolMenus, ...lifeMenus].some((menu) => menu.to === location.pathname)
-  if (!isHomePreview && !session?.user) {
-    return (
-      <Navigate
-        to="/login"
-        state={{ from: location.pathname + location.search + location.hash }}
-        replace
-      />
-    )
-  }
   if (!isHomePreview && (loading || error)) {
     return (
       <div className="app-shell">
@@ -124,6 +127,13 @@ function ProtectedApp() {
         </section>
       </div>
     )
+  }
+  const from = location.pathname + location.search + location.hash
+  if (!isHomePreview && !session?.user) {
+    return <Navigate to="/login" state={{ from }} replace />
+  }
+  if (!isHomePreview && !savedProfile) {
+    return <Navigate to="/signup/consent" state={{ from }} replace />
   }
   return (
     <div className="app-shell">

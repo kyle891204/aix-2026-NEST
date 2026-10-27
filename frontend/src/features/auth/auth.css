@@ -202,3 +202,9 @@
   opacity: 0.45;
   cursor: not-allowed;
 }
+
+.signup-storage-error {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 16px 24px;
+}

@@ -1,9 +1,13 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useDemoProfile } from '../../profile/demo-profile-context'
+import { profileDetails } from '../../profile/profile-display'
 import '../school.css'
 
 export function SchoolHomePage() {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const { savedProfile } = useDemoProfile()
+  const profile = savedProfile?.profile ?? null
 
   return (
     <div className="school-home">
@@ -15,10 +19,12 @@ export function SchoolHomePage() {
           aria-controls="dashboard-profile-details"
           onClick={() => setIsProfileOpen((previous) => !previous)}
         >
-          <span>
-            <strong>안녕하세요!</strong>
+          <span className="profile-summary">
+            <strong>
+              {profile ? `${profile.nickname}님, 안녕하세요!` : '안녕하세요!'}
+            </strong>
             <span className="dashboard-description">
-              학과·학번 등 내 정보 {isProfileOpen ? '접기' : '펼치기'}
+              학교·학과 등 내 정보 {isProfileOpen ? '접기' : '펼치기'}
             </span>
           </span>
 
@@ -28,26 +34,12 @@ export function SchoolHomePage() {
         {isProfileOpen ? (
           <div id="dashboard-profile-details">
             <dl className="profile-details">
-              <div>
-                <dt>학과</dt>
-                <dd>학과 미입력</dd>
-              </div>
-              <div>
-                <dt>학번</dt>
-                <dd>학번 미입력</dd>
-              </div>
-              <div>
-                <dt>과정·학년</dt>
-                <dd>미입력</dd>
-              </div>
-              <div>
-                <dt>국적·비자</dt>
-                <dd>미입력</dd>
-              </div>
-              <div>
-                <dt>선호 언어</dt>
-                <dd>미입력</dd>
-              </div>
+              {profileDetails(profile).map(({ label, value }) => (
+                <div key={label}>
+                  <dt>{label}</dt>
+                  <dd>{value}</dd>
+                </div>
+              ))}
             </dl>
 
             <Link to="/profile">개인정보 수정 →</Link>
@@ -67,14 +59,12 @@ export function SchoolHomePage() {
 
         <article className="home-card">
           <div className="notice-badges">
-            <span>해당</span>
+            <span>예시</span>
             <span>학교</span>
           </div>
 
           <h3>외국인 학부생 체류 서류 제출 안내</h3>
-          <p className="home-description">
-            D-2 비자 · 학부 재학생 조건과 일치
-          </p>
+          <p className="home-description">조건별 공지 분류는 준비 중입니다.</p>
           <p>2026.10.28 17:00 · KST</p>
         </article>
 
