@@ -155,3 +155,50 @@
 .consent-details p {
   line-height: 1.6;
 }
+
+.signup-form {
+  display: grid;
+  gap: 20px;
+}
+
+.signup-field {
+  display: grid;
+  gap: 8px;
+}
+
+.signup-field input,
+.signup-field select {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid var(--auth-line);
+  border-radius: 10px;
+  background: white;
+  color: var(--auth-ink);
+  font: inherit;
+}
+
+.signup-optional {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+  margin: 0;
+  padding: 16px;
+  border: 1px solid var(--auth-line);
+  border-radius: 12px;
+}
+
+.signup-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.signup-actions button {
+  flex: 1;
+}
+
+.signup-actions button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

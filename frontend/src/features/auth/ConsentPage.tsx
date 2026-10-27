@@ -1,9 +1,20 @@
-import { useState } from 'react'
 import './auth.css'
 
-export function ConsentPage() {
-  const [basicConsent, setBasicConsent] = useState(false)
-  const [personalizedConsent, setPersonalizedConsent] = useState(false)
+  interface ConsentPageProps {
+    basicConsent: boolean
+    personalizedConsent: boolean
+    onBasicConsentChange: (checked: boolean) => void
+    onPersonalizedConsentChange: (checked: boolean) => void
+    onNext: () => void
+  }
+
+  export function ConsentPage({
+                                basicConsent,
+                                personalizedConsent,
+                                onBasicConsentChange,
+                                onPersonalizedConsentChange,
+                                onNext,
+                              }: ConsentPageProps) {
 
   const canContinue = basicConsent
 
@@ -21,7 +32,7 @@ export function ConsentPage() {
               <input
                 type="checkbox"
                 checked={basicConsent}
-                onChange={(event) => setBasicConsent(event.target.checked)}
+                onChange={(event) => onBasicConsentChange(event.target.checked)}
               />
               <span>[필수] 기본 개인정보 수집·이용 동의</span>
             </label>
@@ -42,7 +53,7 @@ export function ConsentPage() {
                 type="checkbox"
                 checked={personalizedConsent}
                 onChange={(event) =>
-                  setPersonalizedConsent(event.target.checked)
+                  onPersonalizedConsentChange(event.target.checked)
                 }
               />
               <span>[선택] 맞춤정보 수집·이용 동의</span>
@@ -51,9 +62,9 @@ export function ConsentPage() {
             <details className="consent-details">
               <summary>내용 보기</summary>
               <p>
-                맞춤 안내를 위해 사용자가 직접 입력한 국적, 학위과정, 학년, 비자
-                종류 등을 사용합니다. 동의하지 않아도 기본 기능을 이용할 수
-                있습니다.
+                맞춤 안내를 위해 사용자가 직접 인력한 학교, 단과대학, 학과·학부,
+                국적, 학위과정, 학년 정보를 사용합니다.
+                동의하지 않아도 기본 기능을 이용할 수 있습니다.
               </p>
               <p>개발용 요약입니다. 최종 동의서 내용은 별도로 연결합니다.</p>
             </details>
@@ -66,7 +77,7 @@ export function ConsentPage() {
             : '필수 동의 내용을 확인하고 체크해 주세요.'}
         </p>
 
-        <button type="button" disabled={!canContinue}>
+        <button type="button" disabled={!canContinue} onClick={onNext}>
           다음
         </button>
       </main>

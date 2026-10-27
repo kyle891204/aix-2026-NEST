@@ -1,0 +1,87 @@
+/* SCHOOL / LIFE 전환 메뉴 */
+.mode-switch {
+    display: inline-flex;
+    gap: 4px;
+    margin: 16px 0;
+    padding: 4px;
+    border: 1px solid #e2e7f0;
+    border-radius: 999px;
+    background: #f4f6fc;
+}
+
+.mode-switch a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 14px;
+    border-radius: 999px;
+    color: #657795;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.mode-switch a.active {
+    color: white;
+    background: #3f5fff;
+}
+
+.mode-switch a[href="/life"].active {
+    background: #8671c6;
+}
+
+/* 두 홈 화면의 공통 배치 */
+.school-home,
+.life-home {
+    padding: 24px 16px;
+    border-radius: 16px;
+    background: #f5f6fd;
+    color: #1c2940;
+}
+
+/* 공통 카드 */
+.home-card {
+    padding: 18px;
+    border: 1px solid #e1e7f1;
+    border-radius: 18px;
+    background: white;
+}
+
+/* 보조 설명 */
+.home-description {
+    display: block;
+    margin-top: 6px;
+    color: #657795;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+/* 섹션 제목과 더 보기 링크 */
+.home-section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.home-section-heading h2 {
+    margin: 0;
+    font-size: 17px;
+}
+
+.home-section-heading a {
+    flex-shrink: 0;
+    color: #657795;
+    font-size: 12px;
+    text-decoration: none;
+}
+
+.bottom-nav--school {
+    --nav-accent: #3f5fff;
+}
+
+.bottom-nav--life {
+    --nav-accent: #8671c6;
+}
