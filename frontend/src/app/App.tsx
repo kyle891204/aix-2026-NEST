@@ -19,6 +19,7 @@ import { EmptyState } from '../shared/ui/EmptyState'
 import { SignupPage } from '../features/auth/SignupPage.tsx'
 import { SchoolHomePage } from '../features/school/pages/SchoolHomePage.tsx'
 import { LifeHomePage } from '../features/life/pages/LifeHomePage'
+import { LifeGuidePage } from '../features/life/pages/LifeGuidePage'
 import './home.css'
 
 // 토글로 전환할떄마다 하단 메뉴도 바뀌게
@@ -49,6 +50,7 @@ export default function App() {
           <Route element={<ProtectedApp />}>
             <Route path="/" element={<SchoolHomePage />} />
             <Route path="/life" element={<LifeHomePage />} />
+            <Route path="/life/guide" element={<LifeGuidePage />} />
             <Route path="/notices" element={<NoticePage />} />
             <Route path="/community" element={<CommunityPage />} />
             <Route path="/profile" element={<ProfilePage />} />
