@@ -1,0 +1,40 @@
+export const questionMessages = {
+  ko: {
+    resolve: '해결로 표시',
+    edit: '질문 수정',
+    remove: '질문 삭제',
+    confirm: '확인',
+    cancel: '취소',
+    resolvePrompt: '질문이 해결되었나요?',
+    deletePrompt: '이 질문을 삭제할까요?',
+    locked: '해결된 질문은 수정·삭제하거나 미해결로 변경할 수 없습니다.',
+    noReplies: '답글이 등록되면 해결로 표시할 수 있습니다.',
+    hasReplies: '답글이 있는 질문은 삭제할 수 없습니다.',
+  },
+  en: {
+    resolve: 'Mark as resolved',
+    edit: 'Edit question',
+    remove: 'Delete question',
+    confirm: 'Confirm',
+    cancel: 'Cancel',
+    resolvePrompt:
+      'Has your question been resolved?',
+    deletePrompt: 'Delete this question?',
+    locked:
+      'Resolved questions cannot be edited, deleted, or marked as unresolved.',
+    noReplies: 'You can mark this question as resolved once it has a reply.',
+    hasReplies: 'Questions with replies cannot be deleted.',
+  },
+  zh: {
+    resolve: '标记为已解决',
+    edit: '编辑问题',
+    remove: '删除问题',
+    confirm: '确认',
+    cancel: '取消',
+    resolvePrompt: '问题已经解决了吗？',
+    deletePrompt: '要删除此问题吗？',
+    locked: '已解决的问题无法修改、删除或重新标记为未解决。',
+    noReplies: '收到回复后才能将问题标记为已解决。',
+    hasReplies: '已有回复的问题无法删除。',
+  },
+} as const

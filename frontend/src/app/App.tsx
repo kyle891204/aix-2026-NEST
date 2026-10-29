@@ -1,4 +1,16 @@
 import {
+  QuestionLayout,
+  QuestionListPage,
+  QuestionDetailPage,
+  QuestionFormPage,
+} from '../features/questions/QuestionPages'
+import {
+  MarketLayout,
+  MarketListPage,
+  MarketDetailPage,
+  MarketFormPage,
+} from '../features/market/MarketPages'
+import {
   Navigate,
   NavLink,
   Outlet,
@@ -51,6 +63,18 @@ export default function App() {
             <Route path="/" element={<SchoolHomePage />} />
             <Route path="/life" element={<LifeHomePage />} />
             <Route path="/life/guide" element={<LifeGuidePage />} />
+            <Route path="/life/market" element={<MarketLayout />}>
+              <Route index element={<MarketListPage />} />
+              <Route path="new" element={<MarketFormPage />} />
+              <Route path=":postId" element={<MarketDetailPage />} />
+              <Route path=":postId/edit" element={<MarketFormPage />} />
+            </Route>
+            <Route path="/life/questions" element={<QuestionLayout />}>
+              <Route index element={<QuestionListPage />} />
+              <Route path="new" element={<QuestionFormPage />} />
+              <Route path=":postId" element={<QuestionDetailPage />} />
+              <Route path=":postId/edit" element={<QuestionFormPage />} />
+            </Route>
             <Route path="/notices" element={<NoticePage />} />
             <Route path="/community" element={<CommunityPage />} />
             <Route path="/profile" element={<ProfilePage />} />
@@ -117,7 +141,11 @@ function ProtectedApp() {
   const isHomePreview =
     import.meta.env.DEV &&
     !session?.user &&
-    [...schoolMenus, ...lifeMenus].some((menu) => menu.to === location.pathname)
+    ([...schoolMenus, ...lifeMenus].some(
+      (menu) => menu.to === location.pathname,
+    ) ||
+      location.pathname.startsWith('/life/market/') ||
+      location.pathname.startsWith('/life/questions/'))
   if (!isHomePreview && (loading || error)) {
     return (
       <div className="app-shell">
