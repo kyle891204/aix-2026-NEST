@@ -51,6 +51,27 @@ timestamp는 실행 시각을 UTC ISO 8601 형식으로 반환한다. 인증 없
 
 현재 기능 DTO는 아직 없으며 위 내용은 형식 예시다. 기타 오류는 아직 공통 형식으로 통일하지 않았다.
 
+### POST /api/v1/community/translations
+
+장터·질문 글과 답글을 조회자의 선호 언어로 번역한다. 로그인 세션이 필요하며(비로그인 401 `AUTH_REQUIRED`) 응답은 `Cache-Control: no-store`다.
+화면 연결은 아직 없다.
+
+| 필드 | 규칙 |
+| --- | --- |
+| `text` | 필수, 공백 불가, 최대 3000자 |
+| `targetLanguage` | 필수, `ko` / `en` / `zh`(간체) |
+| `sourceLanguage` | 선택, `ko` / `en` / `zh`. 목표 언어와 같으면 Gemini를 호출하지 않고 원문을 반환한다. |
+| `context` | 선택, 최대 200자. 해석 참고용이며 번역하지 않는다. |
+
+```json
+{ "translatedText": "Desk for sale", "targetLanguage": "en", "cached": false }
+```
+
+- 입력 오류는 위 검증 실패 형식(400 `INVALID_REQUEST`)을 따른다.
+- 키 미설정·Gemini 응답 오류·네트워크 실패는 모두 502 `{ "code": "TRANSLATION_FAILED", "message": "...", "fields": {} }`다.
+  화면은 원문을 유지하고 재시도를 제공한다. 원인은 서버 로그에만 남긴다.
+- `cached`는 서버 메모리 캐시(1시간, 최대 200건) 재사용 여부이며 재시작·재배포 시 초기화된다.
+
 ## 구현된 LMS 개발 검사 API
 
 - GET `/dev/lms/profile`: 토큰 소유자 정보.
