@@ -4,14 +4,17 @@ import '../life.css'
 const boards = [
   {
     title: '자유게시판',
+    to: '/community',
     description: '일상·정보·경험 나누기',
   },
   {
     title: '장터게시판',
+    to: '/life/market',
     description: '중고 물품 판매·구매 글',
   },
   {
     title: '질문게시판',
+    to: '/life/questions',
     description: '학교생활 질문과 답변',
   },
 ]
@@ -33,7 +36,7 @@ export function LifeHomePage() {
 
       <section className="dashboard-card life-links">
         {boards.map((board) => (
-          <Link key={board.title} className="life-menu-row" to="/community">
+          <Link key={board.title} className="life-menu-row" to={board.to}>
             <span>
               <strong>{board.title}</strong>
               <span className="dashboard-description">{board.description}</span>
