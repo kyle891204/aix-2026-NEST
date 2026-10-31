@@ -1,7 +1,13 @@
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '/api/v1').replace(
-  /\/$/,
-  '',
-)
+// Always call the same-origin Vite/Vercel proxy so the HttpOnly session cookie is sent.
+const API_BASE_URL = '/api/v1'
+const CSRF_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
+
+let csrfToken: string | null = null
+
+// Kept in memory only. Updated whenever the auth session is read or revoked.
+export function setCsrfToken(token: string | null) {
+  csrfToken = token
+}
 
 export class ApiError extends Error {
   readonly status: number
@@ -25,11 +31,13 @@ export class ApiError extends Error {
 export async function requestJson(
   path: string,
   options: RequestInit = {},
-  baseUrl = API_BASE_URL,
 ): Promise<unknown> {
   const headers = new Headers(options.headers)
   if (!headers.has('Accept')) headers.set('Accept', 'application/json')
-  const response = await fetch(`${baseUrl}${path}`, {
+  const method = (options.method ?? 'GET').toUpperCase()
+  if (csrfToken && CSRF_METHODS.has(method) && !headers.has('X-CSRF-Token'))
+    headers.set('X-CSRF-Token', csrfToken)
+  const response = await fetch(`${API_BASE_URL}${path}`, {
     ...options,
     headers,
   })
