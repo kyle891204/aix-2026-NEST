@@ -52,7 +52,8 @@ Render는 비밀 환경변수의 저장·실행 플랫폼이므로 토큰이 로
 
 - Root Directory: `frontend`
 - Production Branch: `main`
-- 환경변수 권장값: `VITE_API_BASE_URL=/api/v1`
+- API 주소 환경변수는 필요 없다. 프론트는 항상 같은 원본의 `/api/v1`을 호출한다.
+- 시연 중 로그인 장애 대비: `VITE_DEMO_GUEST=true`로 빌드하면 로그인 없이 화면을 볼 수 있다. 평소에는 설정하지 않는다.
 - `frontend/vercel.json`에서 `/api/*`를 Render로 전달하고 나머지 경로는 SPA로 처리한다.
 - 로그인은 같은 원본 API와 HttpOnly 세션 쿠키를 사용한다. Render에 `GOOGLE_CLIENT_ID`를
   설정하고 운영에서는 `AUTH_COOKIE_SECURE=true`를 유지한다.

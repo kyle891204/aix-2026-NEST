@@ -138,8 +138,9 @@ function ProtectedApp() {
 
   const menus = isLife ? lifeMenus : schoolMenus
 
+  // 개발 모드, 또는 시연용 게스트 모드(VITE_DEMO_GUEST=true)에서는 로그인 없이 화면을 볼 수 있다
   const isHomePreview =
-    import.meta.env.DEV &&
+    (import.meta.env.DEV || import.meta.env.VITE_DEMO_GUEST === 'true') &&
     !session?.user &&
     ([...schoolMenus, ...lifeMenus].some(
       (menu) => menu.to === location.pathname,
