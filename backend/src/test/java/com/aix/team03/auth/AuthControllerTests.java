@@ -17,7 +17,11 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest(properties = {"spring.config.import=", "app.lms.api-token="})
+@SpringBootTest(properties = {
+        "spring.config.import=",
+        "app.lms.api-token=",
+        "app.auth.demo-guest=false"
+})
 class AuthControllerTests {
     @Autowired WebApplicationContext context;
     @MockitoBean GoogleTokenVerifier verifier;
