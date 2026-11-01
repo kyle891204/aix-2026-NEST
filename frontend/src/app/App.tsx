@@ -36,6 +36,12 @@ import { SignupPage } from '../features/auth/SignupPage.tsx'
 import { SchoolHomePage } from '../features/school/pages/SchoolHomePage.tsx'
 import { LifeHomePage } from '../features/life/pages/LifeHomePage'
 import { LifeGuidePage } from '../features/life/pages/LifeGuidePage'
+import {
+  FreeBoardLayout,
+  FreeBoardListPage,
+  FreeBoardDetailPage,
+  FreeBoardFormPage,
+} from '../features/free-board/FreeBoardPages'
 import './home.css'
 
 // 토글로 전환할떄마다 하단 메뉴도 바뀌게
@@ -67,6 +73,12 @@ export default function App() {
             <Route path="/" element={<SchoolHomePage />} />
             <Route path="/life" element={<LifeHomePage />} />
             <Route path="/life/guide" element={<LifeGuidePage />} />
+            <Route path="/life/free" element={<FreeBoardLayout />}>
+              <Route index element={<FreeBoardListPage />} />
+              <Route path="new" element={<FreeBoardFormPage />} />
+              <Route path=":postId" element={<FreeBoardDetailPage />} />
+              <Route path=":postId/edit" element={<FreeBoardFormPage />} />
+            </Route>
             <Route path="/life/market" element={<MarketLayout />}>
               <Route index element={<MarketListPage />} />
               <Route path="new" element={<MarketFormPage />} />
@@ -143,6 +155,7 @@ function ProtectedApp() {
     ([...schoolMenus, ...lifeMenus].some(
       (menu) => menu.to === location.pathname,
     ) ||
+      location.pathname.startsWith('/life/free/') ||
       location.pathname.startsWith('/life/market/') ||
       location.pathname.startsWith('/life/questions/'))
   if (!isHomePreview && (loading || error)) {
