@@ -1,0 +1,144 @@
+.life-guide-options .life-guide-emergency-button {
+  color: #b42318;
+  border-color: #e9aaa5;
+  background: #fff;
+}
+
+.life-guide-options .life-guide-emergency-button[aria-pressed='true'] {
+  color: #fff;
+  border-color: #b42318;
+  background: #b42318;
+}
+
+.emergency-contacts {
+  padding-bottom: 24px;
+}
+
+.emergency-contacts-intro {
+  margin-bottom: 20px;
+  color: #555;
+}
+
+.emergency-contacts h3 {
+  margin: 0 0 12px;
+  font-size: 17px;
+}
+
+.emergency-phone-list,
+.emergency-consular-list {
+  display: grid;
+  gap: 12px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.emergency-phone-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 86px;
+  padding: 16px;
+  border: 1px solid #f0cbc7;
+  border-radius: 12px;
+  color: #202124;
+  background: #fff8f7;
+  text-decoration: none;
+}
+
+.emergency-phone-card:hover {
+  border-color: #b42318;
+  background: #fff0ee;
+}
+
+.emergency-phone-description {
+  display: block;
+  margin-top: 4px;
+  color: #666;
+  font-size: 13px;
+}
+
+.emergency-phone-number {
+  color: #b42318;
+  font-size: 28px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.emergency-consular-section {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.emergency-country-picker,
+.emergency-consular-card {
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.emergency-country-picker label {
+  margin-top: 12px;
+}
+
+.emergency-saved-country,
+.emergency-country-heading {
+  margin: 12px 0;
+}
+
+.emergency-country-heading {
+  font-weight: 700;
+}
+
+.emergency-consular-card h4 {
+  margin: 0 0 6px;
+  font-size: 16px;
+}
+
+.emergency-consular-phones {
+  display: grid;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.emergency-consular-phones dt {
+  color: #555;
+  font-size: 13px;
+}
+
+.emergency-consular-phones dd {
+  margin: 0;
+}
+
+.emergency-consular-phones a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: #b42318;
+  font-size: 20px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.emergency-contact-meta {
+  color: #666;
+  font-size: 13px;
+}
+
+.emergency-contact-note {
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: #82261d;
+  background: #fff3f1;
+  font-size: 13px;
+}
+
+.emergency-source-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 13px;
+}
