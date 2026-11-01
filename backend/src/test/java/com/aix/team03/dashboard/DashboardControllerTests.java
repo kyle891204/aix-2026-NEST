@@ -55,6 +55,13 @@ class DashboardControllerTests {
     }
 
     @Test
+    void anonymousRequestIsRejectedByLoginProtection() throws Exception {
+        mvc.perform(post("/api/v1/dashboard").contentType(MediaType.APPLICATION_JSON).content("{}"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value("AUTH_REQUIRED"));
+    }
+
+    @Test
     void missingBodyIsJudgedAsAnEmptyProfile() throws Exception {
         call("", null)
                 .andExpect(status().isOk())
