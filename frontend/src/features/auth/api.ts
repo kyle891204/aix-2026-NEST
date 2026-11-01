@@ -1,4 +1,4 @@
-import { requestJson, setCsrfToken } from '../../shared/api/client'
+import { requestJson, setCsrfToken } from '../../shared/api/client.ts'
 
 export interface AuthUser {
   id: string
