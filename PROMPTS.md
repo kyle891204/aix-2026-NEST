@@ -92,5 +92,6 @@
 - 작업: `/api/v1/**`의 POST·PUT·PATCH·DELETE에 `X-CSRF-Token` 검사 추가. `/api/v1/auth/**`는 기존 자체 검사를 유지하도록 제외하고, 비로그인 쓰기가 401을 유지하도록 로그인 확인 뒤에 실행.
 - 범위: 새 파일 `CsrfAccessConfig`, `CsrfAccessTests` 추가. 기존 파일은 작성자 동의를 받아 `CommunityTranslationControllerTests`에 토큰만 추가.
 - 검증: `mvnw clean verify` 전체 52개 통과 (새 테스트 10개 포함).
-- 미검증: 실제 브라우저에서 Google 로그인 후 토큰을 주고받는 흐름, 게스트 세션 검사(PR #41 머지 후 확인).
+- 미검증: 실제 브라우저에서 Google 로그인 후 토큰을 주고받는 흐름.
 - 비밀정보: 테스트에는 가상 계정과 가상 토큰만 사용.
+- 후속 수정(PR #39 리뷰): 최신 `main` 반영, 게스트 모드 CSRF 테스트 2개 추가(`CsrfDemoGuestTests`), `CsrfAccessTests`의 토큰 추출을 JsonPath로 변경하고 게스트 설정을 false로 고정, 실행 순서 전제를 주석에 명시, 문서 CSRF 규칙 반영. 전체 56개 통과.
