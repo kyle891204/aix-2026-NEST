@@ -91,14 +91,8 @@ AUTH_COOKIE_SECURE=true
 운영 쿠키의 Secure 기본값도 `true`다. 로컬 `.env`를 업로드하지 않는다.
 프론트에 Google 비밀번호·클라이언트 보안 비밀번호·Google 토큰을 환경변수로 넣지 않는다.
 
-Vercel Environment 권장값:
-
-```dotenv
-VITE_API_BASE_URL=/api/v1
-```
-
+프론트의 모든 API 요청은 같은 원본의 `/api/v1/*`를 쓴다(`VITE_API_BASE_URL`은 더 이상 사용하지 않는다).
 `frontend/vercel.json`의 `/api/:path*` 외부 rewrite가 Render로 전달한다.
-인증 요청은 기존 `VITE_API_BASE_URL` 값과 무관하게 항상 같은 원본의 `/api/v1/auth/*`를 쓴다.
 따라서 브라우저는 Vercel 호스트의 쿠키를 사용한다. 쿠키 Domain은 설정하지 않는다.
 이는 Vercel/Render 사이의 제3자 쿠키에 의존하지 않기 위한 구성이다.
 API rewrite는 SPA의 `/index.html` fallback보다 먼저 적용되어야 한다.
