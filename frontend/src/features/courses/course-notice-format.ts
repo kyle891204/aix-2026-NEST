@@ -39,6 +39,17 @@ export function kstLabel(value: string | null) {
   return `${parts.month}/${parts.day}(${parts.weekday}) ${parts.hour}:${parts.minute}`
 }
 
+// javascript: 같은 주소가 링크로 실행되지 않도록 http·https만 허용한다. LMS 테스트 화면의 OriginalLink와 같은 기준이다.
+export function safeLinkUrl(url: string | null) {
+  if (!url) return null
+  try {
+    const parsed = new URL(url)
+    return ['https:', 'http:'].includes(parsed.protocol) ? url : null
+  } catch {
+    return null
+  }
+}
+
 export function isPastDue(dueAt: string | null, now = Date.now()) {
   if (!dueAt) return false
   const time = Date.parse(dueAt)

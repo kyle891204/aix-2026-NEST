@@ -59,7 +59,7 @@ class CourseControllerTests {
         when(courses.notifications(anyLong(), any(), any(), any())).thenReturn(new CourseNotifications("12",
                 List.of(new Notification("assignment-22", NotificationType.ASSIGNMENT, "9주차 과제", null,
                         "2026-11-03T14:59:00Z", null, null, null, "https://lms.test/as/22", null)),
-                List.of(new NotificationError(NotificationType.MATERIAL, "LMS_CONNECTION_FAILED"))));
+                List.of(new NotificationError(NotificationType.MATERIAL, "LMS_CONNECTION_FAILED")), true));
 
         call("/api/v1/courses/12/notifications")
                 .andExpect(status().isOk())
@@ -68,7 +68,8 @@ class CourseControllerTests {
                 .andExpect(jsonPath("$.notifications[0].dueAt").value("2026-11-03T14:59:00Z"))
                 .andExpect(jsonPath("$.notifications[0].savedScheduleId").isEmpty())
                 .andExpect(jsonPath("$.errors[0].type").value("MATERIAL"))
-                .andExpect(jsonPath("$.errors[0].code").value("LMS_CONNECTION_FAILED"));
+                .andExpect(jsonPath("$.errors[0].code").value("LMS_CONNECTION_FAILED"))
+                .andExpect(jsonPath("$.truncated").value(true));
 
         LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
         verify(courses).notifications(12, EnumSet.allOf(NotificationType.class), today.minusDays(90), today);
@@ -80,6 +81,18 @@ class CourseControllerTests {
                 .andExpect(status().isOk());
         verify(courses).notifications(12, EnumSet.of(NotificationType.MATERIAL),
                 LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 30));
+    }
+
+    @Test
+    void onlyOneDateFillsTheOtherWithinNinetyDays() throws Exception {
+        // 종료일만 보내면 그 전 90일, 시작일만 보내면 오늘까지 조회한다.
+        call("/api/v1/courses/12/notifications?endDate=2026-03-31").andExpect(status().isOk());
+        verify(courses).notifications(12, EnumSet.allOf(NotificationType.class),
+                LocalDate.of(2026, 3, 31).minusDays(90), LocalDate.of(2026, 3, 31));
+
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
+        call("/api/v1/courses/12/notifications?startDate=" + today.minusDays(10)).andExpect(status().isOk());
+        verify(courses).notifications(12, EnumSet.allOf(NotificationType.class), today.minusDays(10), today);
     }
 
     @Test

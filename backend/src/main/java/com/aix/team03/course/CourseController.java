@@ -40,9 +40,11 @@ public class CourseController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         // 공지 조회 기간 기본값은 기존 LMS 개발 API와 같이 한국 날짜 기준 최근 90일이다.
+        // 한쪽만 보내면 다른 쪽을 그 날짜 기준 90일로 채운다(종료일만 → 그 전 90일, 시작일만 → 오늘까지).
         LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
-        return courses.notifications(courseId, types(type),
-                startDate == null ? today.minusDays(90) : startDate, endDate == null ? today : endDate);
+        LocalDate end = endDate != null ? endDate : today;
+        LocalDate start = startDate != null ? startDate : end.minusDays(90);
+        return courses.notifications(courseId, types(type), start, end);
     }
 
     private static Set<NotificationType> types(String type) {

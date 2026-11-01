@@ -15,6 +15,7 @@ import {
   isPastDue,
   kstLabel,
   materialLabel,
+  safeLinkUrl,
 } from './course-notice-format'
 import './courses.css'
 
@@ -39,7 +40,6 @@ function failure(cause: unknown, fallback: string) {
 
 export function CourseNoticesPage() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const selectedId = searchParams.get('courseId')
   const [filter, setFilter] = useState<Filter>('ALL')
   const [courses, setCourses] = useState<Load<CourseList>>({
     status: 'loading',
@@ -47,6 +47,13 @@ export function CourseNoticesPage() {
   const [coursesAttempt, setCoursesAttempt] = useState(0)
   const [noticesAttempt, setNoticesAttempt] = useState(0)
   const [passwordTried, setPasswordTried] = useState(false)
+  // 주소의 courseId는 과목 목록에 있을 때만 쓴다. 목록에 없는 값은 아래에서 첫 과목으로 바꾼다.
+  const requestedId = searchParams.get('courseId')
+  const selectedId =
+    courses.status === 'ready' &&
+    courses.data.courses.some((course) => course.courseId === requestedId)
+      ? requestedId
+      : null
   // 결과에 요청 키(과목·재시도 횟수)를 붙여 두고, 현재 키와 다르면 불러오는 중으로 본다.
   const [noticesResult, setNoticesResult] = useState<{
     key: string
@@ -74,7 +81,7 @@ export function CourseNoticesPage() {
     }
   }, [coursesAttempt])
 
-  // 선택한 과목이 없으면 첫 과목을 고른다. 새로고침해도 유지되도록 주소에 남긴다.
+  // 선택한 과목이 없거나 목록에 없는 과목이면 첫 과목을 고른다. 새로고침해도 유지되도록 주소에 남긴다.
   const firstCourseId =
     courses.status === 'ready' ? courses.data.courses[0]?.courseId : undefined
   useEffect(() => {
@@ -195,8 +202,8 @@ export function CourseNoticesPage() {
       )}
 
       <p className="home-description course-footnote">
-        현재는 데모용 공통 LMS 계정의 과목을 보여줘요. 시간은 한국
-        시간(KST)이에요.
+        현재는 데모용 공통 LMS 계정의 과목을 보여줘요. 공지는 최근 90일 것만
+        보여주고, 시간은 한국 시간(KST)이에요.
         {courses.status === 'ready' && courses.data.truncated && (
           <> 과목이 많아 일부만 표시했어요.</>
         )}
@@ -274,6 +281,11 @@ function NoticeList({
 
   return (
     <>
+      {data.truncated && (
+        <p className="course-status">
+          LMS 조회 상한 때문에 일부 항목만 표시했어요.
+        </p>
+      )}
       {errors.map((error) => (
         <p className="course-error" role="alert" key={error.type}>
           {TYPE_LABELS[error.type]}을(를) 불러오지 못했어요. 잠시 후 다시 시도해
@@ -313,11 +325,12 @@ function NoticeCard({ item }: { item: CourseNotification }) {
     </>
   )
 
-  // LMS 원문 링크가 있으면 새 탭으로 연다. 원문 권한은 LMS가 확인한다.
-  return item.sourceUrl ? (
+  // http·https 원문 링크만 새 탭으로 연다. 원문 권한은 LMS가 확인한다.
+  const href = safeLinkUrl(item.sourceUrl)
+  return href ? (
     <a
       className={`home-card course-card${pastDue ? ' course-card--past' : ''}`}
-      href={item.sourceUrl}
+      href={href}
       target="_blank"
       rel="noreferrer"
     >

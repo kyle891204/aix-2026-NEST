@@ -9,6 +9,7 @@ import {
   isPastDue,
   kstLabel,
   materialLabel,
+  safeLinkUrl,
 } from '../src/features/courses/course-notice-format.ts'
 
 const originalFetch = globalThis.fetch
@@ -94,6 +95,7 @@ test('notifications keep partial errors and reject unknown types', async () => {
       },
     ],
     errors: [{ type: 'MATERIAL', code: 'LMS_CONNECTION_FAILED' }],
+    truncated: true,
   })
   const result = await getCourseNotifications('12')
   assert.equal(requestedUrl, '/api/v1/courses/12/notifications')
@@ -101,11 +103,28 @@ test('notifications keep partial errors and reject unknown types', async () => {
   assert.deepEqual(result.errors, [
     { type: 'MATERIAL', code: 'LMS_CONNECTION_FAILED' },
   ])
+  assert.equal(result.truncated, true)
 
   mockFetch({
     courseId: '12',
     notifications: [{ id: 'quiz-1', type: 'QUIZ', title: '퀴즈' }],
     errors: [],
+    truncated: false,
   })
   await assert.rejects(getCourseNotifications('12'), /과목알림 응답/)
+
+  mockFetch({ courseId: '12', notifications: [], errors: [] })
+  await assert.rejects(getCourseNotifications('12'), /과목알림 응답/)
+})
+
+test('only http and https source links become clickable', () => {
+  assert.equal(
+    safeLinkUrl('https://learning.hanyang.ac.kr/courses/12'),
+    'https://learning.hanyang.ac.kr/courses/12',
+  )
+  assert.equal(safeLinkUrl('http://lms.test/a/1'), 'http://lms.test/a/1')
+  assert.equal(safeLinkUrl('javascript:alert(1)'), null)
+  assert.equal(safeLinkUrl('data:text/html,hi'), null)
+  assert.equal(safeLinkUrl('/relative/path'), null)
+  assert.equal(safeLinkUrl(null), null)
 })

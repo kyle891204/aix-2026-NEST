@@ -36,6 +36,7 @@ export interface CourseNotifications {
   courseId: string
   notifications: CourseNotification[]
   errors: NotificationError[]
+  truncated: boolean
 }
 
 const TYPES: readonly string[] = ['ANNOUNCEMENT', 'ASSIGNMENT', 'MATERIAL']
@@ -109,7 +110,8 @@ export async function getCourseNotifications(
     !Array.isArray(value.notifications) ||
     !value.notifications.every(isNotification) ||
     !Array.isArray(value.errors) ||
-    !value.errors.every(isNotificationError)
+    !value.errors.every(isNotificationError) ||
+    typeof value.truncated !== 'boolean'
   )
     throw new Error('과목알림 응답 형식이 올바르지 않습니다.')
   return value as unknown as CourseNotifications

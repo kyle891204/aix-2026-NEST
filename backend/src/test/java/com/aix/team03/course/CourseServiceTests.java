@@ -152,6 +152,48 @@ class CourseServiceTests {
     }
 
     @Test
+    void oneFailedModuleKeepsMaterialsAlreadyRead() {
+        fixture("/api/v1/courses/12/modules", 200, """
+                [{"id":1,"name":"1주차","position":1},{"id":2,"name":"2주차","position":2}]""");
+        fixture("/api/v1/courses/12/modules/1/items", 200, """
+                [{"id":71,"title":"1주차 강의자료.pdf","type":"File","position":1}]""");
+        fixture("/api/v1/courses/12/modules/2/items", 500, "{}");
+        var result = service.notifications(12, EnumSet.of(NotificationType.MATERIAL), START, END);
+
+        assertThat(result.notifications()).extracting(Notification::id).containsExactly("material-71");
+        assertThat(result.errors()).containsExactly(new NotificationError(NotificationType.MATERIAL, "LMS_HTTP_ERROR"));
+    }
+
+    @Test
+    void announcementsAreOrderedByActualTimeAcrossOffsets() {
+        // 글자 순서로는 +09:00 값이 앞서지만 실제 시각은 Z 값이 1시간 더 늦다.
+        fixture("/api/v1/announcements", 200, """
+                [{"id":1,"title":"한국 시간 공지","posted_at":"2026-10-29T10:00:00+09:00"},
+                 {"id":2,"title":"UTC 공지","posted_at":"2026-10-29T02:00:00Z"},
+                 {"id":3,"title":"게시일 없음","posted_at":null}]""");
+        var result = service.notifications(12, EnumSet.of(NotificationType.ANNOUNCEMENT), START, END);
+        assertThat(result.notifications()).extracting(Notification::id)
+                .containsExactly("announcement-2", "announcement-1", "announcement-3");
+    }
+
+    @Test
+    void truncatedIsReportedWhenAnLmsListHitsThePageLimit() {
+        // 항상 다음 페이지 링크를 주면 LMS 클라이언트가 페이지 상한에서 멈추고 truncated를 표시한다.
+        server.createContext("/api/v1/courses/12/assignments", exchange -> {
+            String query = exchange.getRequestURI().getQuery();
+            int page = query != null && query.contains("page=") ? Integer.parseInt(query.replaceAll(".*page=(\\d+).*", "$1")) : 1;
+            exchange.getResponseHeaders().set("Link", "<http://127.0.0.1:" + server.getAddress().getPort()
+                    + "/api/v1/courses/12/assignments?page=" + (page + 1) + ">; rel=\"next\"");
+            respond(exchange, 200, "[{\"id\":" + page + ",\"name\":\"과제 " + page + "\",\"course_id\":12}]");
+        });
+        var result = service.notifications(12, EnumSet.of(NotificationType.ASSIGNMENT), START, END);
+        assertThat(result.truncated()).isTrue();
+
+        announcements();
+        assertThat(service.notifications(12, EnumSet.of(NotificationType.ANNOUNCEMENT), START, END).truncated()).isFalse();
+    }
+
+    @Test
     void whenEveryRequestedTypeFailsTheLmsErrorIsThrown() {
         fixture("/api/v1/announcements", 401, "{}");
         fixture("/api/v1/courses/12/assignments", 401, "{}");

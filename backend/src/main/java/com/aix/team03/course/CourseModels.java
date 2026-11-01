@@ -18,6 +18,7 @@ public final class CourseModels {
 
     public record NotificationError(NotificationType type, String code) {}
 
+    /** truncated는 LMS 페이지 상한에 걸려 일부 목록만 가져왔을 때 true다. */
     public record CourseNotifications(String courseId, List<Notification> notifications,
-            List<NotificationError> errors) {}
+            List<NotificationError> errors, boolean truncated) {}
 }
