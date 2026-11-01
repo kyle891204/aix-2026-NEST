@@ -21,7 +21,8 @@ public class CsrfAccessConfig implements WebMvcConfigurer {
                 if (WRITE_METHODS.contains(request.getMethod())) AuthSessions.checkCsrf(request);
                 return true;
             }
-        // Runs after AuthAccessConfig (order 0) so a signed-out write stays 401, not 403.
+        // Runs after AuthAccessConfig so a signed-out write stays 401, not 403.
+        // Relies on AuthAccessConfig keeping the default order 0, which it does not set explicitly.
         }).addPathPatterns("/api/v1/**").excludePathPatterns("/api/v1/auth/**").order(1);
     }
 }

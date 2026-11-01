@@ -1,5 +1,6 @@
 package com.aix.team03.auth;
 
+import com.jayway.jsonpath.JsonPath;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,11 +23,11 @@ import org.springframework.web.context.WebApplicationContext;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest(properties = {"spring.config.import=", "app.lms.api-token="})
+@SpringBootTest(properties = {"spring.config.import=", "app.lms.api-token=", "app.auth.demo-guest=false"})
 @Import(CsrfAccessTests.ProbeController.class)
 class CsrfAccessTests {
     private static final String TOKEN = "csrf-fixture";
-    private static final String PROTECTED = "/api/v1/community/csrf-probe";
+    static final String PROTECTED = "/api/v1/community/csrf-probe";
     private static final String PUBLIC = "/api/v1/csrf-probe";
     private static final List<HttpMethod> WRITES =
             List.of(HttpMethod.POST, HttpMethod.PUT, HttpMethod.PATCH, HttpMethod.DELETE);
@@ -86,7 +87,7 @@ class CsrfAccessTests {
         var body = mvc.perform(get("/api/v1/auth/session").session(session))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
-        var token = body.replaceAll(".*\"csrfToken\":\"([^\"]+)\".*", "$1");
+        String token = JsonPath.read(body, "$.csrfToken");
 
         mvc.perform(post(PROTECTED).session(session).header("X-CSRF-Token", token))
                 .andExpect(status().isOk());
