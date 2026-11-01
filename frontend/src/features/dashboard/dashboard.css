@@ -23,8 +23,11 @@
   font-size: 12px;
 }
 
-/* 해당 여부 배지: 해당은 학교 파랑, 확인 필요는 주황 */
-.school-home .notice-badges .dashboard-status--NEEDS_REVIEW {
+/* 해당 여부 배지: 해당은 학교 파랑, 확인 필요는 주황.
+   school.css의 `.school-home .notice-badges span:first-child`(파랑)보다 우선하도록 선택자를 더 구체적으로 쓴다 */
+.school-home
+  .notice-badges
+  span.dashboard-status.dashboard-status--NEEDS_REVIEW {
   background: #fff3e6;
   color: #b35c00;
 }

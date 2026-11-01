@@ -63,6 +63,20 @@ class DashboardServiceTests {
     }
 
     @Test
+    void applicableNoticesComeBeforeNeedsReviewEvenWithLaterDeadlines() {
+        // 확인 필요 공지의 마감이 더 빨라도 limit으로 자를 때 해당 공지가 밀리지 않아야 한다.
+        var result = service(
+                notice("review-soon", "2026-10-20", "2026-11-03T09:00:00+09:00", EVERYONE, AnalysisStatus.NOT_ANALYZED),
+                notice("applies-later", "2026-10-20", "2026-11-25T09:00:00+09:00",
+                        new TargetConditions(null, null, List.of("BACHELOR"), null), AnalysisStatus.CONFIRMED),
+                notice("applies-no-deadline", "2026-10-25", null, EVERYONE, AnalysisStatus.CONFIRMED))
+                .dashboard(BACHELOR_2, 2);
+
+        assertThat(result.matchedNotices()).extracting(DashboardNotice::noticeId)
+                .containsExactly("applies-later", "applies-no-deadline");
+    }
+
+    @Test
     void limitCapsTheNumberOfNotices() {
         var result = service(
                 notice("a", "2026-10-01", null, EVERYONE, AnalysisStatus.CONFIRMED),
