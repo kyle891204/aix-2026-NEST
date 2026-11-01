@@ -1,0 +1,21 @@
+.free-board-page .free-board-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.free-board-actions .market-secondary {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}
+
+.free-board-page .free-board-confirm {
+  margin-top: 20px;
+  border-color: #e8c1b8;
+}
+
+.free-board-page .free-board-delete {
+  background: #fff0ed;
+  color: #b42318;
+}

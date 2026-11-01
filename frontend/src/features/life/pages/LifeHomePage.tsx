@@ -4,7 +4,7 @@ import '../life.css'
 const boards = [
   {
     title: '자유게시판',
-    to: '/community',
+    to: '/life/free',
     description: '일상·정보·경험 나누기',
   },
   {
