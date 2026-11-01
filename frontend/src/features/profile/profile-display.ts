@@ -1,6 +1,7 @@
 import { ERICA_COLLEGES, ERICA_SCHOOL } from '../auth/erica-academics'
 import type { Language } from '../../shared/types/language'
 import type { SignupProfile } from './demo-profile'
+import { getCountryName } from '../../shared/data/countries'
 
 const languageLabels: Record<Language, string> = {
   ko: '한국어',
@@ -24,7 +25,10 @@ export function profileDetails(profile: SignupProfile | null) {
         [profile?.degree, profile?.year].filter(Boolean).join(' · ') ||
         '미입력',
     },
-    { label: '국적', value: profile?.nationality || '미입력' },
+    {
+      label: '국적',
+      value: getCountryName(profile?.nationality ?? ''),
+    },
     {
       label: '선호 언어',
       value: profile ? languageLabels[profile.language] : '미입력',
