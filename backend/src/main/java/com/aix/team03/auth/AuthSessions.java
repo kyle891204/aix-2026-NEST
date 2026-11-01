@@ -29,6 +29,22 @@ final class AuthSessions {
         }
     }
 
+    static void prepareGuest(HttpServletRequest request) {
+        var session = request.getSession(true);
+
+        synchronized (session) {
+            if (session.getAttribute(USER) == null) {
+                var guest = new AuthUser(
+                        "guest-" + randomToken(),
+                        "guest@example.invalid"
+                );
+                session.setAttribute(USER, guest);
+            }
+
+            prepare(session);
+        }
+    }
+
     static HttpSession checkCsrf(HttpServletRequest request) {
         var session = request.getSession(false);
         String supplied = request.getHeader("X-CSRF-Token");
