@@ -10,7 +10,6 @@ import com.aix.team03.notices.NoticeModels.Source;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
 import java.util.List;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
@@ -40,12 +39,12 @@ public class NoticeController {
     @PostMapping("/search")
     public NoticeListResponse search(@RequestParam(required = false) Source source,
             @RequestParam(required = false) MatchFilter match,
-            @Valid @RequestBody(required = false) ProfileRequest body) {
+            @RequestBody(required = false) ProfileRequest body) {
         return new NoticeListResponse(notices.search(source, match, profile(body)), false);
     }
 
     @PostMapping("/{noticeId}/view")
-    public NoticeDetail view(@PathVariable String noticeId, @Valid @RequestBody(required = false) ProfileRequest body) {
+    public NoticeDetail view(@PathVariable String noticeId, @RequestBody(required = false) ProfileRequest body) {
         return notices.view(noticeId, profile(body));
     }
 
@@ -79,8 +78,8 @@ public class NoticeController {
     /** 전체 대상 필터는 match를 보내지 않는 것이라 NOT_APPLICABLE은 받지 않는다. */
     public enum MatchFilter { APPLICABLE, NEEDS_REVIEW }
 
-    public record ProfileRequest(@Size(max = 50) String nationality, @Size(max = 50) String visaType,
-            @Size(max = 50) String degree, @Size(max = 50) String year) {}
+    // 길이 제한으로 400을 내지 않는다. 저장된 프로필 값이 길어도 공지가 막히지 않고, 읽을 수 없는 값은 값 없음으로 판별한다.
+    public record ProfileRequest(String nationality, String visaType, String degree, String year) {}
 
     public record TranslationRequest(@NotBlank @Pattern(regexp = "ko|en|zh") String targetLanguage) {}
 

@@ -148,12 +148,20 @@ class NoticeControllerTests {
         search("?match=NOT_APPLICABLE", "{}")
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.fields.match").exists());
-        search("", "{\"nationality\":\"" + "가".repeat(51) + "\"}")
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.fields.nationality").exists());
         search("", "{")
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+    }
+
+    @Test
+    void longProfileValueIsTreatedAsMissingInsteadOfBlockingNotices() throws Exception {
+        var body = "{\"nationality\":\"" + "가".repeat(51) + "\"}";
+        search("?match=NEEDS_REVIEW", body)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items", hasSize(6)));
+        send(PATH + "/univ-001/view", body)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.matchStatus").value("NEEDS_REVIEW"));
     }
 
     @Test
