@@ -42,6 +42,8 @@ public class LmsDemoAccessConfig implements WebMvcConfigurer {
                 }
                 return true;
             }
-        }).addPathPatterns("/api/v1/dev/lms", "/api/v1/dev/lms/**");
+        }).addPathPatterns("/api/v1/dev/lms", "/api/v1/dev/lms/**",
+                // #9 과목알림도 같은 공통 LMS 계정의 데이터라 같은 데모 암호로 보호한다.
+                "/api/v1/courses", "/api/v1/courses/**");
     }
 }

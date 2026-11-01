@@ -6,6 +6,7 @@ import java.time.ZoneId;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
+import org.springframework.context.annotation.Profile;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,8 +19,12 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import static com.aix.team03.course.CourseModels.*;
 
-/** #9 과목알림. 로그인 확인은 AuthAccessConfig의 /courses/** 규칙이 맡는다. LMS 오류는 GlobalExceptionHandler의 LMS 형식으로 응답한다. */
+/**
+ * #9 과목알림. 공통 LMS 계정의 데이터라 운영에서는 lms-demo 프로필일 때만 열고, 데모 암호는 LmsDemoAccessConfig가 검사한다.
+ * 로그인 확인은 AuthAccessConfig의 /courses/** 규칙이 맡는다. LMS 오류는 GlobalExceptionHandler의 LMS 형식으로 응답한다.
+ */
 @RestController
+@Profile("!prod | lms-demo")
 @RequestMapping("/api/v1/courses")
 public class CourseController {
     private final CourseService courses;
