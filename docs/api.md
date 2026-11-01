@@ -17,7 +17,15 @@ Google 토큰이나 세션 ID를 URL/브라우저 저장소에 넣지 않는다.
 | GET `/auth/me` | 세션 쿠키 | `{ id, email }`; 비로그인 401 |
 | POST `/auth/logout` | 세션 쿠키 + `X-CSRF-Token` | `{ loggedOut: true }`; 세션 폐기 |
 
-`id`는 Google `sub`이며 회원 DB의 가입 완료 여부를 뜻하지 않는다.
+`AUTH_DEMO_GUEST=true`이면 `/auth/session`은 게스트 사용자와 CSRF 토큰을 반환한다.
+기존 로그인 사용자는 유지하며, 게스트 ID는 세션별로 구분한다.
+서버 로그인 보호 및 `Cache-Control: no-store` 적용 경로에
+`/courses/**`, `/dashboard/**`, `/schedules/**`를 추가했다.
+경로 보호 등록은 해당 API의 기능 구현 완료를 의미하지 않는다.
+게스트 설정과 사용 제한은 [로그인 문서](authentication.md)를 참고한다.
+
+실제 로그인 사용자의 `id`는 Google `sub`이며, 게스트는 세션별 `guest-` ID를 사용한다.
+이 값은 회원 DB의 가입 완료 여부를 뜻하지 않는다.
 `googleClientId`가 비어 있으면 로그인이 아직 설정되지 않은 상태다.
 오류 형식은 `{ code, message, fields: {} }`다. 대표 코드는 `AUTH_REQUIRED`(401),
 `AUTH_INVALID_CREDENTIAL`(401), `AUTH_CHALLENGE_EXPIRED`(401), `AUTH_CSRF_INVALID`(403),
