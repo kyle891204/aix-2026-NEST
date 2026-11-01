@@ -12,20 +12,36 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.beans.factory.annotation.Value;
 
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthController {
     private final GoogleTokenVerifier verifier;
-
-    public AuthController(GoogleTokenVerifier verifier) { this.verifier = verifier; }
+    private final boolean demoGuest;
+    public AuthController(
+            GoogleTokenVerifier verifier,
+            @Value("${app.auth.demo-guest:false}") boolean demoGuest
+    ) {
+        this.verifier = verifier;
+        this.demoGuest = demoGuest;
+    }
 
     @GetMapping("/session")
     public SessionResponse session(HttpServletRequest request) {
+        if (demoGuest) {
+            AuthSessions.prepareGuest(request);
+        }
+
         var session = request.getSession(true);
         AuthSessions.prepare(session);
-        return new SessionResponse(AuthSessions.currentUser(request), verifier.clientId(),
-                (String) session.getAttribute(AuthSessions.CSRF), (String) session.getAttribute(AuthSessions.NONCE));
+
+        return new SessionResponse(
+                AuthSessions.currentUser(request),
+                verifier.clientId(),
+                (String) session.getAttribute(AuthSessions.CSRF),
+                (String) session.getAttribute(AuthSessions.NONCE)
+        );
     }
 
     @PostMapping(value = "/google", consumes = MediaType.APPLICATION_JSON_VALUE)
