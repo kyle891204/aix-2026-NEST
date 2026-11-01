@@ -24,6 +24,7 @@ import { LoginPage } from '../features/auth/LoginPage'
 import { LmsTestPage } from '../features/lms-test/LmsTestPage'
 import { CommunityPage } from '../features/community/pages/CommunityPage'
 import { NoticePage } from '../features/notices/pages/NoticePage'
+import { CourseNoticesPage } from '../features/courses/CourseNoticesPage'
 import { ProfilePage } from '../features/profile/pages/ProfilePage'
 import { DemoProfileProvider } from '../features/profile/DemoProfileProvider'
 import { useDemoProfile } from '../features/profile/demo-profile-context'
@@ -76,6 +77,7 @@ export default function App() {
               <Route path=":postId/edit" element={<QuestionFormPage />} />
             </Route>
             <Route path="/notices" element={<NoticePage />} />
+            <Route path="/course-notices" element={<CourseNoticesPage />} />
             <Route path="/community" element={<CommunityPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/lms-test" element={<LmsTestPage />} />
@@ -93,16 +95,6 @@ export default function App() {
             path="/entry-exit"
             element={
               <EmptyState title="입출국" description="준비 중인 화면입니다." />
-            }
-          />
-
-          <Route
-            path="/course-notices"
-            element={
-              <EmptyState
-                title="과목알림"
-                description="준비 중인 화면입니다."
-              />
             }
           />
 
