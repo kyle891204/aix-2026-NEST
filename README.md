@@ -1,4 +1,4 @@
-# NEST - 외국인 유학생 맞춤형 학사 및 생활 지원 서비스
+# NEST - 맞춤형 학사 및 생활 지원 서비스
 
 > 한 줄 소개 — 누구의 어떤 문제를 해결하는가
 > One line — whose problem does this solve?
