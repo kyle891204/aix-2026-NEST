@@ -82,3 +82,15 @@
 - 알려진 한계: 서버 세션 만료(30분) 후 첫 쓰기 요청이 `AUTH_CSRF_INVALID`로 실패할 수 있음. 시연 전 새로고침으로 해결.
 - 비밀정보: 테스트에는 가상 토큰만 사용.
 - 후속 수정(PR #38 리뷰): 세션 조회·로그인 시 토큰 저장, 로그아웃 시 삭제 테스트 3개 추가(전체 27개 통과). `VITE_DEMO_GUEST`는 Vercel Preview 환경에만 설정하도록 배포 문서 보완.
+
+## 2026-11-01 — 서버 공통 CSRF 검사 구현
+
+- 도구: Claude Code.
+- 요청 요지: 역할 분담 ② 서버 CSRF. 데이터를 바꾸는 요청에 공통 CSRF 검사를 적용.
+- 작업 브랜치: `feat/server-csrf` (`main` 기준), PR #39.
+- 참고: PR #38의 토큰 자동 첨부 방식과 리뷰 내용, 기존 `AuthSessions`·`AuthController`·`AuthAccessConfig`.
+- 작업: `/api/v1/**`의 POST·PUT·PATCH·DELETE에 `X-CSRF-Token` 검사 추가. `/api/v1/auth/**`는 기존 자체 검사를 유지하도록 제외하고, 비로그인 쓰기가 401을 유지하도록 로그인 확인 뒤에 실행.
+- 범위: 새 파일 `CsrfAccessConfig`, `CsrfAccessTests` 추가. 기존 파일은 작성자 동의를 받아 `CommunityTranslationControllerTests`에 토큰만 추가.
+- 검증: `mvnw clean verify` 전체 52개 통과 (새 테스트 10개 포함).
+- 미검증: 실제 브라우저에서 Google 로그인 후 토큰을 주고받는 흐름, 게스트 세션 검사(PR #41 머지 후 확인).
+- 비밀정보: 테스트에는 가상 계정과 가상 토큰만 사용.
