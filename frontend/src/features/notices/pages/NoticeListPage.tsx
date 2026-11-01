@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import { toDashboardProfile } from '../../dashboard/profile-codes'
 import { useDemoProfile } from '../../profile/demo-profile-context'
 import {
-  noticeProfile,
   searchNotices,
   type MatchFilter,
   type NoticeSource,
@@ -37,7 +37,9 @@ export function NoticeListPage() {
   const source = selected(params.get('source'), SOURCE_FILTERS)
   const match = selected(params.get('match'), MATCH_FILTERS)
   const { savedProfile } = useDemoProfile()
-  const profile = JSON.stringify(noticeProfile(savedProfile?.profile ?? null))
+  const profile = JSON.stringify(
+    toDashboardProfile(savedProfile?.profile ?? null),
+  )
   const [attempt, setAttempt] = useState(0)
   const [loaded, setLoaded] = useState<{
     key: string

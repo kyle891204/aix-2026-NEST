@@ -5,11 +5,11 @@ import {
   saveActionChecks,
 } from '../src/features/notices/action-checks.ts'
 import {
-  noticeProfile,
   searchNotices,
   translateNotice,
   viewNotice,
 } from '../src/features/notices/api.ts'
+import { toDashboardProfile } from '../src/features/dashboard/profile-codes.ts'
 import {
   formatDeadline,
   matchLabel,
@@ -41,7 +41,7 @@ function memoryStorage() {
   }
 }
 
-const emptyProfile = noticeProfile(null)
+const emptyProfile = toDashboardProfile(null)
 
 afterEach(() => {
   globalThis.fetch = originalFetch
@@ -74,20 +74,17 @@ test('원문과 선호 언어가 다를 때만 번역한다', () => {
   assert.equal(needsTranslation('zh', 'ko'), true)
 })
 
-test('프로필의 빈 값은 null로 보내고 비자는 보내지 않는다', () => {
-  assert.deepEqual(
-    noticeProfile({ nationality: 'VN', degree: '', year: '2' }),
-    { nationality: 'VN', visaType: null, degree: null, year: '2' },
-  )
-})
-
 test('필터는 쿼리로, 프로필은 본문으로 보낸다', async () => {
   mockFetch({ items: [], truncated: false })
   await searchNotices(null, null, emptyProfile)
   assert.equal(calls[0].url, '/api/v1/notices/search')
   assert.equal(calls[0].init.method, 'POST')
 
-  const profile = noticeProfile({ nationality: 'VN', degree: '', year: '' })
+  const profile = toDashboardProfile({
+    nationality: 'VN',
+    degree: '',
+    year: '',
+  })
   mockFetch({ items: [], truncated: false })
   await searchNotices('COLLEGE', 'NEEDS_REVIEW', profile)
   assert.equal(
@@ -102,7 +99,7 @@ test('공지 상세 요청은 프로필을 URL에 넣지 않는다', async () =>
   mockFetch({})
   await viewNotice(
     'univ-001',
-    noticeProfile({ nationality: 'VN', degree: '', year: '' }),
+    toDashboardProfile({ nationality: 'VN', degree: '', year: '' }),
   )
   assert.equal(calls[0].url, '/api/v1/notices/univ-001/view')
   assert.equal(JSON.parse(String(calls[0].init.body)).nationality, 'VN')

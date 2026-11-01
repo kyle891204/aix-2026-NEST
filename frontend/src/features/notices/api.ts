@@ -1,17 +1,13 @@
 import { requestJson } from '../../shared/api/client.ts'
 import type { Language } from '../../shared/types/language'
+import type { DashboardProfile } from '../dashboard/api.ts'
 
 export type NoticeSource = 'UNIVERSITY' | 'INTERNATIONAL' | 'COLLEGE'
 export type MatchStatus = 'APPLICABLE' | 'NEEDS_REVIEW' | 'NOT_APPLICABLE'
 export type MatchFilter = 'APPLICABLE' | 'NEEDS_REVIEW'
 
-// 프로필은 브라우저에만 있어 판별에 필요한 값만 요청 본문으로 보낸다.
-export interface NoticeProfile {
-  nationality: string | null
-  visaType: string | null
-  degree: string | null
-  year: string | null
-}
+// 프로필은 브라우저에만 있어 판별에 필요한 값만 요청 본문으로 보낸다. 값 변환은 #6과 같은 코드를 쓴다.
+export type NoticeProfile = DashboardProfile
 
 export interface NoticeSummary {
   noticeId: string
@@ -46,18 +42,6 @@ export interface NoticeTranslation {
   translated: TranslatedNotice | null
   retryable: boolean
   message: string | null
-}
-
-export function noticeProfile(
-  profile: { nationality: string; degree: string; year: string } | null,
-): NoticeProfile {
-  return {
-    nationality: profile?.nationality || null,
-    // 비자는 아직 프로필에서 입력받지 않는다.
-    visaType: null,
-    degree: profile?.degree || null,
-    year: profile?.year || null,
-  }
 }
 
 function postJson(path: string, body: unknown) {

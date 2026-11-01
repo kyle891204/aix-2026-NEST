@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../../auth/auth-context'
+import { toDashboardProfile } from '../../dashboard/profile-codes'
 import { useDemoProfile } from '../../profile/demo-profile-context'
 import { loadActionChecks, saveActionChecks } from '../action-checks'
 import {
-  noticeProfile,
   translateNotice,
   viewNotice,
   type NoticeDetail,
@@ -22,7 +22,9 @@ export function NoticeDetailPage() {
   const { session } = useAuth()
   const accountId = session?.user?.id ?? null
   const language = savedProfile?.profile.language ?? 'ko'
-  const profile = JSON.stringify(noticeProfile(savedProfile?.profile ?? null))
+  const profile = JSON.stringify(
+    toDashboardProfile(savedProfile?.profile ?? null),
+  )
   const [checks, setChecks] = useState<string[]>(() => {
     if (!accountId) return []
     try {
