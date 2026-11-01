@@ -91,14 +91,8 @@ AUTH_COOKIE_SECURE=true
 운영 쿠키의 Secure 기본값도 `true`다. 로컬 `.env`를 업로드하지 않는다.
 프론트에 Google 비밀번호·클라이언트 보안 비밀번호·Google 토큰을 환경변수로 넣지 않는다.
 
-Vercel Environment 권장값:
-
-```dotenv
-VITE_API_BASE_URL=/api/v1
-```
-
+프론트의 모든 API 요청은 같은 원본의 `/api/v1/*`를 쓴다(`VITE_API_BASE_URL`은 더 이상 사용하지 않는다).
 `frontend/vercel.json`의 `/api/:path*` 외부 rewrite가 Render로 전달한다.
-인증 요청은 기존 `VITE_API_BASE_URL` 값과 무관하게 항상 같은 원본의 `/api/v1/auth/*`를 쓴다.
 따라서 브라우저는 Vercel 호스트의 쿠키를 사용한다. 쿠키 Domain은 설정하지 않는다.
 이는 Vercel/Render 사이의 제3자 쿠키에 의존하지 않기 위한 구성이다.
 API rewrite는 SPA의 `/index.html` fallback보다 먼저 적용되어야 한다.
@@ -114,8 +108,9 @@ API rewrite는 SPA의 `/index.html` fallback보다 먼저 적용되어야 한다
 - Google ID 토큰의 RSA 서명을 Google 공개키로 검증한다. issuer, audience, azp(있을 때),
   만료 시각, 검증된 이메일, sub, 로그인 시도별 nonce도 확인한다.
 - 식별 키는 이메일이 아닌 Google `sub`다. 저장 정보는 `sub`와 이메일뿐이다.
-- 로그인 전 세션에서 CSRF 토큰과 10분 유효 nonce를 발급한다. POST는 세션과 일치하는
-  `X-CSRF-Token`을 요구한다. 인증 후에는 이전 세션을 폐기하고 새 세션을 만든다.
+- 로그인 전 세션에서 CSRF 토큰과 10분 유효 nonce를 발급한다.
+  로그인·로그아웃 POST는 세션과 일치하는 `X-CSRF-Token`을 요구한다.
+  인증 후에는 이전 세션을 폐기하고 새 세션을 만든다.
 - 브라우저에는 `HttpOnly; Secure; SameSite=Lax; Path=/api` 세션 쿠키만 둔다.
   Google 토큰은 로그인 요청에만 사용하며 localStorage/sessionStorage/URL에 저장하지 않는다.
 - 인증 응답은 `Cache-Control: no-store`다. ID 토큰과 세션 값을 로그에 기록하지 않는다.
@@ -127,6 +122,27 @@ API rewrite는 SPA의 `/index.html` fallback보다 먼저 적용되어야 한다
 
 검증 참고: [Google 서버 토큰 검증](https://developers.google.com/identity/gsi/web/guides/verify-google-id-token),
 [Spring JWT 검증](https://docs.spring.io/spring-security/reference/servlet/oauth2/resource-server/jwt.html).
+
+## 시연용 게스트 모드
+
+- 서버 환경변수 `AUTH_DEMO_GUEST`의 기본값은 `false`다.
+- `true`이면 서버 시작 시 경고 로그를 출력하고, 비로그인 요청에 게스트 세션을 생성한다.
+- 게스트 ID는 `guest-` 접두사로 시작하며 세션마다 다르다. 같은 세션에서는 유지된다.
+- 이미 로그인한 사용자는 게스트로 덮어쓰지 않는다.
+- 게스트도 세션과 CSRF 토큰을 사용한다. 기존 로그인·로그아웃의 CSRF 검사는 유지한다.
+- 제품 API의 공통 CSRF 검사는 별도 작업이다.
+- 기능별 사용자 조회는 `AuthCurrentUser.require(request)`를 사용한다.
+  각 기능은 반환된 사용자 ID로 데이터 소유권을 검사해야 한다.
+
+로컬 실행:
+
+```bash
+AUTH_DEMO_GUEST=true ./mvnw spring-boot:run
+```
+
+프론트의 `VITE_DEMO_GUEST`와 서버의 `AUTH_DEMO_GUEST`는 별도 설정이다.
+서버 설정은 해당 백엔드 전체에 적용된다. Production과 Preview가 같은 백엔드를
+공유하면 둘 다 영향을 받으므로, 게스트 모드는 시연용 백엔드에서만 활성화한다.
 
 ## 확인 방법
 
