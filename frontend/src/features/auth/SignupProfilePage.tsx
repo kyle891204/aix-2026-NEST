@@ -1,8 +1,7 @@
 import { SUPPORTED_LANGUAGES, type Language } from '../../shared/types/language'
 import { ERICA_SCHOOL, ERICA_COLLEGES } from './erica-academics'
 import type { SignupProfile } from '../profile/demo-profile'
-
-export type { SignupProfile } from '../profile/demo-profile'
+import { COUNTRIES } from '../../shared/data/countries'
 
 interface SignupProfilePageProps {
   profile: SignupProfile
@@ -19,9 +18,16 @@ const languageLabels: Record<Language, string> = {
 }
 
 const optionalFields = [
-  { key: 'nationality', label: '국적' },
-  { key: 'degree', label: '학위과정' },
-  { key: 'year', label: '학년' },
+  {
+    key: 'degree',
+    label: '학위과정',
+    options: ['학사', '석사', '박사', '석박사통합'],
+  },
+  {
+    key: 'year',
+    label: '학년',
+    options: ['1학년', '2학년', '3학년', '4학년', '5학년 이상'],
+  },
 ] as const
 
 export function SignupProfilePage({
@@ -46,7 +52,7 @@ export function SignupProfilePage({
       <main className="auth-content">
         <p className="auth-eyebrow">NEST 회원가입 · 프로필 설정</p>
         <h1>어떻게 불러드릴까요?</h1>
-        <p>닉네임과 사용할 언어를 설정해 주세요.</p>
+        <p>이름과 사용할 언어를 설정해 주세요.</p>
 
         <form
           className="signup-form"
@@ -63,7 +69,7 @@ export function SignupProfilePage({
           }}
         >
           <label className="signup-field">
-            <span>닉네임 · 필수</span>
+            <span>이름 · 필수</span>
             <input
               type="text"
               value={profile.nickname}
@@ -73,7 +79,7 @@ export function SignupProfilePage({
                   nickname: event.target.value,
                 })
               }
-              placeholder="사용할 닉네임"
+              placeholder="사용할 이름"
               required
             />
           </label>
@@ -173,11 +179,42 @@ export function SignupProfilePage({
                 </select>
               </label>
 
+              <label className="signup-field">
+                <span>국적</span>
+
+                <select
+                  value={profile.nationality}
+                  onChange={(event) =>
+                    onChange({
+                      ...profile,
+                      nationality: event.target.value,
+                    })
+                  }
+                >
+                  <option value="">국적 선택 · 선택 입력</option>
+
+                  {profile.nationality &&
+                    !COUNTRIES.some(
+                      (country) => country.code === profile.nationality,
+                    ) && (
+                      <option value={profile.nationality} disabled>
+                        {profile.nationality} · 목록에서 다시 선택해 주세요
+                      </option>
+                    )}
+
+                  {COUNTRIES.map((country) => (
+                    <option key={country.code} value={country.code}>
+                      {country.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
               {optionalFields.map((field) => (
                 <label className="signup-field" key={field.key}>
                   <span>{field.label}</span>
-                  <input
-                    type="text"
+
+                  <select
                     value={profile[field.key]}
                     onChange={(event) =>
                       onChange({
@@ -185,8 +222,24 @@ export function SignupProfilePage({
                         [field.key]: event.target.value,
                       })
                     }
-                    placeholder="선택 입력"
-                  />
+                  >
+                    <option value="">{field.label} 선택 · 선택 입력</option>
+
+                    {profile[field.key] &&
+                      !field.options.some(
+                        (option) => option === profile[field.key],
+                      ) && (
+                        <option value={profile[field.key]} disabled>
+                          {profile[field.key]} · 목록에서 다시 선택해 주세요
+                        </option>
+                      )}
+
+                    {field.options.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
                 </label>
               ))}
             </fieldset>
@@ -195,7 +248,7 @@ export function SignupProfilePage({
           <p aria-live="polite">
             {canContinue
               ? '입력 내용을 확인한 뒤 다음으로 이동해 주세요.'
-              : '닉네임을 입력해 주세요.'}
+              : '이름을 입력해 주세요.'}
           </p>
 
           <div className="signup-actions">
