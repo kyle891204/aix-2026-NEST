@@ -41,7 +41,8 @@ public class NoticeMatcher {
             if (allowed == null || allowed.isEmpty()) continue;
             String value = values.get(field);
             Outcome outcome = value == null ? Outcome.UNKNOWN
-                    : allowed.stream().map(NoticeMatcher::normalize).anyMatch(value::equals) ? Outcome.MATCH
+                    : allowed.stream().map(NoticeMatcher::normalize).anyMatch(condition -> satisfies(field, value, condition))
+                            ? Outcome.MATCH
                     : Outcome.MISMATCH;
             mismatch |= outcome == Outcome.MISMATCH;
             unknown |= outcome == Outcome.UNKNOWN;
@@ -78,6 +79,12 @@ public class NoticeMatcher {
     private static String normalize(String value) {
         if (value == null || value.isBlank()) return null;
         return value.strip().toUpperCase(Locale.ROOT);
+    }
+
+    // 세부 비자(D-2-1)는 상위 비자(D-2) 대상 공지에도 해당한다. 반대(D-2 학생이 D-2-1 공지)는 해당하지 않는다.
+    private static boolean satisfies(Field field, String value, String condition) {
+        if (value.equals(condition)) return true;
+        return field == Field.VISA_TYPE && condition != null && value.startsWith(condition + "-");
     }
 
     private static List<String> allowed(TargetConditions target, Field field) {

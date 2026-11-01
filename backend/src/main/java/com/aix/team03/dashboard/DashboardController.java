@@ -2,9 +2,9 @@ package com.aix.team03.dashboard;
 
 import com.aix.team03.global.error.ApiError;
 import com.aix.team03.matching.MatchingModels.StudentProfile;
-import jakarta.validation.Valid;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,7 +27,7 @@ public class DashboardController {
     public DashboardController(DashboardService dashboard) { this.dashboard = dashboard; }
 
     @PostMapping
-    public DashboardResponse dashboard(@Valid @RequestBody(required = false) DashboardRequest body,
+    public DashboardResponse dashboard(@RequestBody(required = false) DashboardRequest body,
             @RequestParam(defaultValue = "20") int limit) {
         if (limit < 1 || limit > 50) throw new InvalidLimitException();
         // 본문이 없거나 맞춤정보 동의를 해제한 경우 빈 프로필로 판별한다.
@@ -39,6 +39,13 @@ public class DashboardController {
     public ResponseEntity<ApiError> invalidLimit() {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError(
                 "INVALID_REQUEST", "입력 값을 확인해 주세요.", Map.of("limit", "1~50 사이 숫자여야 합니다.")));
+    }
+
+    // 읽을 수 없는 JSON 본문도 Spring 기본 400 대신 공통 오류 형식으로 응답한다.
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiError> unreadableBody() {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError(
+                "INVALID_REQUEST", "입력 값을 확인해 주세요.", Map.of("body", "JSON 형식이 올바르지 않습니다.")));
     }
 
     private static class InvalidLimitException extends RuntimeException {}

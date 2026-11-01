@@ -81,10 +81,18 @@ class DashboardControllerTests {
     }
 
     @Test
-    void overlongProfileValueIsAnInvalidRequest() throws Exception {
-        call("", "{\"nationality\":\"" + "x".repeat(51) + "\"}")
+    void overlongProfileValueIsTreatedAsMissingInsteadOfBlocking() throws Exception {
+        // 저장된 프로필 값이 길어도 대시보드가 계속 400으로 막히지 않아야 한다.
+        call("", "{\"nationality\":\"" + "x".repeat(200) + "\",\"degree\":\"BACHELOR\",\"year\":\"2\"}")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.missingProfileFields[0]").value("nationality"));
+    }
+
+    @Test
+    void malformedJsonUsesTheCommonErrorFormat() throws Exception {
+        call("", "{\"nationality\":")
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("INVALID_REQUEST"))
-                .andExpect(jsonPath("$.fields.nationality").exists());
+                .andExpect(jsonPath("$.fields.body").exists());
     }
 }

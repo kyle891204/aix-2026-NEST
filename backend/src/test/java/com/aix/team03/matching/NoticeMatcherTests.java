@@ -66,6 +66,24 @@ class NoticeMatcherTests {
     }
 
     @Test
+    void detailedVisaMatchesItsParentVisaButNotTheOtherWay() {
+        var d21 = new StudentProfile("VN", "D-2-1", "BACHELOR", "2");
+        var parentNotice = matcher.match(new TargetConditions(null, List.of("D-2"), null, null),
+                AnalysisStatus.CONFIRMED, d21);
+        assertThat(parentNotice.status()).isEqualTo(MatchStatus.APPLICABLE);
+        assertThat(parentNotice.reasons()).containsExactly("D-2-1 비자 대상");
+
+        var detailedNotice = matcher.match(new TargetConditions(null, List.of("D-2-1"), null, null),
+                AnalysisStatus.CONFIRMED, student);
+        assertThat(detailedNotice.status()).isEqualTo(MatchStatus.NOT_APPLICABLE);
+
+        // D-2가 D-20 같은 다른 비자에 잘못 걸리지 않는다.
+        var d20 = matcher.match(new TargetConditions(null, List.of("D-2"), null, null), AnalysisStatus.CONFIRMED,
+                new StudentProfile(null, "D-20", null, null));
+        assertThat(d20.status()).isEqualTo(MatchStatus.NOT_APPLICABLE);
+    }
+
+    @Test
     void uncertainAnalysisNeedsReviewEvenWhenConditionsDoNotMatch() {
         var result = matcher.match(new TargetConditions(List.of("CN"), null, null, null),
                 AnalysisStatus.UNCERTAIN, student);

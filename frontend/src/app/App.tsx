@@ -27,6 +27,7 @@ import { ChecklistPage } from '../features/immigration/pages/ChecklistPage'
 import { EntryExitPage } from '../features/immigration/pages/EntryExitPage'
 import { NoticeListPage } from '../features/notices/pages/NoticeListPage'
 import { NoticeDetailPage } from '../features/notices/pages/NoticeDetailPage'
+import { CourseNoticesPage } from '../features/courses/CourseNoticesPage'
 import { ProfilePage } from '../features/profile/pages/ProfilePage'
 import { DemoProfileProvider } from '../features/profile/DemoProfileProvider'
 import { useDemoProfile } from '../features/profile/demo-profile-context'
@@ -89,6 +90,7 @@ export default function App() {
             />
             <Route path="/notices" element={<NoticeListPage />} />
             <Route path="/notices/:noticeId" element={<NoticeDetailPage />} />
+            <Route path="/course-notices" element={<CourseNoticesPage />} />
             <Route path="/community" element={<CommunityPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/lms-test" element={<LmsTestPage />} />
@@ -102,16 +104,6 @@ export default function App() {
               }
             />
           </Route>
-          <Route
-            path="/course-notices"
-            element={
-              <EmptyState
-                title="과목알림"
-                description="준비 중인 화면입니다."
-              />
-            }
-          />
-
           <Route
             path="/schedule"
             element={

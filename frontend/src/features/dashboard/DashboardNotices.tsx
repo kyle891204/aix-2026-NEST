@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ApiError } from '../../shared/api/client'
 import { kstLabel } from '../../shared/format/kst'
+import { useAuth } from '../auth/auth-context'
 import type { SignupProfile } from '../profile/demo-profile'
 import {
   getDashboard,
@@ -9,6 +10,7 @@ import {
   type DashboardProfile,
   type DashboardResult,
 } from './api'
+import { toDashboardProfile } from './profile-codes'
 import './dashboard.css'
 
 const HOME_LIMIT = 3
@@ -31,32 +33,27 @@ const ASKABLE_FIELDS = ['nationality', 'degree', 'year']
 
 type Load =
   | { status: 'loading' }
+  | { status: 'signed-out' }
   | { status: 'error'; message: string }
   | { status: 'ready'; data: DashboardResult }
-
-function toRequest(profile: SignupProfile | null): DashboardProfile {
-  return {
-    nationality: profile?.nationality || null,
-    visaType: null,
-    degree: profile?.degree || null,
-    year: profile?.year || null,
-  }
-}
 
 export function DashboardNotices({
   profile,
 }: {
   profile: SignupProfile | null
 }) {
-  const request = toRequest(profile)
-  const requestKey = JSON.stringify(request)
+  // 로그인 세션(게스트 포함)과 CSRF 토큰을 먼저 받은 뒤 요청한다. 동시에 보내면 게스트 세션이 둘 생길 수 있다.
+  const { loading: authLoading } = useAuth()
+  const requestKey = JSON.stringify(toDashboardProfile(profile))
   const [attempt, setAttempt] = useState(0)
   // 결과에 요청 키(프로필·재시도 횟수)를 붙여 두고, 현재 키와 다르면 불러오는 중으로 본다.
   const [result, setResult] = useState<{ key: string; load: Load } | null>(null)
   const key = `${requestKey}#${attempt}`
-  const load: Load = result?.key === key ? result.load : { status: 'loading' }
+  const load: Load =
+    !authLoading && result?.key === key ? result.load : { status: 'loading' }
 
   useEffect(() => {
+    if (authLoading) return
     let active = true
     const current = `${requestKey}#${attempt}`
     getDashboard(JSON.parse(requestKey) as DashboardProfile, HOME_LIMIT)
@@ -65,16 +62,22 @@ export function DashboardNotices({
       })
       .catch((cause: unknown) => {
         const code = cause instanceof ApiError ? cause.code : null
-        const message = code
-          ? `맞춤 공지를 불러오지 못했어요. (${code})`
-          : '맞춤 공지를 불러오지 못했어요.'
-        if (active)
-          setResult({ key: current, load: { status: 'error', message } })
+        // 로그인하지 않은 미리보기에서는 다시 시도해도 성공할 수 없으므로 로그인 안내만 보여준다.
+        const load: Load =
+          code === 'AUTH_REQUIRED'
+            ? { status: 'signed-out' }
+            : {
+                status: 'error',
+                message: code
+                  ? `맞춤 공지를 불러오지 못했어요. (${code})`
+                  : '맞춤 공지를 불러오지 못했어요.',
+              }
+        if (active) setResult({ key: current, load })
       })
     return () => {
       active = false
     }
-  }, [requestKey, attempt])
+  }, [authLoading, requestKey, attempt])
 
   return (
     <section className="school-notices">
@@ -85,6 +88,12 @@ export function DashboardNotices({
 
       {load.status === 'loading' && (
         <p className="home-description">맞춤 공지를 고르고 있어요…</p>
+      )}
+      {load.status === 'signed-out' && (
+        <p className="dashboard-profile-hint">
+          로그인하면 나에게 해당하는 공지를 볼 수 있어요.{' '}
+          <Link to="/login">로그인하기 ›</Link>
+        </p>
       )}
       {load.status === 'error' && (
         <div className="dashboard-error" role="alert">
