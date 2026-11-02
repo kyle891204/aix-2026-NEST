@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { EmergencyContacts } from '../components/EmergencyContacts'
 import '../life.css'
 
 // 카카오 지도 API의 타입을 TypeScript에 알려줘.
@@ -40,6 +41,7 @@ export function LifeGuidePage() {
         </button>
         <button
           type="button"
+          className="life-guide-emergency-button"
           aria-pressed={selectedTab === 'emergency'}
           onClick={() => setSelectedTab('emergency')}
         >
@@ -57,7 +59,7 @@ export function LifeGuidePage() {
       {selectedTab === 'emergency' && (
         <section aria-labelledby="emergency-title">
           <h2 id="emergency-title">긴급연락처</h2>
-          <p>연락처 안내를 준비 중입니다.</p>
+          <EmergencyContacts />
         </section>
       )}
     </section>
