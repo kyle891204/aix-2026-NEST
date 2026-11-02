@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useDemoProfile } from '../../profile/demo-profile-context'
 import { profileDetails } from '../../profile/profile-display'
+import { DashboardNotices } from '../../dashboard/DashboardNotices'
 import '../school.css'
 
 export function SchoolHomePage() {
@@ -51,27 +52,7 @@ export function SchoolHomePage() {
         )}
       </section>
 
-      <section className="school-notices">
-        <div className="home-section-heading">
-          <h2>나에게 해당하는 공지</h2>
-          <Link to="/notices">모두 보기 ›</Link>
-        </div>
-
-        <article className="home-card">
-          <div className="notice-badges">
-            <span>예시</span>
-            <span>학교</span>
-          </div>
-
-          <h3>외국인 학부생 체류 서류 제출 안내</h3>
-          <p className="home-description">조건별 공지 분류는 준비 중입니다.</p>
-          <p>2026.10.28 17:00 · KST</p>
-        </article>
-
-        <p className="dashboard-description">
-          검토용 예시 · 실제 학교·LMS 데이터는 연결 전
-        </p>
-      </section>
+      <DashboardNotices profile={profile} />
     </div>
   )
 }
