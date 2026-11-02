@@ -119,3 +119,16 @@
 - 데이터: 외교부 주한공관주소록 32페이지의 128개 공관과 개별 공관 공식 안내를 결합한 117개국·131개 연락처 항목. 출처·확인일·주소록 수정일·번호 원문 보존. 미입력·기존 자유입력·주소록 미수록 국가·대한민국·번호 없는 공관은 각각 별도 안내. 주소록 미수록을 공관 부재로 단정하지 않으며 회원정보를 자동 갱신하지 않음.
 - 검증 범위와 공식 출처: `docs/emergency-contacts.md`. 서버·브라우저와 실제 전화는 실행하지 않음.
 - 검증 결과: 전체 프론트 테스트 47개(신규 7개), 타입·빌드·Oxlint·신규 파일 Prettier 검사 통과. 브라우저 표시·전화 앱 연결은 미검증.
+
+## 2026-11-01 — 서버 공통 CSRF 검사 구현
+
+- 도구: Claude Code.
+- 요청 요지: 역할 분담 ② 서버 CSRF. 데이터를 바꾸는 요청에 공통 CSRF 검사를 적용.
+- 작업 브랜치: `feat/server-csrf` (`main` 기준), PR #39.
+- 참고: PR #38의 토큰 자동 첨부 방식과 리뷰 내용, 기존 `AuthSessions`·`AuthController`·`AuthAccessConfig`.
+- 작업: `/api/v1/**`의 POST·PUT·PATCH·DELETE에 `X-CSRF-Token` 검사 추가. `/api/v1/auth/**`는 기존 자체 검사를 유지하도록 제외하고, 비로그인 쓰기가 401을 유지하도록 로그인 확인 뒤에 실행.
+- 범위: 새 파일 `CsrfAccessConfig`, `CsrfAccessTests` 추가. 기존 파일은 작성자 동의를 받아 `CommunityTranslationControllerTests`에 토큰만 추가.
+- 검증: `mvnw clean verify` 전체 97개 통과 (새 테스트 12개 포함, PR #42 머지 후 `main` 기준).
+- 미검증: 실제 브라우저에서 Google 로그인 후 토큰을 주고받는 흐름.
+- 비밀정보: 테스트에는 가상 계정과 가상 토큰만 사용.
+- 후속 수정(PR #39 리뷰): 최신 `main` 반영, 게스트 모드 CSRF 테스트 2개 추가(`CsrfDemoGuestTests`), `CsrfAccessTests`의 토큰 추출을 JsonPath로 변경하고 게스트 설정을 false로 고정, 실행 순서 전제를 주석에 명시, 문서 CSRF 규칙 반영. 전체 56개 통과.
