@@ -1,0 +1,72 @@
+[
+  {
+    "noticeId": "seed-visa-extension",
+    "title": "[예시] 외국인 유학생 체류기간 연장 신청 안내",
+    "category": "VISA",
+    "postedAt": "2026-10-28",
+    "deadline": "2026-11-20T18:00:00+09:00",
+    "sourceUrl": null,
+    "targetConditions": { "nationalities": null, "visaTypes": ["D-2", "D-4"], "degrees": null, "years": null },
+    "analysisStatus": "CONFIRMED"
+  },
+  {
+    "noticeId": "seed-undergrad-scholarship",
+    "title": "[예시] 외국인 학부생 성적우수 장학금 신청",
+    "category": "SCHOLARSHIP",
+    "postedAt": "2026-10-25",
+    "deadline": "2026-11-10T17:00:00+09:00",
+    "sourceUrl": null,
+    "targetConditions": { "nationalities": null, "visaTypes": null, "degrees": ["BACHELOR"], "years": ["2", "3", "4"] },
+    "analysisStatus": "CONFIRMED"
+  },
+  {
+    "noticeId": "seed-grad-ethics",
+    "title": "[예시] 대학원생 연구윤리 교육 이수 안내",
+    "category": "ACADEMIC",
+    "postedAt": "2026-10-20",
+    "deadline": "2026-11-30T23:59:00+09:00",
+    "sourceUrl": null,
+    "targetConditions": { "nationalities": null, "visaTypes": null, "degrees": ["MASTER", "DOCTORAL"], "years": null },
+    "analysisStatus": "CONFIRMED"
+  },
+  {
+    "noticeId": "seed-freshman-orientation",
+    "title": "[예시] 신입 유학생 캠퍼스 오리엔테이션",
+    "category": "EVENT",
+    "postedAt": "2026-10-30",
+    "deadline": "2026-11-07T14:00:00+09:00",
+    "sourceUrl": null,
+    "targetConditions": { "nationalities": null, "visaTypes": null, "degrees": null, "years": ["1"] },
+    "analysisStatus": "CONFIRMED"
+  },
+  {
+    "noticeId": "seed-health-insurance",
+    "title": "[예시] 외국인 학생 국민건강보험 가입 안내",
+    "category": "ETC",
+    "postedAt": "2026-10-15",
+    "deadline": null,
+    "sourceUrl": null,
+    "targetConditions": { "nationalities": null, "visaTypes": null, "degrees": null, "years": null },
+    "analysisStatus": "CONFIRMED"
+  },
+  {
+    "noticeId": "seed-vietnam-meetup",
+    "title": "[예시] 베트남 유학생 교류 모임 참가 신청",
+    "category": "EVENT",
+    "postedAt": "2026-10-29",
+    "deadline": null,
+    "sourceUrl": null,
+    "targetConditions": { "nationalities": ["VN"], "visaTypes": null, "degrees": null, "years": null },
+    "analysisStatus": "UNCERTAIN"
+  },
+  {
+    "noticeId": "seed-exchange-return",
+    "title": "[예시] 교환학생 귀국 전 제출 서류 안내",
+    "category": "ACADEMIC",
+    "postedAt": "2026-10-27",
+    "deadline": "2026-12-05T18:00:00+09:00",
+    "sourceUrl": null,
+    "targetConditions": { "nationalities": null, "visaTypes": null, "degrees": ["EXCHANGE"], "years": null },
+    "analysisStatus": "NOT_ANALYZED"
+  }
+]
