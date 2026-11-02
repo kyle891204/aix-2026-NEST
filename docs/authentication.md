@@ -130,7 +130,7 @@ API rewrite는 SPA의 `/index.html` fallback보다 먼저 적용되어야 한다
 - 게스트 ID는 `guest-` 접두사로 시작하며 세션마다 다르다. 같은 세션에서는 유지된다.
 - 이미 로그인한 사용자는 게스트로 덮어쓰지 않는다.
 - 게스트도 세션과 CSRF 토큰을 사용한다. 기존 로그인·로그아웃의 CSRF 검사는 유지한다.
-- 제품 API의 공통 CSRF 검사는 별도 작업이다.
+- 제품 API의 쓰기 요청도 공통 CSRF 검사를 받는다(`CsrfAccessConfig`). 게스트도 토큰이 없으면 403이다.
 - 기능별 사용자 조회는 `AuthCurrentUser.require(request)`를 사용한다.
   각 기능은 반환된 사용자 ID로 데이터 소유권을 검사해야 한다.
 

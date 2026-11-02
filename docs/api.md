@@ -30,6 +30,8 @@ Google 토큰이나 세션 ID를 URL/브라우저 저장소에 넣지 않는다.
 오류 형식은 `{ code, message, fields: {} }`다. 대표 코드는 `AUTH_REQUIRED`(401),
 `AUTH_INVALID_CREDENTIAL`(401), `AUTH_CHALLENGE_EXPIRED`(401), `AUTH_CSRF_INVALID`(403),
 `AUTH_NOT_CONFIGURED`(503), `AUTH_PROVIDER_UNAVAILABLE`(503)다.
+`/auth/**`를 제외한 `/api/v1/**`의 POST·PUT·PATCH·DELETE에는 세션과 일치하는 `X-CSRF-Token`이 필요하다.
+없거나 틀리면 `AUTH_CSRF_INVALID`(403)다. 프론트는 `requestJson`이 자동 첨부한다.
 10분이 지난 로그인 시도는 `/auth/session`을 다시 읽어 새 nonce로 재시도한다.
 설정·배포·한계는 [로그인 문서](authentication.md)를 참고한다.
 

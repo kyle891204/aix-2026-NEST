@@ -35,12 +35,13 @@ class CommunityTranslationControllerTests {
         var session = new MockHttpSession();
         // AuthSessions.USER: 로그인 후 서버 세션에 저장되는 사용자 속성
         session.setAttribute("nest.user", new AuthUser("google-sub", "student@example.com"));
+        session.setAttribute("nest.csrf", "csrf-fixture");
         return session;
     }
 
     private ResultActions translate(MockHttpSession session, String json) throws Exception {
         var request = post(PATH).contentType(MediaType.APPLICATION_JSON).content(json);
-        return mvc.perform(session == null ? request : request.session(session));
+        return mvc.perform(session == null ? request : request.session(session).header("X-CSRF-Token", "csrf-fixture"));
     }
 
     @Test
