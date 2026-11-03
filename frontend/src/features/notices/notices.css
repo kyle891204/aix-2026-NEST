@@ -187,15 +187,6 @@
   text-decoration: none;
 }
 
-.notice-secondary {
-  min-height: 44px;
-  border: 1px solid #e7ebf3;
-  border-radius: 14px;
-  background: #fff;
-  color: #1c2940;
-  font-weight: 700;
-}
-
 .notice-field {
   display: grid;
   gap: 8px;

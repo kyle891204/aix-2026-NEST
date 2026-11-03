@@ -21,7 +21,7 @@ export function EntryExitPage() {
         <span className="notice-hint">
           출국일 · 학적·숙소 정리 · 학교 확인사항
         </span>
-        <Link className="notice-secondary notice-link-button" to="exit">
+        <Link className="notice-primary notice-link-button" to="exit">
           출국 준비 보기
         </Link>
       </section>
