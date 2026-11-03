@@ -1,17 +1,23 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../../auth/auth-context'
-import { toDashboardProfile } from '../../dashboard/profile-codes'
 import { useDemoProfile } from '../../profile/demo-profile-context'
 import { loadActionChecks, saveActionChecks } from '../action-checks'
 import {
   isSignedOut,
+  noticeProfile,
   translateNotice,
   viewNotice,
   type NoticeDetail,
   type NoticeTranslation,
 } from '../api'
-import { formatDeadline, matchLabel, needsTranslation } from '../notice-display'
+import {
+  formatDeadline,
+  matchLabel,
+  needsTranslation,
+  postedLabel,
+} from '../notice-display'
+import { NoticeLoading } from '../NoticeLoading'
 import '../notices.css'
 
 const TRANSLATION_FAILED =
@@ -24,9 +30,7 @@ export function NoticeDetailPage() {
   const { session, loading: authLoading } = useAuth()
   const accountId = session?.user?.id ?? null
   const language = savedProfile?.profile.language ?? 'ko'
-  const profile = JSON.stringify(
-    toDashboardProfile(savedProfile?.profile ?? null),
-  )
+  const profile = JSON.stringify(noticeProfile(savedProfile?.profile ?? null))
   const [checks, setChecks] = useState<string[]>(() => {
     if (!accountId) return []
     try {
@@ -152,9 +156,7 @@ export function NoticeDetailPage() {
   if (!notice) {
     return (
       <div className="notice-page">
-        <p className="notice-hint" aria-live="polite">
-          공지를 불러오고 있어요…
-        </p>
+        <NoticeLoading />
       </div>
     )
   }
@@ -179,6 +181,9 @@ export function NoticeDetailPage() {
           <span className={`notice-badge is-${notice.matchStatus}`}>
             {badge}
           </span>
+        )}
+        {notice.sourceName && (
+          <span className="notice-badge">{notice.sourceName}</span>
         )}
         {notice.sample && <span className="notice-badge">예시 데이터</span>}
         {failed && (
@@ -225,10 +230,24 @@ export function NoticeDetailPage() {
 
       {tab === 'original' ? (
         <section className="notice-card">
+          <span className="notice-hint">
+            게시일 {postedLabel(notice.postedAt)}
+          </span>
           <p className="notice-body">{notice.originalContent}</p>
+          {notice.attachments.length > 0 && (
+            <ul className="notice-files">
+              {notice.attachments.map((file) => (
+                <li key={file.url}>
+                  <a href={file.url} target="_blank" rel="noreferrer">
+                    {file.name}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
           {notice.sourceUrl && (
             <a href={notice.sourceUrl} target="_blank" rel="noreferrer">
-              공식 출처 보기 ↗
+              학교 홈페이지에서 원문 보기 ↗
             </a>
           )}
         </section>
