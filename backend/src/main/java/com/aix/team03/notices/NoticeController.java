@@ -6,6 +6,8 @@ import com.aix.team03.matching.MatchingModels.MatchStatus;
 import com.aix.team03.matching.MatchingModels.StudentProfile;
 import com.aix.team03.matching.MatchingModels.TargetConditions;
 import com.aix.team03.notices.NoticeModels.Action;
+import com.aix.team03.notices.NoticeModels.Attachment;
+import com.aix.team03.notices.NoticeModels.Category;
 import com.aix.team03.notices.NoticeModels.Source;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -40,17 +42,21 @@ public class NoticeController {
     public NoticeListResponse search(@RequestParam(required = false) Source source,
             @RequestParam(required = false) MatchFilter match,
             @RequestBody(required = false) ProfileRequest body) {
-        return new NoticeListResponse(notices.search(source, match, profile(body)), false);
+        return new NoticeListResponse(notices.search(source, match, profile(body), collegeId(body)), false);
     }
 
     @PostMapping("/{noticeId}/view")
     public NoticeDetail view(@PathVariable String noticeId, @RequestBody(required = false) ProfileRequest body) {
-        return notices.view(noticeId, profile(body));
+        return notices.view(noticeId, profile(body), collegeId(body));
     }
 
     @PostMapping(value = "/{noticeId}/translations", consumes = MediaType.APPLICATION_JSON_VALUE)
     public TranslationResponse translate(@PathVariable String noticeId, @Valid @RequestBody TranslationRequest body) {
         return notices.translate(noticeId, body.targetLanguage());
+    }
+
+    private static String collegeId(ProfileRequest body) {
+        return body == null || body.collegeId() == null || body.collegeId().isBlank() ? null : body.collegeId();
     }
 
     private static StudentProfile profile(ProfileRequest body) {
@@ -61,6 +67,12 @@ public class NoticeController {
     public ResponseEntity<ApiError> notFound() {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new ApiError("NOTICE_NOT_FOUND", "공지를 찾을 수 없습니다.", Map.of()));
+    }
+
+    @ExceptionHandler(CollectedNoticeRepository.NoticeSourceUnavailableException.class)
+    public ResponseEntity<ApiError> sourceUnavailable() {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(new ApiError("NOTICE_SOURCE_UNAVAILABLE",
+                "학교 공지를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.", Map.of()));
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
@@ -79,20 +91,23 @@ public class NoticeController {
     public enum MatchFilter { APPLICABLE, NEEDS_REVIEW }
 
     // 길이 제한으로 400을 내지 않는다. 저장된 프로필 값이 길어도 공지가 막히지 않고, 읽을 수 없는 값은 값 없음으로 판별한다.
-    public record ProfileRequest(String nationality, String visaType, String degree, String year) {}
+    // collegeId는 프로필의 단과대 ID다. 없으면 ERICA 전체 공지만 보여준다.
+    public record ProfileRequest(String nationality, String visaType, String degree, String year,
+            String collegeId) {}
 
     public record TranslationRequest(@NotBlank @Pattern(regexp = "ko|en|zh") String targetLanguage) {}
 
     public record NoticeListResponse(List<NoticeSummary> items, boolean truncated) {}
 
-    public record NoticeSummary(String noticeId, Source source, String title, AnalysisStatus analysisStatus,
-            MatchStatus matchStatus, List<String> matchReasons, String deadline, boolean sample) {}
+    public record NoticeSummary(String noticeId, Source source, String sourceName, Category category, String title,
+            String postedAt, AnalysisStatus analysisStatus, MatchStatus matchStatus, List<String> matchReasons,
+            String deadline, boolean sample) {}
 
-    public record NoticeDetail(String noticeId, Source source, String title, AnalysisStatus analysisStatus,
-            MatchStatus matchStatus, List<String> matchReasons, String deadline, String target,
-            TargetConditions targetConditions, List<Action> actions, List<String> documents,
-            String originalContent, String originalLanguage, String sourceUrl, String savedScheduleId,
-            boolean sample) {}
+    public record NoticeDetail(String noticeId, Source source, String sourceName, Category category, String title,
+            String postedAt, AnalysisStatus analysisStatus, MatchStatus matchStatus, List<String> matchReasons,
+            String deadline, String target, TargetConditions targetConditions, List<Action> actions,
+            List<String> documents, List<Attachment> attachments, String originalContent, String originalLanguage,
+            String sourceUrl, String savedScheduleId, boolean sample) {}
 
     public record TranslationResponse(String noticeId, String targetLanguage, String translationStatus,
             TranslatedNotice translated, boolean retryable, String message) {}

@@ -45,8 +45,9 @@ public class NoticeService {
         this.translations = translations;
     }
 
-    public List<NoticeSummary> search(Source source, MatchFilter match, StudentProfile profile) {
+    public List<NoticeSummary> search(Source source, MatchFilter match, StudentProfile profile, String collegeId) {
         return notices.findAll().stream()
+                .filter(notice -> visibleTo(notice, collegeId))
                 .filter(notice -> source == null || notice.source() == source)
                 .map(notice -> summary(notice, profile))
                 .filter(summary -> match == null || summary.matchStatus().name().equals(match.name()))
@@ -54,14 +55,17 @@ public class NoticeService {
                 .toList();
     }
 
-    public NoticeDetail view(String noticeId, StudentProfile profile) {
+    public NoticeDetail view(String noticeId, StudentProfile profile, String collegeId) {
         var notice = find(noticeId);
+        // 다른 단과대 공지는 주소로 직접 열어도 없는 공지로 처리한다.
+        if (!visibleTo(notice, collegeId)) throw new NoticeNotFoundException();
         var result = match(notice, profile);
         // savedScheduleId는 #10 일정 서비스가 생기면 채운다.
-        return new NoticeDetail(notice.noticeId(), notice.source(), notice.title(), notice.analysisStatus(),
-                result.status(), result.reasons(), notice.deadline(), notice.target(), notice.targetConditions(),
-                notice.actions(), notice.documents(), notice.originalContent(), notice.originalLanguage(),
-                notice.sourceUrl(), null, notice.sample());
+        return new NoticeDetail(notice.noticeId(), notice.source(), notice.sourceName(), notice.category(),
+                notice.title(), notice.postedAt(), notice.analysisStatus(), result.status(), result.reasons(),
+                notice.deadline(), notice.target(), notice.targetConditions(), notice.actions(), notice.documents(),
+                notice.attachments(), notice.originalContent(), notice.originalLanguage(), notice.sourceUrl(), null,
+                notice.sample());
     }
 
     public TranslationResponse translate(String noticeId, String targetLanguage) {
@@ -95,8 +99,14 @@ public class NoticeService {
 
     private NoticeSummary summary(Notice notice, StudentProfile profile) {
         var result = match(notice, profile);
-        return new NoticeSummary(notice.noticeId(), notice.source(), notice.title(), notice.analysisStatus(),
-                result.status(), result.reasons(), notice.deadline(), notice.sample());
+        return new NoticeSummary(notice.noticeId(), notice.source(), notice.sourceName(), notice.category(),
+                notice.title(), notice.postedAt(), notice.analysisStatus(), result.status(), result.reasons(),
+                notice.deadline(), notice.sample());
+    }
+
+    /** ERICA 전체 공지는 모두에게, 단과대 공지는 프로필의 단과대가 같은 학생에게만 보여준다. */
+    private static boolean visibleTo(Notice notice, String collegeId) {
+        return notice.collegeId() == null || notice.collegeId().equals(collegeId);
     }
 
     private MatchResult match(Notice notice, StudentProfile profile) {
