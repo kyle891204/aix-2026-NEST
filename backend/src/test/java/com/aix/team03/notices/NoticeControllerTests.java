@@ -13,6 +13,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.everyItem;
@@ -162,6 +163,15 @@ class NoticeControllerTests {
         send(PATH + "/univ-001/view", body)
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.matchStatus").value("NEEDS_REVIEW"));
+    }
+
+    @Test
+    void listsApplicableFirstThenByNearestDeadline() throws Exception {
+        search("", UNDERGRADUATE)
+                .andExpect(jsonPath("$.items[*].noticeId",
+                        contains("univ-001", "intl-001", "intl-002", "univ-002", "coll-002", "coll-001")))
+                .andExpect(jsonPath("$.items[*].matchStatus", contains("APPLICABLE", "APPLICABLE", "APPLICABLE",
+                        "NEEDS_REVIEW", "NEEDS_REVIEW", "NOT_APPLICABLE")));
     }
 
     @Test

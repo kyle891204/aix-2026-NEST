@@ -5,6 +5,7 @@ import { toDashboardProfile } from '../../dashboard/profile-codes'
 import { useDemoProfile } from '../../profile/demo-profile-context'
 import { loadActionChecks, saveActionChecks } from '../action-checks'
 import {
+  isSignedOut,
   translateNotice,
   viewNotice,
   type NoticeDetail,
@@ -19,7 +20,8 @@ const TRANSLATION_FAILED =
 export function NoticeDetailPage() {
   const { noticeId = '' } = useParams()
   const { savedProfile } = useDemoProfile()
-  const { session } = useAuth()
+  // 세션과 CSRF 토큰을 받기 전에 요청하면 게스트 세션이 둘 생길 수 있어 세션 확인을 기다린다.
+  const { session, loading: authLoading } = useAuth()
   const accountId = session?.user?.id ?? null
   const language = savedProfile?.profile.language ?? 'ko'
   const profile = JSON.stringify(
@@ -41,6 +43,7 @@ export function NoticeDetailPage() {
     key: string
     notice: NoticeDetail | null
     error: string | null
+    signedOut?: boolean
   } | null>(null)
   const [translationResult, setTranslationResult] = useState<{
     key: string
@@ -49,28 +52,34 @@ export function NoticeDetailPage() {
 
   // 응답의 key가 현재 요청과 다르면 아직 불러오는 중으로 본다.
   const loadKey = `${noticeId}:${profile}:${attempt}`
-  const current = loaded?.key === loadKey ? loaded : null
+  const current = !authLoading && loaded?.key === loadKey ? loaded : null
   const notice = current?.notice ?? null
   const loadError = current?.error ?? null
+  const signedOut = current?.signedOut ?? false
 
   useEffect(() => {
+    if (authLoading) return
     let active = true
     viewNotice(noticeId, JSON.parse(profile))
       .then((value) => {
         if (active) setLoaded({ key: loadKey, notice: value, error: null })
       })
-      .catch(() => {
-        if (active)
-          setLoaded({
-            key: loadKey,
-            notice: null,
-            error: '공지를 불러오지 못했어요.',
-          })
+      .catch((cause: unknown) => {
+        if (!active) return
+        setLoaded(
+          isSignedOut(cause)
+            ? { key: loadKey, notice: null, error: null, signedOut: true }
+            : {
+                key: loadKey,
+                notice: null,
+                error: '공지를 불러오지 못했어요.',
+              },
+        )
       })
     return () => {
       active = false
     }
-  }, [noticeId, profile, loadKey])
+  }, [authLoading, noticeId, profile, loadKey])
 
   function toggleCheck(actionId: string, checked: boolean) {
     if (!accountId) return
@@ -113,6 +122,18 @@ export function NoticeDetailPage() {
     }
   }, [shouldTranslate, noticeId, language, translationKey])
 
+  if (signedOut) {
+    return (
+      <div className="notice-page">
+        <Link className="notice-back" to="/notices">
+          ‹ 뒤로
+        </Link>
+        <p className="notice-hint">
+          로그인하면 공지를 볼 수 있어요. <Link to="/login">로그인하기 ›</Link>
+        </p>
+      </div>
+    )
+  }
   if (loadError) {
     return (
       <div className="notice-page">

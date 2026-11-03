@@ -12,6 +12,10 @@ import com.aix.team03.notices.NoticeController.TranslationResponse;
 import com.aix.team03.notices.NoticeModels.Action;
 import com.aix.team03.notices.NoticeModels.Notice;
 import com.aix.team03.notices.NoticeModels.Source;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeParseException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -25,6 +29,11 @@ public class NoticeService {
     private static final Map<String, String> LANGUAGE_NAMES =
             Map.of("ko", "Korean", "en", "English", "zh", "Simplified Chinese");
     private static final String TRANSLATION_FAILED = "번역하지 못했습니다. 원문을 확인하거나 다시 시도해 주세요.";
+
+    // 해당 → 확인 필요 → 해당 안 됨 순으로, 같은 상태 안에서는 마감 임박순으로 보여준다. 마감이 없으면 뒤로 간다.
+    private static final Comparator<NoticeSummary> LIST_ORDER = Comparator
+            .comparing((NoticeSummary summary) -> summary.matchStatus().ordinal())
+            .thenComparing(summary -> deadline(summary.deadline()), Comparator.nullsLast(Comparator.naturalOrder()));
 
     private final NoticeRepository notices;
     private final NoticeMatcher matcher;
@@ -41,6 +50,7 @@ public class NoticeService {
                 .filter(notice -> source == null || notice.source() == source)
                 .map(notice -> summary(notice, profile))
                 .filter(summary -> match == null || summary.matchStatus().name().equals(match.name()))
+                .sorted(LIST_ORDER)
                 .toList();
     }
 
@@ -95,6 +105,14 @@ public class NoticeService {
 
     private Notice find(String noticeId) {
         return notices.findById(noticeId).orElseThrow(NoticeNotFoundException::new);
+    }
+
+    private static Instant deadline(String value) {
+        try {
+            return value == null ? null : OffsetDateTime.parse(value).toInstant();
+        } catch (DateTimeParseException exception) {
+            return null;
+        }
     }
 
     static class NoticeNotFoundException extends RuntimeException {}

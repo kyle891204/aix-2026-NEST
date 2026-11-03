@@ -31,6 +31,9 @@ export function ChecklistPage({ direction }: { direction: Direction }) {
   const [checklist, setChecklist] = useState(() =>
     loadInitial(accountId, direction),
   )
+  // 공지 할 일 체크와 달리 저장 버튼으로 저장하므로, 저장하지 않은 변경이 있으면 알려준다.
+  const [saved, setSaved] = useState(checklist)
+  const unsaved = JSON.stringify(checklist) !== JSON.stringify(saved)
   const [saveState, setSaveState] = useState<'idle' | 'saved' | 'failed'>(
     'idle',
   )
@@ -53,6 +56,7 @@ export function ChecklistPage({ direction }: { direction: Direction }) {
     if (!accountId) return
     try {
       saveChecklist(window.localStorage, accountId, direction, checklist)
+      setSaved(checklist)
       setSaveState('saved')
     } catch {
       // 저장에 실패해도 입력한 값은 화면에 남겨 다시 시도할 수 있게 한다.
@@ -108,6 +112,11 @@ export function ChecklistPage({ direction }: { direction: Direction }) {
         준비 진행상태 저장
       </button>
 
+      {accountId && unsaved && (
+        <p className="notice-hint" role="status">
+          저장하지 않은 변경이 있어요. 준비 진행상태 저장을 눌러 주세요.
+        </p>
+      )}
       {!accountId && (
         <p className="notice-hint">로그인하면 준비 상태를 저장할 수 있어요.</p>
       )}

@@ -5,6 +5,7 @@ import {
   saveActionChecks,
 } from '../src/features/notices/action-checks.ts'
 import {
+  isSignedOut,
   searchNotices,
   translateNotice,
   viewNotice,
@@ -20,7 +21,7 @@ import {
   loadChecklist,
   saveChecklist,
 } from '../src/features/immigration/checklist-store.ts'
-import { setCsrfToken } from '../src/shared/api/client.ts'
+import { ApiError, setCsrfToken } from '../src/shared/api/client.ts'
 
 const originalFetch = globalThis.fetch
 let calls: { url: string; init: RequestInit }[] = []
@@ -163,4 +164,10 @@ test('저장값이 없으면 비어 있고, 손상되거나 모르는 값은 버
     plannedDate: '',
     completedKeys: ['PASSPORT_VISA'],
   })
+})
+
+test('로그인이 필요한 오류만 로그인 안내로 처리한다', () => {
+  assert.equal(isSignedOut(new ApiError(401, '', 'AUTH_REQUIRED')), true)
+  assert.equal(isSignedOut(new ApiError(403, '', 'AUTH_CSRF_INVALID')), false)
+  assert.equal(isSignedOut(new Error('network')), false)
 })

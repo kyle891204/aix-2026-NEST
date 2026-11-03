@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { toDashboardProfile } from '../../dashboard/profile-codes'
+import { useAuth } from '../../auth/auth-context'
 import { useDemoProfile } from '../../profile/demo-profile-context'
 import {
+  isSignedOut,
   searchNotices,
   type MatchFilter,
   type NoticeSource,
@@ -37,6 +39,8 @@ export function NoticeListPage() {
   const source = selected(params.get('source'), SOURCE_FILTERS)
   const match = selected(params.get('match'), MATCH_FILTERS)
   const { savedProfile } = useDemoProfile()
+  // 세션과 CSRF 토큰을 받기 전에 요청하면 게스트 세션이 둘 생길 수 있어 세션 확인을 기다린다.
+  const { loading: authLoading } = useAuth()
   const profile = JSON.stringify(
     toDashboardProfile(savedProfile?.profile ?? null),
   )
@@ -45,28 +49,35 @@ export function NoticeListPage() {
     key: string
     items: NoticeSummary[] | null
     error: string | null
+    signedOut?: boolean
   } | null>(null)
 
   // 응답의 key가 현재 조건과 다르면 아직 불러오는 중으로 본다.
   const key = `${source}:${match}:${profile}:${attempt}`
-  const current = loaded?.key === key ? loaded : null
+  const current = !authLoading && loaded?.key === key ? loaded : null
   const notices = current?.items ?? null
   const error = current?.error ?? null
+  const signedOut = current?.signedOut ?? false
 
   useEffect(() => {
+    if (authLoading) return
     let active = true
     searchNotices(source, match, JSON.parse(profile))
       .then((items) => {
         if (active) setLoaded({ key, items, error: null })
       })
-      .catch(() => {
-        if (active)
-          setLoaded({ key, items: null, error: '공지를 불러오지 못했어요.' })
+      .catch((cause: unknown) => {
+        if (!active) return
+        setLoaded(
+          isSignedOut(cause)
+            ? { key, items: null, error: null, signedOut: true }
+            : { key, items: null, error: '공지를 불러오지 못했어요.' },
+        )
       })
     return () => {
       active = false
     }
-  }, [source, match, profile, key])
+  }, [authLoading, source, match, profile, key])
 
   function setFilter(name: string, value: string | null) {
     const next = new URLSearchParams(params)
@@ -118,7 +129,12 @@ export function NoticeListPage() {
           </button>
         </div>
       )}
-      {!error && !notices && (
+      {signedOut && (
+        <p className="notice-hint">
+          로그인하면 공지를 볼 수 있어요. <Link to="/login">로그인하기 ›</Link>
+        </p>
+      )}
+      {!error && !signedOut && !notices && (
         <p className="notice-hint" aria-live="polite">
           공지를 불러오고 있어요…
         </p>

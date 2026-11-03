@@ -1,4 +1,4 @@
-import { requestJson } from '../../shared/api/client.ts'
+import { ApiError, requestJson } from '../../shared/api/client.ts'
 import type { Language } from '../../shared/types/language'
 import type { DashboardProfile } from '../dashboard/api.ts'
 
@@ -42,6 +42,11 @@ export interface NoticeTranslation {
   translated: TranslatedNotice | null
   retryable: boolean
   message: string | null
+}
+
+// 로그인하지 않은 미리보기에서는 다시 시도해도 성공하지 않으므로 로그인 안내를 보여준다.
+export function isSignedOut(cause: unknown) {
+  return cause instanceof ApiError && cause.code === 'AUTH_REQUIRED'
 }
 
 function postJson(path: string, body: unknown) {
