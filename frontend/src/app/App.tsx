@@ -23,7 +23,10 @@ import { useAuth } from '../features/auth/auth-context'
 import { LoginPage } from '../features/auth/LoginPage'
 import { LmsTestPage } from '../features/lms-test/LmsTestPage'
 import { CommunityPage } from '../features/community/pages/CommunityPage'
-import { NoticePage } from '../features/notices/pages/NoticePage'
+import { ChecklistPage } from '../features/immigration/pages/ChecklistPage'
+import { EntryExitPage } from '../features/immigration/pages/EntryExitPage'
+import { NoticeListPage } from '../features/notices/pages/NoticeListPage'
+import { NoticeDetailPage } from '../features/notices/pages/NoticeDetailPage'
 import { CourseNoticesPage } from '../features/courses/CourseNoticesPage'
 import { ProfilePage } from '../features/profile/pages/ProfilePage'
 import { DemoProfileProvider } from '../features/profile/DemoProfileProvider'
@@ -88,7 +91,17 @@ export default function App() {
               <Route path=":postId" element={<QuestionDetailPage />} />
               <Route path=":postId/edit" element={<QuestionFormPage />} />
             </Route>
-            <Route path="/notices" element={<NoticePage />} />
+            <Route path="/entry-exit" element={<EntryExitPage />} />
+            <Route
+              path="/entry-exit/entry"
+              element={<ChecklistPage key="entry" direction="entry" />}
+            />
+            <Route
+              path="/entry-exit/exit"
+              element={<ChecklistPage key="exit" direction="exit" />}
+            />
+            <Route path="/notices" element={<NoticeListPage />} />
+            <Route path="/notices/:noticeId" element={<NoticeDetailPage />} />
             <Route path="/course-notices" element={<CourseNoticesPage />} />
             <Route path="/community" element={<CommunityPage />} />
             <Route path="/profile" element={<ProfilePage />} />
@@ -103,13 +116,6 @@ export default function App() {
               }
             />
           </Route>
-          <Route
-            path="/entry-exit"
-            element={
-              <EmptyState title="입출국" description="준비 중인 화면입니다." />
-            }
-          />
-
           <Route
             path="/schedule"
             element={
