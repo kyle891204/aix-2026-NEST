@@ -209,6 +209,24 @@ class CollectedNoticeRepositoryTests {
     }
 
     @Test
+    void failedFirstCollectionIsRetriedAfterAMinute() {
+        when(collector.collectLists()).thenReturn(List.of())
+                .thenReturn(List.of(listed(school("1", "", "공지", null, "본문"))));
+        var clock = new MutableClock();
+        var repository = repository(clock, new ArrayList<>());
+
+        assertThatThrownBy(repository::findAll).isInstanceOf(CollectedNoticeRepository.NoticeSourceUnavailableException.class);
+        // 1분 안에는 학교 사이트에 다시 요청하지 않는다.
+        clock.now = clock.now.plusSeconds(30);
+        assertThatThrownBy(repository::findAll).isInstanceOf(CollectedNoticeRepository.NoticeSourceUnavailableException.class);
+        verify(collector, times(1)).collectLists();
+
+        clock.now = clock.now.plusSeconds(60);
+        assertThat(repository.findAll()).extracting(Notice::noticeId).containsExactly("erica-pharmacy-1");
+        verify(collector, times(2)).collectLists();
+    }
+
+    @Test
     void staleNoticesRefreshInBackgroundWithoutBlocking() {
         var calls = new AtomicInteger();
         when(collector.collectLists()).thenAnswer(call ->

@@ -26,6 +26,7 @@ import org.springframework.stereotype.Repository;
  * 학교 게시판에서 수집한 실제 공지를 서버 메모리에 둔다. DB가 없어 재시작하면 다시 수집한다.
  * 서버가 켜지면 바로 수집을 시작한다. 목록만 먼저 읽어 보여주고, 본문은 백그라운드에서 게시판별로 채운다.
  * 1시간이 지난 목록은 조회를 막지 않고 다시 읽으며, 본문을 이미 읽은 공지는 상세를 다시 읽지 않는다.
+ * 아직 한 번도 목록을 읽지 못했으면 1시간을 기다리지 않고 1분 뒤 조회에서 다시 수집한다.
  * 샘플 공지는 수집을 끈 경우(테스트, 오프라인 개발)에만 쓴다.
  */
 @Primary
@@ -33,6 +34,7 @@ import org.springframework.stereotype.Repository;
 public class CollectedNoticeRepository implements NoticeRepository {
     private static final Logger log = LoggerFactory.getLogger(CollectedNoticeRepository.class);
     private static final Duration REFRESH_AFTER = Duration.ofHours(1);
+    private static final Duration RETRY_AFTER = Duration.ofMinutes(1);
 
     private final SampleNoticeRepository samples;
     private final SchoolNoticeCollector collector;
@@ -85,10 +87,10 @@ public class CollectedNoticeRepository implements NoticeRepository {
     }
 
     private List<Notice> ensureCollected() {
-        if (collectedAt == null) {
+        if (needsFirstList()) {
             // 첫 수집은 동시에 들어온 요청이 한 번만 하도록 잠그고, 나머지는 목록이 나올 때까지 기다린다.
             synchronized (this) {
-                if (collectedAt == null) refresh();
+                if (needsFirstList()) refresh();
             }
         } else if (collectedAt.plus(REFRESH_AFTER).isBefore(clock.instant())
                 && refreshing.compareAndSet(false, true)) {
@@ -101,6 +103,12 @@ public class CollectedNoticeRepository implements NoticeRepository {
             });
         }
         return collected;
+    }
+
+    // 수집한 적이 없거나, 수집했지만 학교 사이트를 하나도 못 읽은 지 1분이 지났다.
+    private boolean needsFirstList() {
+        return collectedAt == null
+                || (collected.isEmpty() && collectedAt.plus(RETRY_AFTER).isBefore(clock.instant()));
     }
 
     synchronized void refresh() {
