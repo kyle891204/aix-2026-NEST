@@ -193,6 +193,21 @@ class NoticeControllerTests {
     }
 
     @Test
+    void otherCollegeNoticeIsNotTranslated() throws Exception {
+        translationsSucceed();
+
+        translate("coll-001", "{\"targetLanguage\":\"en\",\"collegeId\":\"pharmacy\"}")
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("NOTICE_NOT_FOUND"));
+        translate("coll-001", "{\"targetLanguage\":\"en\"}")
+                .andExpect(status().isNotFound());
+        verifyNoInteractions(translations);
+        translate("coll-001", "{\"targetLanguage\":\"en\",\"collegeId\":\"computing\"}")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.translationStatus").value("SUCCEEDED"));
+    }
+
+    @Test
     void returnsNoticeDetail() throws Exception {
         send(PATH + "/univ-001/view", UNDERGRADUATE)
                 .andExpect(status().isOk())
@@ -256,7 +271,7 @@ class NoticeControllerTests {
     void missingTargetIsNotSentToGemini() throws Exception {
         translationsSucceed();
 
-        translate("coll-002", "{\"targetLanguage\":\"en\"}")
+        translate("coll-002", "{\"targetLanguage\":\"en\",\"collegeId\":\"computing\"}")
                 .andExpect(jsonPath("$.translationStatus").value("SUCCEEDED"))
                 .andExpect(jsonPath("$.translated.target", nullValue()));
         verify(translations, never()).translate(eq(null), any(), any());

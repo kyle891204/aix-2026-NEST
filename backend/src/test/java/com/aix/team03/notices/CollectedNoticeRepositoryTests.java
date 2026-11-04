@@ -266,6 +266,27 @@ class CollectedNoticeRepositoryTests {
     }
 
     @Test
+    void boardMissingFromRefreshKeepsItsPreviousNotices() {
+        var global = new SchoolNotice("erica-global", BoardKind.INTERNATIONAL, "ERICA 국제처", null, "9", "", "비자 안내",
+                null, "https://global.hanyang.ac.kr/bbs/board.php?wr_id=9", null, List.of());
+        // 두 번째 수집에서는 약학대학 게시판만 못 읽었다.
+        when(collector.collectLists()).thenReturn(List.of(listed(school("1", "", "공지", null, "본문")), global))
+                .thenReturn(List.of(global));
+        var clock = new MutableClock();
+        var background = new ArrayList<Runnable>();
+        var repository = repository(clock, background);
+
+        repository.findAll();
+        background.clear();
+        clock.now = clock.now.plusSeconds(2 * 60 * 60);
+        repository.findAll();
+        background.getFirst().run();
+
+        assertThat(repository.findAll()).extracting(Notice::noticeId)
+                .containsExactlyInAnyOrder("erica-global-9", "erica-pharmacy-1");
+    }
+
+    @Test
     void disabledCollectionUsesSamplesWithoutTouchingSchoolSites() {
         var repository = new CollectedNoticeRepository(samples, collector, false, Runnable::run, Clock.systemUTC());
 

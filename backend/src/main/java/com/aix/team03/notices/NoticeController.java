@@ -52,11 +52,15 @@ public class NoticeController {
 
     @PostMapping(value = "/{noticeId}/translations", consumes = MediaType.APPLICATION_JSON_VALUE)
     public TranslationResponse translate(@PathVariable String noticeId, @Valid @RequestBody TranslationRequest body) {
-        return notices.translate(noticeId, body.targetLanguage());
+        return notices.translate(noticeId, body.targetLanguage(), collegeId(body.collegeId()));
     }
 
     private static String collegeId(ProfileRequest body) {
-        return body == null || body.collegeId() == null || body.collegeId().isBlank() ? null : body.collegeId();
+        return body == null ? null : collegeId(body.collegeId());
+    }
+
+    private static String collegeId(String value) {
+        return value == null || value.isBlank() ? null : value;
     }
 
     private static StudentProfile profile(ProfileRequest body) {
@@ -95,7 +99,9 @@ public class NoticeController {
     public record ProfileRequest(String nationality, String visaType, String degree, String year,
             String collegeId) {}
 
-    public record TranslationRequest(@NotBlank @Pattern(regexp = "ko|en|zh") String targetLanguage) {}
+    // collegeId는 상세 조회와 같이 다른 단과대 공지를 번역하지 않도록 받는다.
+    public record TranslationRequest(@NotBlank @Pattern(regexp = "ko|en|zh") String targetLanguage,
+            String collegeId) {}
 
     public record NoticeListResponse(List<NoticeSummary> items, boolean truncated) {}
 

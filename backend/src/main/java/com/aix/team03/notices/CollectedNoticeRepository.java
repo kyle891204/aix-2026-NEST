@@ -13,6 +13,8 @@ import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +28,7 @@ import org.springframework.stereotype.Repository;
  * 학교 게시판에서 수집한 실제 공지를 서버 메모리에 둔다. DB가 없어 재시작하면 다시 수집한다.
  * 서버가 켜지면 바로 수집을 시작한다. 목록만 먼저 읽어 보여주고, 본문은 백그라운드에서 게시판별로 채운다.
  * 1시간이 지난 목록은 조회를 막지 않고 다시 읽으며, 본문을 이미 읽은 공지는 상세를 다시 읽지 않는다.
- * 아직 한 번도 목록을 읽지 못했으면 1시간을 기다리지 않고 1분 뒤 조회에서 다시 수집한다.
+ * 다시 수집할 때 못 읽은 게시판은 이전 공지를 유지한다. 아직 한 번도 목록을 읽지 못했으면 1시간을 기다리지 않고 1분 뒤 조회에서 다시 수집한다.
  * 샘플 공지는 수집을 끈 경우(테스트, 오프라인 개발)에만 쓴다.
  */
 @Primary
@@ -121,7 +123,10 @@ public class CollectedNoticeRepository implements NoticeRepository {
             }
             var known = new HashMap<String, SchoolNotice>();
             for (var notice : school) if (hasDetail(notice)) known.put(key(notice), notice);
-            publish(listed.stream().map(notice -> known.getOrDefault(key(notice), notice)).toList());
+            // 이번에 목록을 못 읽은 게시판은 다음 수집까지 이전에 읽은 공지를 그대로 보여준다.
+            var readBoards = listed.stream().map(SchoolNotice::boardKey).collect(Collectors.toSet());
+            publish(Stream.concat(listed.stream().map(notice -> known.getOrDefault(key(notice), notice)),
+                    school.stream().filter(notice -> !readBoards.contains(notice.boardKey()))).toList());
             log.info("Listed {} school notices", listed.size());
             var pending = school.stream().filter(notice -> !hasDetail(notice)).toList();
             if (!pending.isEmpty()) executor.execute(() -> collector.collectDetails(pending, this::merge));

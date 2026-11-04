@@ -98,12 +98,14 @@ export async function viewNotice(noticeId: string, profile: NoticeProfile) {
   )) as NoticeDetail
 }
 
+// 상세 조회와 같이 단과대를 보내 다른 단과대 공지는 번역하지 않게 한다.
 export async function translateNotice(
   noticeId: string,
   targetLanguage: Language,
+  collegeId: string | null,
 ) {
   return (await postJson(
     `/notices/${encodeURIComponent(noticeId)}/translations`,
-    { targetLanguage },
+    { targetLanguage, collegeId },
   )) as NoticeTranslation
 }

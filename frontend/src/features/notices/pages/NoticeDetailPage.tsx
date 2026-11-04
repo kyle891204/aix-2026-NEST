@@ -111,7 +111,7 @@ export function NoticeDetailPage() {
   useEffect(() => {
     if (!shouldTranslate) return
     let active = true
-    translateNotice(noticeId, language)
+    translateNotice(noticeId, language, JSON.parse(profile).collegeId)
       .catch((): NoticeTranslation => ({
         translationStatus: 'FAILED',
         translated: null,
@@ -124,7 +124,7 @@ export function NoticeDetailPage() {
     return () => {
       active = false
     }
-  }, [shouldTranslate, noticeId, language, translationKey])
+  }, [shouldTranslate, noticeId, language, profile, translationKey])
 
   if (signedOut) {
     return (

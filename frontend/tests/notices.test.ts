@@ -108,15 +108,18 @@ test('공지 상세 요청은 프로필을 URL에 넣지 않는다', async () =>
   assert.equal(JSON.parse(String(calls[0].init.body)).nationality, 'VN')
 })
 
-test('번역 요청에 목표 언어와 CSRF 토큰을 보낸다', async () => {
+test('번역 요청에 목표 언어·단과대와 CSRF 토큰을 보낸다', async () => {
   setCsrfToken('csrf-fixture')
   mockFetch({ translationStatus: 'SUCCEEDED', translated: null })
 
-  await translateNotice('univ-001', 'en')
+  await translateNotice('coll-001', 'en', 'computing')
 
-  assert.equal(calls[0].url, '/api/v1/notices/univ-001/translations')
+  assert.equal(calls[0].url, '/api/v1/notices/coll-001/translations')
   assert.equal(calls[0].init.method, 'POST')
-  assert.equal(calls[0].init.body, '{"targetLanguage":"en"}')
+  assert.equal(
+    calls[0].init.body,
+    '{"targetLanguage":"en","collegeId":"computing"}',
+  )
   assert.equal(
     new Headers(calls[0].init.headers).get('X-CSRF-Token'),
     'csrf-fixture',
