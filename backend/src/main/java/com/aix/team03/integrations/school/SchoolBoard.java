@@ -1,8 +1,10 @@
 package com.aix.team03.integrations.school;
 
+import com.aix.team03.integrations.school.SchoolNoticeCollector.HtmlFetcher;
 import com.aix.team03.integrations.school.SchoolNoticeModels.BoardKind;
 import com.aix.team03.integrations.school.SchoolNoticeModels.Detail;
 import com.aix.team03.integrations.school.SchoolNoticeModels.ListEntry;
+import java.io.IOException;
 import java.util.List;
 import org.jsoup.nodes.Document;
 
@@ -21,6 +23,11 @@ public interface SchoolBoard {
     String listUrl();
 
     List<ListEntry> parseList(Document list);
+
+    /** 보통은 글 주소를 연다. 상세가 폼 전송으로만 열리는 게시판은 목록 페이지의 폼 값을 써서 바꾼다. */
+    default Document fetchDetail(Document list, ListEntry entry, HtmlFetcher fetcher) throws IOException {
+        return fetcher.fetch(entry.url());
+    }
 
     Detail parseDetail(Document detail);
 }

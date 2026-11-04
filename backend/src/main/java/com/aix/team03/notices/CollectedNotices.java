@@ -7,6 +7,7 @@ import com.aix.team03.notices.NoticeModels.Attachment;
 import com.aix.team03.notices.NoticeModels.Category;
 import com.aix.team03.notices.NoticeModels.Notice;
 import com.aix.team03.notices.NoticeModels.Source;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -32,8 +33,8 @@ final class CollectedNotices {
 
     static Notice toNotice(SchoolNotice school) {
         var label = school.label() == null ? "" : school.label().strip();
-        var degrees = DEGREE_LABELS.get(label);
-        var conditions = degrees == null ? null : new TargetConditions(null, null, degrees, null);
+        var degrees = degrees(label);
+        var conditions = degrees.isEmpty() ? null : new TargetConditions(null, null, degrees, null);
         var content = school.content() == null || school.content().isBlank() ? MISSING_CONTENT : school.content();
         return new Notice(school.boardKey() + "-" + school.id(), Source.valueOf(school.kind().name()),
                 school.boardName(), school.collegeId(), category(label, school.title()), title(label, school.title()),
@@ -42,6 +43,13 @@ final class CollectedNotices {
                 null, null, conditions, List.of(), List.of(),
                 school.attachments().stream().map(file -> new Attachment(file.name(), file.url())).toList(),
                 content, "ko", school.url(), false);
+    }
+
+    /** 분류가 "ERICA 학부", "학부/대학원"처럼 여러 낱말일 수 있어 낱말마다 확인한다. */
+    static List<String> degrees(String label) {
+        return Arrays.stream(label.split("[\\s/·,]+"))
+                .flatMap(word -> DEGREE_LABELS.getOrDefault(word, List.of()).stream())
+                .distinct().toList();
     }
 
     /** 사이트에서 보이는 것처럼 분류를 제목 앞에 둔다. */

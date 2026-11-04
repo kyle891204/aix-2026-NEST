@@ -93,6 +93,182 @@ class SchoolBoardParserTests {
     }
 
     @Test
+    void readsLiferayListAndDetail() {
+        var board = new HaksaBoard();
+        var list = Jsoup.parse("""
+                <div class="hyu-list-body-item showThumbnail">
+                <div class="hyu-list-body-thumbnail"><a href="#none" onclick="_kr_ac_hanyang_bbs_web_portlet_BbsPortlet_viewMessage(228613, true, false)"><img src="/a.png"></a></div>
+                <h4><span class="hyu-badge">주요공지</span> <a href="#none" onclick="_kr_ac_hanyang_bbs_web_portlet_BbsPortlet_viewMessage(228613, true, false)"> [ERICA 학부] 겨울계절학기 수요조사 안내 </a></h4>
+                <p><span class="date">&nbsp;/&nbsp;</span> <span class="date">2026. 9. 22</span></p></div>""", board.listUrl());
+        var detail = Jsoup.parse("""
+                <div class="hyu-meta-item"><span>등록일</span> <span>2026. 9. 22 </span></div>
+                <div class="hyu-meta-item"><span>공지일</span> <span>2026. 9. 22 ~ 2027. 2. 20</span></div>
+                <div class="hyu-meta-item file-download"><a href="https://ehaksa.hanyang.ac.kr/documents/portlet_file_entry/1/a.pdf?download=true"> 안내문.pdf </a></div>
+                <div class="hyu-list-body-item entry-content"><div class="item-content"> 수요조사에 참여해 주세요.<br> 기간을 확인하세요. </div></div>""",
+                board.listUrl());
+
+        assertThat(board.parseList(list)).singleElement().satisfies(entry -> {
+            assertThat(entry.id()).isEqualTo("228613");
+            assertThat(entry.label()).isEqualTo("ERICA 학부");
+            assertThat(entry.title()).isEqualTo("겨울계절학기 수요조사 안내");
+            assertThat(entry.postedAt()).isEqualTo(LocalDate.of(2026, 9, 22));
+            assertThat(entry.url()).startsWith("https://ehaksa.hanyang.ac.kr/notice?p_p_id=")
+                    .endsWith("_messageId=228613");
+        });
+        var read = board.parseDetail(detail);
+        assertThat(read.postedAt()).isEqualTo(LocalDate.of(2026, 9, 22));
+        assertThat(read.content()).isEqualTo("수요조사에 참여해 주세요.\n기간을 확인하세요.");
+        assertThat(read.attachments()).extracting(Attachment::name).containsExactly("안내문.pdf");
+        assertThat(board.collegeId()).isNull();
+    }
+
+    @Test
+    void readsAdvancedConvergenceTokenIds() {
+        var board = new AdvancedConvergenceBoard();
+        var list = Jsoup.parse("""
+                <ul class="board-default-list"><li class="board-default-item">
+                <a href="/front/community/undergraduate/read?id=AaF_tVQwfo2rgY7lsZPFUw&amp;sd=12">
+                <div class="board-default-item-date" data-time-2="2026-10-28T10:00"><p></p></div>
+                <div class="board-default-item-title"><p><span class="label label-primary">공지</span> [사회봉사단] 수강신청 일정 안내 </p></div>
+                </a></li></ul>""", board.listUrl());
+
+        assertThat(board.parseList(list)).singleElement().satisfies(entry -> {
+            assertThat(entry.id()).isEqualTo("AaF_tVQwfo2rgY7lsZPFUw");
+            assertThat(entry.label()).isEqualTo("사회봉사단");
+            assertThat(entry.title()).isEqualTo("수강신청 일정 안내");
+            assertThat(entry.postedAt()).isEqualTo(LocalDate.of(2026, 10, 28));
+        });
+        var detail = Jsoup.parse("""
+                <div class="board-default-read-date" data-time-2="2026-10-28T10:00"></div>
+                <div class="board-default-read-content"><div class="content-field"><p>수강신청을 하세요.</p></div></div>
+                <div class="cms-af-md-af-list"><ul><li><div><p class="cms-af-md-af-list-item-name"> 안내문.jpg </p></div>
+                <div class="btn-wrapper"><a href="/b/file/down/AaF_t/a.jpg" target="_blank"></a></div></li></ul></div>""",
+                board.listUrl());
+        var read = board.parseDetail(detail);
+        assertThat(read.postedAt()).isEqualTo(LocalDate.of(2026, 10, 28));
+        assertThat(read.content()).isEqualTo("수강신청을 하세요.");
+        assertThat(read.attachments()).containsExactly(
+                new Attachment("안내문.jpg", "https://atc.hanyang.ac.kr/b/file/down/AaF_t/a.jpg"));
+    }
+
+    @Test
+    void readsTableBoardDateFromDetailNotTitle() {
+        var board = new CommunicationCultureBoard();
+        var list = Jsoup.parse("""
+                <table><tr><td></td><td>대학원</td>
+                <td class="left"><a href="/bbs/board.php?tbl=bbs61&amp;mode=VIEW&amp;num=2270&amp;page=1"> 결과보고서 제출 안내 ~ 12.10(목) </a>
+                <div class="pc_none"><span>26.11.02</span></div></td><td class="mob_none">26.11.02</td></tr></table>""",
+                board.listUrl());
+        var detail = Jsoup.parse("""
+                <table class="bbs_view"><tr><th><div class="left">
+                <p class="title">[대학원] 2026.12.10까지 제출 안내</p><p class="con">관리자 │ 2026-11-02 </p>
+                <p class="con"><a href='/bbs/download.php?tbl=bbs61&no=2404'>붙임1.pdf</a></p></div></th></tr>
+                <tr><td><div id="DivContents"><p>보고서를 내 주세요.</p></div></td></tr></table>""", board.listUrl());
+
+        assertThat(board.parseList(list)).singleElement().satisfies(entry -> {
+            assertThat(entry.id()).isEqualTo("2270");
+            assertThat(entry.label()).isEqualTo("대학원");
+            assertThat(entry.title()).isEqualTo("결과보고서 제출 안내 ~ 12.10(목)");
+            assertThat(entry.postedAt()).isNull();
+        });
+        var read = board.parseDetail(detail);
+        assertThat(read.postedAt()).isEqualTo(LocalDate.of(2026, 11, 2));
+        assertThat(read.content()).isEqualTo("보고서를 내 주세요.");
+        assertThat(read.attachments()).containsExactly(
+                new Attachment("붙임1.pdf", "https://ccss.hanyang.ac.kr/bbs/download.php?tbl=bbs61&no=2404"));
+    }
+
+    @Test
+    void readsDesignAttachmentNameBesideDownloadLink() {
+        var board = new DesignBoard();
+        var list = Jsoup.parse("""
+                <div class="bl-list" role="row"><div class="bl-item bl-num">254</div>
+                <div class="bl-subj"><a href="http://idesign.hanyang.ac.kr/bbs/board.php?bo_table=notice&amp;wr_id=1526">
+                <span class="text-gray m-r-5">[수업]</span> <span class="subj">겨울계절학기 운영 안내</span></a></div>
+                <div class="bl-item text-gray"> 2026-10-29 </div></div>""", board.listUrl());
+        var detail = Jsoup.parse("""
+                <div class="board-view-info"><div class="info-box-bottom"><span>2026-10-29 09:37</span></div></div>
+                <div class="board-view-file"><ul><li> - 첨부파일 : <strong>개설과목.xlsx</strong> (30.9K) -
+                <a href="http://idesign.hanyang.ac.kr/bbs/download.php?bo_table=notice&amp;wr_id=1526&amp;no=0" class="view_file_download"><u>다운로드</u></a></li></ul></div>
+                <div id="board_view_con"><p>운영 일정입니다.</p></div>""", board.listUrl());
+
+        assertThat(board.parseList(list)).singleElement().satisfies(entry -> {
+            assertThat(entry.id()).isEqualTo("1526");
+            assertThat(entry.label()).isEqualTo("수업");
+            assertThat(entry.title()).isEqualTo("겨울계절학기 운영 안내");
+            assertThat(entry.postedAt()).isEqualTo(LocalDate.of(2026, 10, 29));
+        });
+        var read = board.parseDetail(detail);
+        assertThat(read.postedAt()).isEqualTo(LocalDate.of(2026, 10, 29));
+        assertThat(read.attachments()).extracting(Attachment::name).containsExactly("개설과목.xlsx");
+    }
+
+    @Test
+    void readsSportsArtsListWithoutPinnedBadge() {
+        var board = new SportsArtsBoard();
+        var list = Jsoup.parse("""
+                <ul><li><a href="board.php?bo_table=notice&amp;idx=589"><div class="date"><div class="md">10.26</div>
+                <div class="year">2026</div></div><div class="txts"><div class="sbj"><span class="cate main">주요</span>
+                [학부](재입학) 재입학 신청 안내</div></div></a></li></ul>""", board.listUrl());
+        var detail = Jsoup.parse("""
+                <div class="view"><table><tr><th><div class="sbj">재입학</div><div class="date">2026.10.26</div></th></tr>
+                <tr><th class="file"><dl><dd><a href="/board/download.php?bo_table=notice&amp;file_name=a.jpg">안내문.jpg</a></dd></dl></th></tr>
+                <tr><td class="viewcon"><p>신청해 주세요.</p></td></tr></table></div>""", board.listUrl());
+
+        assertThat(board.parseList(list)).singleElement().satisfies(entry -> {
+            assertThat(entry.id()).isEqualTo("589");
+            assertThat(entry.label()).isEqualTo("학부");
+            assertThat(entry.title()).isEqualTo("(재입학) 재입학 신청 안내");
+            assertThat(entry.postedAt()).isEqualTo(LocalDate.of(2026, 10, 26));
+            assertThat(entry.url()).isEqualTo("http://sportsnarts.hanyang.ac.kr/art/board/board.php?bo_table=notice&idx=589");
+        });
+        var read = board.parseDetail(detail);
+        assertThat(read.content()).isEqualTo("신청해 주세요.");
+        assertThat(read.attachments()).extracting(Attachment::name).containsExactly("안내문.jpg");
+    }
+
+    @Test
+    void opensLionsDetailWithListFormToken() {
+        var board = new LionsBoard();
+        var listHtml = """
+                <form method="post" action="./sub5-1.aspx" id="form1">
+                <input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="state" />
+                <input type="hidden" id="nnumlions" name="nnumlions" value="" />
+                <table><tr><td data-label="제목"><a onclick="moveView('2C20AB')">[학적] 재입학 신청 안내</a></td>
+                <td data-label="등록일">2026.10.26</td></tr></table></form>""";
+        var posted = new java.util.ArrayList<Map<String, String>>();
+        var collector = new SchoolNoticeCollector(List.of(board), new SchoolNoticeCollector.HtmlFetcher() {
+            @Override
+            public org.jsoup.nodes.Document fetch(String url) {
+                return Jsoup.parse(listHtml, url);
+            }
+
+            @Override
+            public org.jsoup.nodes.Document post(String url, Map<String, String> form) {
+                posted.add(form);
+                return Jsoup.parse("""
+                        <span id="wDate">2026.10.26</span><span id="content"><p>재입학을 신청하세요.</p></span>
+                        <span id="Downloader_fileList"><a href="/App/System/Common/DownLoadAction.aspx?fN=AB">안내문.pdf</a></span>""", url);
+            }
+        }, 0);
+
+        var notices = collector.collect();
+
+        assertThat(posted).singleElement().satisfies(form -> {
+            assertThat(form).containsEntry("nnumlions", "2C20AB").containsEntry("__VIEWSTATE", "state");
+        });
+        assertThat(notices).singleElement().satisfies(notice -> {
+            // 토큰은 목록을 열 때마다 바뀌어 ID는 등록일과 제목으로 만든다.
+            assertThat(notice.id()).isEqualTo(String.format("20261026-%08x", "[학적] 재입학 신청 안내".hashCode()));
+            assertThat(notice.label()).isEqualTo("학적");
+            assertThat(notice.collegeId()).isEqualTo("lions");
+            assertThat(notice.content()).isEqualTo("재입학을 신청하세요.");
+            assertThat(notice.attachments()).extracting(Attachment::name).containsExactly("안내문.pdf");
+            assertThat(notice.url()).isEqualTo(board.listUrl());
+        });
+    }
+
+    @Test
     void dropsLinksThatAreNotWebAddresses() {
         var detail = Jsoup.parse("""
                 <section id="bo_v_info">2026-10-23</section><div id="bo_v_con">본문</div>

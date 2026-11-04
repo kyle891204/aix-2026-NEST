@@ -97,6 +97,14 @@ class CollectedNoticeRepositoryTests {
     }
 
     @Test
+    void readsDegreeFromEachWordOfLabel() {
+        assertThat(CollectedNotices.degrees("ERICA 학부")).containsExactly("BACHELOR");
+        assertThat(CollectedNotices.degrees("학부/대학원")).containsExactly("BACHELOR", "MASTER", "DOCTORAL");
+        assertThat(CollectedNotices.degrees("ERICA")).isEmpty();
+        assertThat(CollectedNotices.degrees("")).isEmpty();
+    }
+
+    @Test
     void classifiesByBoardLabelThenTitle() {
         assertThat(CollectedNotices.category("장학", "신청 안내")).isEqualTo(Category.SCHOLARSHIP);
         assertThat(CollectedNotices.category("", "외국인 유학생 체류기간 연장 안내")).isEqualTo(Category.VISA);

@@ -11,7 +11,11 @@ import org.jsoup.select.Elements;
 /** 게시판 HTML에서 본문 글, 날짜, 링크를 꺼내는 공통 처리. */
 final class BoardHtml {
     private static final Pattern DATE = Pattern.compile("(20\\d{2})[.\\-/]\\s?(\\d{1,2})[.\\-/]\\s?(\\d{1,2})");
-    private static final Pattern ID = Pattern.compile("[?&](?:wr_id|idx|id)=(\\d+)");
+    private static final Pattern ID = Pattern.compile("[?&](?:wr_id|idx|id|num)=(\\d+)");
+    private static final Pattern LABEL = Pattern.compile("^\\[([^\\]]{1,20})\\]\\s*(.*)$", Pattern.DOTALL);
+
+    /** 제목 앞의 [학부] 같은 분류와 나머지 제목. 분류가 없으면 분류는 빈 문자열이다. */
+    record LabeledTitle(String label, String title) {}
 
     private BoardHtml() {}
 
@@ -36,6 +40,13 @@ final class BoardHtml {
         } catch (RuntimeException exception) {
             return null;
         }
+    }
+
+    static LabeledTitle labeled(String title) {
+        var text = title == null ? "" : title.strip();
+        var matcher = LABEL.matcher(text);
+        return matcher.matches() ? new LabeledTitle(matcher.group(1).strip(), matcher.group(2).strip())
+                : new LabeledTitle("", text);
     }
 
     static String id(String url) {
