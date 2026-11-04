@@ -3,11 +3,12 @@ package com.aix.team03.integrations.school;
 import com.aix.team03.integrations.school.SchoolNoticeModels.BoardKind;
 import com.aix.team03.integrations.school.SchoolNoticeModels.Detail;
 import com.aix.team03.integrations.school.SchoolNoticeModels.ListEntry;
+import java.time.LocalDate;
 import java.util.List;
 import org.jsoup.nodes.Document;
 import org.springframework.stereotype.Component;
 
-/** ERICA 국제처 공지. 목록에는 연도 없는 날짜만 있어 게시일은 상세에서 읽는다. 분류는 제목 앞 열에 있다. */
+/** ERICA 국제처 공지. 목록에는 연도 없는 날짜만 있어 연도를 오늘 기준으로 채우고, 상세를 읽으면 상세의 게시일로 바꾼다. 분류는 제목 앞 열에 있다. */
 @Component
 public class GlobalOfficeBoard implements SchoolBoard {
     @Override public String key() { return "erica-global"; }
@@ -21,8 +22,10 @@ public class GlobalOfficeBoard implements SchoolBoard {
                 .map(link -> {
                     var cell = link.closest("td");
                     var label = cell == null || cell.previousElementSibling() == null ? "" : cell.previousElementSibling().text();
+                    var row = link.closest("tr");
+                    var date = row == null || row.children().isEmpty() ? "" : row.children().last().text();
                     return new ListEntry(BoardHtml.id(link.attr("href")), BoardHtml.webUrl(link), label.strip(),
-                            link.text().strip(), null);
+                            link.text().strip(), BoardHtml.monthDay(date, LocalDate.now(BoardHtml.KOREA)));
                 })
                 .filter(entry -> entry.id() != null && entry.url() != null)
                 .toList();

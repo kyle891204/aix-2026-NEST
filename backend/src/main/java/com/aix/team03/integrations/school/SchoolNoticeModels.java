@@ -18,8 +18,11 @@ public final class SchoolNoticeModels {
     /**
      * 게시판에서 읽은 공지 원본. id는 게시판 안에서 고정된 글 번호다. postedAt은 끝내 읽지 못하면 null이다.
      * collegeId는 단과대 공지면 그 단과대 ID, ERICA 전체 공지면 null이다.
+     * content는 목록만 읽고 상세를 아직 읽지 않았으면 null이고, 상세가 이미지뿐이거나 읽지 못했으면 빈 문자열이다.
      */
     public record SchoolNotice(String boardKey, BoardKind kind, String boardName, String collegeId, String id,
             String label,
-            String title, LocalDate postedAt, String url, String content, List<Attachment> attachments) {}
+            String title, LocalDate postedAt, String url, String content, List<Attachment> attachments) {
+        public boolean detailRead() { return content != null; }
+    }
 }

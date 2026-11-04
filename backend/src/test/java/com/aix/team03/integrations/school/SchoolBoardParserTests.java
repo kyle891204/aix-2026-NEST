@@ -1,6 +1,7 @@
 package com.aix.team03.integrations.school;
 
 import com.aix.team03.integrations.school.SchoolNoticeModels.Attachment;
+import com.aix.team03.integrations.school.SchoolNoticeModels.SchoolNotice;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +32,7 @@ class SchoolBoardParserTests {
             assertThat(entry.id()).isEqualTo("262");
             assertThat(entry.label()).isEqualTo("기숙사");
             assertThat(entry.title()).isEqualTo("창의인재원 입사 모집 안내");
-            assertThat(entry.postedAt()).isNull();
+            assertThat(entry.postedAt()).isEqualTo(BoardHtml.monthDay("10-23", LocalDate.now(BoardHtml.KOREA)));
         });
         var read = board.parseDetail(detail);
         assertThat(read.postedAt()).isEqualTo(LocalDate.of(2026, 10, 23));
@@ -252,7 +253,7 @@ class SchoolBoardParserTests {
             }
         }, 0);
 
-        var notices = collector.collect();
+        var notices = collectAll(collector);
 
         assertThat(posted).singleElement().satisfies(form -> {
             assertThat(form).containsEntry("nnumlions", "2C20AB").containsEntry("__VIEWSTATE", "state");
@@ -266,6 +267,16 @@ class SchoolBoardParserTests {
             assertThat(notice.attachments()).extracting(Attachment::name).containsExactly("안내문.pdf");
             assertThat(notice.url()).isEqualTo(board.listUrl());
         });
+    }
+
+    @Test
+    void fillsYearOfListDateFromToday() {
+        var today = LocalDate.of(2026, 11, 4);
+
+        assertThat(BoardHtml.monthDay("10-23", today)).isEqualTo(LocalDate.of(2026, 10, 23));
+        assertThat(BoardHtml.monthDay("12-30", today)).isEqualTo(LocalDate.of(2025, 12, 30));
+        assertThat(BoardHtml.monthDay("14:05", today)).isEqualTo(today);
+        assertThat(BoardHtml.monthDay("관리자", today)).isNull();
     }
 
     @Test
@@ -295,17 +306,49 @@ class SchoolBoardParserTests {
                         <span class="subject">일반 공지</span><span class="datetime">2026-10-01</span></a></li></ul>""",
                 "https://pharmacy.hanyang.ac.kr/front/information/notice/notice-view?id=1",
                 "<div class=\"board-default-view\"><div class=\"content\">본문</div></div>");
+        var requested = new java.util.ArrayList<String>();
         var collector = new SchoolNoticeCollector(List.of(global, pharmacy), url -> {
+            requested.add(url);
             if (!pages.containsKey(url)) throw new java.io.IOException("unreachable " + url);
             return Jsoup.parse(pages.get(url), url);
         }, 0);
 
-        assertThat(collector.collect()).singleElement().satisfies(notice -> {
+        var listed = collector.collectLists();
+
+        // 목록만 읽은 단계에서는 상세를 요청하지 않고 본문도 비워 둔다.
+        assertThat(requested).containsExactlyInAnyOrder(global.listUrl(), pharmacy.listUrl());
+        assertThat(listed).singleElement().satisfies(notice -> {
+            assertThat(notice.detailRead()).isFalse();
+            assertThat(notice.postedAt()).isEqualTo(LocalDate.of(2026, 10, 1));
+        });
+        assertThat(collectAll(collector)).singleElement().satisfies(notice -> {
             assertThat(notice.boardKey()).isEqualTo("erica-pharmacy");
             assertThat(notice.collegeId()).isEqualTo("pharmacy");
             assertThat(notice.id()).isEqualTo("1");
             assertThat(notice.postedAt()).isEqualTo(LocalDate.of(2026, 10, 1));
             assertThat(notice.content()).isEqualTo("본문");
         });
+    }
+
+    @Test
+    void failedDetailBecomesEmptyBodyInsteadOfLoading() {
+        var pharmacy = new PharmacyBoard();
+        var collector = new SchoolNoticeCollector(List.of(pharmacy), url -> {
+            if (!url.equals(pharmacy.listUrl())) throw new java.io.IOException("unreachable " + url);
+            return Jsoup.parse("""
+                    <ul class="board-default-list"><li><a href="/front/information/notice/notice-view?id=1">
+                    <span class="subject">일반 공지</span></a></li></ul>""", url);
+        }, 0);
+
+        assertThat(collectAll(collector)).singleElement().satisfies(notice -> {
+            assertThat(notice.detailRead()).isTrue();
+            assertThat(notice.content()).isEmpty();
+        });
+    }
+
+    private static List<SchoolNotice> collectAll(SchoolNoticeCollector collector) {
+        var read = new java.util.ArrayList<SchoolNotice>();
+        collector.collectDetails(collector.collectLists(), read::addAll);
+        return read;
     }
 }

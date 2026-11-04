@@ -2,6 +2,7 @@ package com.aix.team03.integrations.school;
 
 import com.aix.team03.integrations.school.SchoolNoticeModels.Attachment;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.regex.Pattern;
 import org.jsoup.nodes.Element;
@@ -11,7 +12,10 @@ import org.jsoup.select.Elements;
 /** 게시판 HTML에서 본문 글, 날짜, 링크를 꺼내는 공통 처리. */
 final class BoardHtml {
     private static final Pattern DATE = Pattern.compile("(20\\d{2})[.\\-/]\\s?(\\d{1,2})[.\\-/]\\s?(\\d{1,2})");
-    private static final Pattern ID = Pattern.compile("[?&](?:wr_id|idx|id|num)=(\\d+)");
+    private static final Pattern MONTH_DAY = Pattern.compile("(\\d{1,2})-(\\d{1,2})");
+    private static final Pattern TIME = Pattern.compile("\\d{1,2}:\\d{2}");
+    static final ZoneId KOREA = ZoneId.of("Asia/Seoul");
+    private static final Pattern ID =Pattern.compile("[?&](?:wr_id|idx|id|num)=(\\d+)");
     private static final Pattern LABEL = Pattern.compile("^\\[([^\\]]{1,20})\\]\\s*(.*)$", Pattern.DOTALL);
 
     /** 제목 앞의 [학부] 같은 분류와 나머지 제목. 분류가 없으면 분류는 빈 문자열이다. */
@@ -47,6 +51,23 @@ final class BoardHtml {
         var matcher = LABEL.matcher(text);
         return matcher.matches() ? new LabeledTitle(matcher.group(1).strip(), matcher.group(2).strip())
                 : new LabeledTitle("", text);
+    }
+
+    /**
+     * 연도 없이 "10-23"으로 적힌 목록 날짜. 오늘보다 뒤면 작년 글로 본다. 오늘 글은 "14:05"처럼 시각만 적혀 오늘로 본다.
+     * 상세를 읽으면 상세의 날짜로 바뀌므로, 본문을 읽기 전 잠깐 보여줄 날짜다.
+     */
+    static LocalDate monthDay(String text, LocalDate today) {
+        var value = text == null ? "" : text.strip();
+        if (TIME.matcher(value).matches()) return today;
+        var matcher = MONTH_DAY.matcher(value);
+        if (!matcher.matches()) return null;
+        try {
+            var date = LocalDate.of(today.getYear(), Integer.parseInt(matcher.group(1)), Integer.parseInt(matcher.group(2)));
+            return date.isAfter(today) ? date.minusYears(1) : date;
+        } catch (RuntimeException exception) {
+            return null;
+        }
     }
 
     static String id(String url) {

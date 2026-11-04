@@ -19,7 +19,9 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
@@ -42,17 +44,91 @@ class CollectedNoticeRepositoryTests {
         return new CollectedNoticeRepository(samples, collector, true, background::add, clock);
     }
 
-    @Test
-    void firstReadWaitsForRealNoticesAndNeverShowsSamples() {
-        when(collector.collect()).thenReturn(List.of(
-                school("1", "일반", "오래된 공지", LocalDate.of(2026, 9, 1), "본문"),
-                school("2", "대학원", "모집요강 공고", LocalDate.of(2026, 10, 1), "본문")));
+    /** 목록 단계의 공지: 본문과 첨부가 아직 없다. */
+    private static SchoolNotice listed(SchoolNotice notice) {
+        return new SchoolNotice(notice.boardKey(), notice.kind(), notice.boardName(), notice.collegeId(), notice.id(),
+                notice.label(), notice.title(), notice.postedAt(), notice.url(), null, List.of());
+    }
 
-        var notices = repository(new MutableClock(), new ArrayList<>()).findAll();
+    // 상세를 읽으면 목록 공지에 본문과 첨부를 붙여 돌려주는 수집기로 꾸민다.
+    @SuppressWarnings("unchecked")
+    private void detailsReturn(String content) {
+        doAnswer(call -> {
+            List<SchoolNotice> pending = call.getArgument(0);
+            ((Consumer<List<SchoolNotice>>) call.getArgument(1)).accept(pending.stream()
+                    .map(notice -> school(notice.id(), notice.label(), notice.title(), notice.postedAt(), content))
+                    .toList());
+            return null;
+        }).when(collector).collectDetails(anyList(), any());
+    }
+
+    @Test
+    void firstReadShowsListsThenFillsBodiesInBackground() {
+        when(collector.collectLists()).thenReturn(List.of(
+                listed(school("1", "일반", "오래된 공지", LocalDate.of(2026, 9, 1), "본문")),
+                listed(school("2", "대학원", "모집요강 공고", LocalDate.of(2026, 10, 1), "본문"))));
+        detailsReturn("본문");
+        var background = new ArrayList<Runnable>();
+        var repository = repository(new MutableClock(), background);
+
+        var notices = repository.findAll();
 
         assertThat(notices).extracting(Notice::noticeId).containsExactly("erica-pharmacy-2", "erica-pharmacy-1");
-        assertThat(notices).allSatisfy(notice -> assertThat(notice.sample()).isFalse());
+        assertThat(notices).allSatisfy(notice -> {
+            assertThat(notice.sample()).isFalse();
+            assertThat(notice.originalContent()).isEqualTo(CollectedNotices.LOADING_CONTENT);
+        });
+        verify(collector, never()).collectDetails(anyList(), any());
+
+        background.getFirst().run();
+
+        assertThat(repository.findAll()).allSatisfy(notice -> {
+            assertThat(notice.originalContent()).isEqualTo("본문");
+            assertThat(notice.attachments()).hasSize(1);
+        });
         verifyNoInteractions(samples);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void refreshReadsDetailsOnlyForNewNotices() {
+        var old = listed(school("1", "", "공지", null, "본문"));
+        var fresh = listed(school("2", "", "새 공지", null, "본문"));
+        when(collector.collectLists()).thenReturn(List.of(old)).thenReturn(List.of(fresh, old));
+        detailsReturn("본문");
+        var clock = new MutableClock();
+        var background = new ArrayList<Runnable>();
+        var repository = repository(clock, background);
+
+        repository.findAll();
+        background.removeFirst().run();
+        clock.now = clock.now.plusSeconds(2 * 60 * 60);
+        repository.findAll();
+        background.removeFirst().run();
+
+        // 새로 올라온 2번만 상세를 읽고, 1번은 읽어 둔 본문을 그대로 보여준다.
+        assertThat(repository.findAll()).filteredOn(notice -> notice.noticeId().equals("erica-pharmacy-1"))
+                .singleElement().satisfies(notice -> assertThat(notice.originalContent()).isEqualTo("본문"));
+        var pendings = ArgumentCaptor.forClass(List.class);
+        background.removeFirst().run();
+        verify(collector, times(2)).collectDetails(pendings.capture(), any());
+        assertThat((List<SchoolNotice>) pendings.getAllValues().getLast()).extracting(SchoolNotice::id).containsExactly("2");
+    }
+
+    @Test
+    void startupCollectionRunsInBackgroundOnlyWhenEnabled() {
+        var background = new ArrayList<Runnable>();
+        new CollectedNoticeRepository(samples, collector, false, background::add, Clock.systemUTC()).collectOnStartup();
+        assertThat(background).isEmpty();
+
+        when(collector.collectLists()).thenReturn(List.of(listed(school("1", "", "공지", null, "본문"))));
+        var repository = repository(new MutableClock(), background);
+        repository.collectOnStartup();
+        assertThat(background).hasSize(1);
+        background.removeFirst().run();
+
+        assertThat(repository.findAll()).extracting(Notice::noticeId).containsExactly("erica-pharmacy-1");
+        verify(collector, times(1)).collectLists();
     }
 
     @Test
@@ -119,11 +195,13 @@ class CollectedNoticeRepositoryTests {
 
         assertThat(notice.postedAt()).isNull();
         assertThat(notice.originalContent()).isEqualTo(CollectedNotices.MISSING_CONTENT);
+        assertThat(CollectedNotices.toNotice(listed(school("6", "", "목록만 읽은 공지", null, "본문"))).originalContent())
+                .isEqualTo(CollectedNotices.LOADING_CONTENT);
     }
 
     @Test
     void noReadableBoardIsReportedInsteadOfShowingSamples() {
-        when(collector.collect()).thenReturn(List.of());
+        when(collector.collectLists()).thenReturn(List.of());
 
         assertThatThrownBy(() -> repository(new MutableClock(), new ArrayList<>()).findAll())
                 .isInstanceOf(CollectedNoticeRepository.NoticeSourceUnavailableException.class);
@@ -133,13 +211,14 @@ class CollectedNoticeRepositoryTests {
     @Test
     void staleNoticesRefreshInBackgroundWithoutBlocking() {
         var calls = new AtomicInteger();
-        when(collector.collect()).thenAnswer(call ->
-                List.of(school(String.valueOf(calls.incrementAndGet()), "", "공지", null, "본문")));
+        when(collector.collectLists()).thenAnswer(call ->
+                List.of(listed(school(String.valueOf(calls.incrementAndGet()), "", "공지", null, "본문"))));
         var clock = new MutableClock();
         var background = new ArrayList<Runnable>();
         var repository = repository(clock, background);
 
         assertThat(repository.findAll()).extracting(Notice::noticeId).containsExactly("erica-pharmacy-1");
+        background.clear();
         clock.now = clock.now.plusSeconds(30 * 60);
         repository.findAll();
         assertThat(background).isEmpty();
@@ -153,12 +232,14 @@ class CollectedNoticeRepositoryTests {
 
     @Test
     void failedRefreshKeepsPreviousNotices() {
-        when(collector.collect()).thenReturn(List.of(school("1", "", "공지", null, "본문"))).thenReturn(List.of());
+        when(collector.collectLists()).thenReturn(List.of(listed(school("1", "", "공지", null, "본문"))))
+                .thenReturn(List.of());
         var clock = new MutableClock();
         var background = new ArrayList<Runnable>();
         var repository = repository(clock, background);
 
         repository.findAll();
+        background.clear();
         clock.now = clock.now.plusSeconds(2 * 60 * 60);
         repository.findAll();
         background.getFirst().run();

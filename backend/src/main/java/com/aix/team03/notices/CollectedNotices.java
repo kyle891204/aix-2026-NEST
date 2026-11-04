@@ -17,6 +17,7 @@ import java.util.Map;
  */
 final class CollectedNotices {
     static final String MISSING_CONTENT = "본문이 이미지나 첨부파일로 되어 있어요. 원문에서 확인해 주세요.";
+    static final String LOADING_CONTENT = "본문을 학교 홈페이지에서 불러오는 중이에요. 잠시 후 다시 열어 주세요.";
 
     private static final Map<String, List<String>> DEGREE_LABELS = Map.of(
             "대학원", List.of("MASTER", "DOCTORAL"),
@@ -35,7 +36,8 @@ final class CollectedNotices {
         var label = school.label() == null ? "" : school.label().strip();
         var degrees = degrees(label);
         var conditions = degrees.isEmpty() ? null : new TargetConditions(null, null, degrees, null);
-        var content = school.content() == null || school.content().isBlank() ? MISSING_CONTENT : school.content();
+        var content = !school.detailRead() ? LOADING_CONTENT
+                : school.content().isBlank() ? MISSING_CONTENT : school.content();
         return new Notice(school.boardKey() + "-" + school.id(), Source.valueOf(school.kind().name()),
                 school.boardName(), school.collegeId(), category(label, school.title()), title(label, school.title()),
                 school.postedAt() == null ? null : school.postedAt().toString(),

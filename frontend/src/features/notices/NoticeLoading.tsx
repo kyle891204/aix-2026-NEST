@@ -5,7 +5,7 @@ export function NoticeLoading() {
       <span className="notice-spinner" aria-hidden="true" />
       <strong>공지를 가져오는 중입니다</strong>
       <span className="notice-hint">
-        학교 홈페이지 12곳에서 읽어 오느라 처음에는 30초 정도 걸릴 수 있어요.
+        학교 홈페이지에서 읽어 오느라 처음에는 몇 초 걸릴 수 있어요.
       </span>
     </div>
   )

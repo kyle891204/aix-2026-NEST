@@ -5,10 +5,15 @@ import com.aix.team03.integrations.school.SchoolNoticeModels.ListEntry;
 import com.aix.team03.integrations.school.SchoolNoticeModels.SchoolNotice;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.slf4j.Logger;
@@ -51,6 +56,7 @@ public class SchoolNoticeCollector {
     private final List<SchoolBoard> boards;
     private final HtmlFetcher fetcher;
     private final long delayMillis;
+    private final Map<String, BoardList> lists = new ConcurrentHashMap<>();
 
     @Autowired
     public SchoolNoticeCollector(List<SchoolBoard> boards) {
@@ -76,11 +82,59 @@ public class SchoolNoticeCollector {
         };
     }
 
+    /**
+     * 게시판마다 목록 첫 페이지만 읽는다. 본문은 아직 없는(content가 null인) 공지로 돌려주고,
+     * 상세는 {@link #collectDetails}로 따로 읽는다. 목록 12쪽만 읽어 첫 화면을 빨리 보여주기 위해서다.
+     */
+    public List<SchoolNotice> collectLists() {
+        return inParallel(boards, board -> {
+            try {
+                var page = fetcher.fetch(board.listUrl());
+                var entries = board.parseList(page).stream().limit(NOTICES_PER_BOARD).toList();
+                // LIONS칼리지처럼 상세를 목록 페이지의 폼으로 여는 게시판을 위해 마지막 목록 페이지를 둔다.
+                lists.put(board.key(), new BoardList(board, page, entries));
+                return entries.stream().map(entry -> notice(board, entry, null)).toList();
+            } catch (IOException | RuntimeException exception) {
+                log.warn("School board {} could not be read: {}", board.key(), exception.toString());
+                return List.of();
+            }
+        });
+    }
+
+    /** 공지의 상세를 게시판별로 읽고, 한 게시판을 다 읽을 때마다 그 게시판 공지를 넘긴다. */
+    public void collectDetails(List<SchoolNotice> pending, Consumer<List<SchoolNotice>> onBoardRead) {
+        var byBoard = pending.stream()
+                .collect(Collectors.groupingBy(SchoolNotice::boardKey, LinkedHashMap::new, Collectors.toList()));
+        inParallel(List.copyOf(byBoard.values()), notices -> {
+            var list = lists.get(notices.getFirst().boardKey());
+            if (list == null) return List.of();
+            var read = notices.stream()
+                    .flatMap(notice -> list.entries().stream().filter(entry -> entry.id().equals(notice.id())))
+                    .map(entry -> {
+                        var detail = detail(list, entry);
+                        return notice(list.board(), entry, detail);
+                    })
+                    .toList();
+            onBoardRead.accept(read);
+            return read;
+        });
+    }
+
+    private record BoardList(SchoolBoard board, Document page, List<ListEntry> entries) {}
+
+    private static SchoolNotice notice(SchoolBoard board, ListEntry entry, Detail detail) {
+        // 상세의 게시일이 목록보다 정확해서(연도 포함) 먼저 쓴다.
+        var postedAt = detail != null && detail.postedAt() != null ? detail.postedAt() : entry.postedAt();
+        return new SchoolNotice(board.key(), board.kind(), board.name(), board.collegeId(), entry.id(), entry.label(),
+                entry.title(), postedAt, entry.url(), detail == null ? null : detail.content(),
+                detail == null ? List.of() : detail.attachments());
+    }
+
     // 게시판마다 사이트가 달라 동시에 읽는다. 한 게시판 안에서는 요청 사이를 띄우므로 사이트마다 부담은 그대로다.
-    public List<SchoolNotice> collect() {
-        if (boards.isEmpty()) return List.of();
-        try (var pool = Executors.newFixedThreadPool(boards.size())) {
-            var results = boards.stream().map(board -> pool.submit(() -> collect(board))).toList();
+    private <T> List<SchoolNotice> inParallel(List<T> items, Function<T, List<SchoolNotice>> work) {
+        if (items.isEmpty()) return List.of();
+        try (var pool = Executors.newFixedThreadPool(items.size())) {
+            var results = items.stream().map(item -> pool.submit(() -> work.apply(item))).toList();
             var notices = new ArrayList<SchoolNotice>();
             for (var result : results) {
                 try {
@@ -96,28 +150,10 @@ public class SchoolNoticeCollector {
         }
     }
 
-    private List<SchoolNotice> collect(SchoolBoard board) {
-        var notices = new ArrayList<SchoolNotice>();
-        try {
-            var list = fetcher.fetch(board.listUrl());
-            var entries = board.parseList(list).stream().limit(NOTICES_PER_BOARD).toList();
-            for (var entry : entries) {
-                var detail = detail(board, list, entry);
-                var postedAt = entry.postedAt() != null ? entry.postedAt() : detail.postedAt();
-                notices.add(new SchoolNotice(board.key(), board.kind(), board.name(), board.collegeId(), entry.id(),
-                        entry.label(),
-                        entry.title(), postedAt, entry.url(), detail.content(), detail.attachments()));
-            }
-        } catch (IOException | RuntimeException exception) {
-            log.warn("School board {} could not be read: {}", board.key(), exception.toString());
-        }
-        return notices;
-    }
-
     // 상세를 못 읽은 글도 목록 정보와 원문 링크로 보여줄 수 있게 빈 상세로 둔다.
-    private Detail detail(SchoolBoard board, Document list, ListEntry entry) {
+    private Detail detail(BoardList list, ListEntry entry) {
         try {
-            return board.parseDetail(board.fetchDetail(list, entry, fetcher));
+            return list.board().parseDetail(list.board().fetchDetail(list.page(), entry, fetcher));
         } catch (IOException | RuntimeException exception) {
             log.warn("School notice {} could not be read: {}", entry.url(), exception.toString());
             return new Detail("", null, List.of());
