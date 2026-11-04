@@ -1,0 +1,373 @@
+/* 학사일정 화면(S10). 과목알림과 같은 배경·카드·색을 쓴다 */
+.academic-schedule {
+  padding: 24px 16px;
+  border-radius: 16px;
+  background: #f5f6fd;
+  color: #1c2940;
+}
+
+.academic-schedule h1 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.schedule-status {
+  margin: 20px 0;
+  color: #657795;
+  font-size: 13px;
+}
+
+.schedule-status a {
+  color: #3f5fff;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.schedule-error {
+  margin: 20px 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #fdecec;
+  color: #8a2a20;
+  font-size: 13px;
+}
+
+.schedule-error p {
+  margin: 0 0 8px;
+}
+
+.schedule-error button {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 10px;
+  background: #3f5fff;
+  color: white;
+  font-weight: 600;
+}
+
+.schedule-month {
+  margin-top: 12px;
+}
+
+.schedule-month h2 {
+  margin: 20px 0 8px;
+  font-size: 15px;
+}
+
+.schedule-month ul {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.schedule-event {
+  display: grid;
+  gap: 6px;
+  padding: 16px;
+  border: 1px solid #e1e7f1;
+  border-radius: 16px;
+  background: white;
+}
+
+.schedule-event strong {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.schedule-event span {
+  color: #657795;
+  font-size: 12px;
+}
+
+.schedule-event em {
+  margin-left: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #3f5fff;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.schedule-event--past {
+  background: transparent;
+}
+
+.schedule-event--past strong {
+  color: #657795;
+  font-weight: 500;
+}
+
+.schedule-event--ongoing {
+  border-color: #3f5fff;
+}
+
+.schedule-source {
+  margin-top: 24px;
+  color: #657795;
+  font-size: 12px;
+}
+
+.schedule-source p {
+  margin: 0 0 6px;
+}
+
+.schedule-source a {
+  color: #3f5fff;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+/* 학사일정·내 일정 탭 */
+.schedule-tabs {
+  display: flex;
+  gap: 4px;
+  margin-top: 16px;
+  padding: 4px;
+  border: 1px solid #e1e7f1;
+  border-radius: 999px;
+  background: white;
+}
+
+.schedule-tabs button {
+  flex: 1;
+  min-width: 0;
+  min-height: 40px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #657795;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.schedule-tabs button[aria-pressed='true'] {
+  background: #3f5fff;
+  color: white;
+}
+
+/* 일정 저장·삭제 */
+.schedule-event-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.schedule-event-actions small {
+  color: #657795;
+  font-size: 12px;
+}
+
+.schedule-event-actions a {
+  color: #3f5fff;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.schedule-event-actions button {
+  min-height: 36px;
+  margin-left: auto;
+  padding: 0 12px;
+  border: 1px solid #3f5fff;
+  border-radius: 10px;
+  background: white;
+  color: #3f5fff;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.schedule-event-actions button:disabled {
+  border-color: #e1e7f1;
+  background: #eef2ff;
+  color: #657795;
+}
+
+.schedule-note {
+  margin: 20px 0 0;
+  color: #657795;
+  font-size: 12px;
+}
+
+/* 건수 요약 */
+.schedule-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 12px;
+  margin: 12px 0 0;
+  font-size: 12px;
+  color: #657795;
+}
+
+.schedule-summary strong {
+  color: #3f5fff;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* 이번 달·이번 주 카드 */
+.schedule-week {
+  margin-top: 12px;
+  padding: 16px;
+  border: 1px solid #e1e7f1;
+  border-radius: 16px;
+  background: white;
+}
+
+.schedule-week h2 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.schedule-week ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  margin: 10px 0;
+  padding: 0;
+  color: #657795;
+  font-size: 12px;
+  list-style: none;
+}
+
+.schedule-week li[aria-current='date'] {
+  color: #3f5fff;
+  font-weight: 700;
+}
+
+.schedule-week p {
+  margin: 0;
+  color: #657795;
+  font-size: 12px;
+}
+
+/* 개인 저장 탭 */
+.schedule-lead {
+  margin: 8px 0 0;
+  color: #657795;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.saved-banner {
+  margin-top: 12px;
+  padding: 16px;
+  border: 1px solid #e1e7f1;
+  border-radius: 16px;
+  background: #eef2ff;
+}
+
+.saved-banner strong {
+  color: #3f5fff;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.saved-banner p {
+  margin: 6px 0 0;
+  color: #657795;
+  font-size: 12px;
+}
+
+.saved-section {
+  margin-top: 20px;
+}
+
+.saved-section h2 {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+
+.saved-section ul {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.saved-card {
+  padding: 14px 16px;
+  border: 1px solid #e1e7f1;
+  border-radius: 16px;
+  background: white;
+}
+
+.saved-card--past {
+  background: transparent;
+}
+
+.saved-card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.saved-card-head span {
+  padding: 4px 12px;
+  border-radius: 8px;
+  background: #eef2ff;
+  color: #3f5fff;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.saved-card-head small {
+  color: #657795;
+  font-size: 12px;
+}
+
+.saved-card-head button {
+  min-height: 36px;
+  margin-left: auto;
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+  color: #8a2a20;
+  font-size: 12px;
+}
+
+.saved-card-body {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.saved-card-body > div {
+  min-width: 0;
+}
+
+.saved-card-body strong {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.saved-card-body p {
+  margin: 4px 0 0;
+  color: #657795;
+  font-size: 12px;
+}
+
+.saved-card-body a {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  color: #657795;
+  font-size: 22px;
+  text-decoration: none;
+}
