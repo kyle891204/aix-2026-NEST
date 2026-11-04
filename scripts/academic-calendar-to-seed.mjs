@@ -1,0 +1,60 @@
+// 브라우저에서 저장한 학사일정 파일(sYear별 get_term_events 응답)을 백엔드 seed로 변환한다.
+// 사용: node scripts/academic-calendar-to-seed.mjs <저장한 파일>...
+import { createHash } from "node:crypto";
+import { readFileSync, writeFileSync } from "node:fs";
+
+const OUTPUT = new URL(
+  "../backend/src/main/resources/seed/academic-calendar.json",
+  import.meta.url,
+);
+const SOURCE_URL = "https://www.hanyang.ac.kr/-93";
+const DATE_TIME = /^(\d{4}-\d{2}-\d{2}) \d{2}:\d{2}$/;
+
+function date(value, subject) {
+  const match = DATE_TIME.exec(value);
+  if (!match) throw new Error(`날짜를 읽을 수 없습니다: ${subject} (${value})`);
+  return match[1];
+}
+
+function readEvents(path) {
+  const saved = JSON.parse(readFileSync(path, "utf8"));
+  if (saved.status !== true) throw new Error(`정상 응답이 아닙니다: ${path}`);
+  return JSON.parse(saved.data).flatMap((month) => month.events);
+}
+
+const paths = process.argv.slice(2);
+if (paths.length === 0) {
+  console.error("저장한 학사일정 파일 경로를 입력해 주세요.");
+  process.exit(1);
+}
+
+// 저장해 둔 개인 일정이 끊기지 않도록 날짜가 아니라 제목과 같은 제목 안의 순서로 ID를 만든다.
+const seen = new Map();
+const events = paths
+  .flatMap(readEvents)
+  .map((event) => ({
+    title: event.subject.trim(),
+    startDate: date(event.startDateTime, event.subject),
+    endDate: date(event.endDateTime, event.subject),
+  }))
+  .sort(
+    (a, b) =>
+      a.startDate.localeCompare(b.startDate) ||
+      a.endDate.localeCompare(b.endDate) ||
+      a.title.localeCompare(b.title),
+  )
+  .map((event) => {
+    const order = (seen.get(event.title) ?? 0) + 1;
+    seen.set(event.title, order);
+    const hash = createHash("sha256").update(event.title).digest("hex");
+    return { scheduleId: `academic-${hash.slice(0, 10)}-${order}`, ...event };
+  });
+
+const checkedAt = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Asia/Seoul",
+}).format(new Date());
+writeFileSync(
+  OUTPUT,
+  `${JSON.stringify({ sourceUrl: SOURCE_URL, checkedAt, events }, null, 2)}\n`,
+);
+console.log(`${events.length}건을 저장했습니다 (${checkedAt} 기준).`);

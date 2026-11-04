@@ -132,3 +132,14 @@
 - 미검증: 실제 브라우저에서 Google 로그인 후 토큰을 주고받는 흐름.
 - 비밀정보: 테스트에는 가상 계정과 가상 토큰만 사용.
 - 후속 수정(PR #39 리뷰): 최신 `main` 반영, 게스트 모드 CSRF 테스트 2개 추가(`CsrfDemoGuestTests`), `CsrfAccessTests`의 토큰 추출을 JsonPath로 변경하고 게스트 설정을 false로 고정, 실행 순서 전제를 주석에 명시, 문서 CSRF 규칙 반영. 전체 56개 통과.
+
+## 2026-11-04 — 학사일정 조회 API (#10)
+
+- 도구: Claude Code.
+- 요청 요지: 학사일정 조회 백엔드. 학부 일정만 제공하고 개인 일정은 DB 없이 브라우저에 저장.
+- 작업 브랜치: `feat/academic-schedule` (`main` 기준).
+- 확인: 학교 학사일정 페이지와 데이터 주소는 Cloudflare 봇 검사(403)와 robots.txt로 수집이 막혀 있어 우회하지 않음. 공식 일정을 옮긴 JSON으로 제공.
+- 작업: `GET /api/v1/schedules/academic`, 교체 가능한 `AcademicCalendarSource`, 서버 시작 시 JSON 검사. API 문서 반영.
+- 데이터: 브라우저에서 저장한 공식 응답을 `scripts/academic-calendar-to-seed.mjs`로 변환해 2026학년도 일정 48건을 넣음. 응답에 캠퍼스 값은 없음.
+- 미완료: 학사일정 화면과 개인 일정 저장은 프론트 PR에서 진행.
+- 비밀정보: 테스트에는 가상 계정과 테스트 전용 일정만 사용.
