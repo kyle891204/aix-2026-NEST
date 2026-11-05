@@ -1,0 +1,107 @@
+[
+  {
+    "noticeId": "intl-001",
+    "source": "INTERNATIONAL",
+    "title": "외국인등록 신청 안내",
+    "analysisStatus": "CONFIRMED",
+    "deadline": null,
+    "target": "입국일부터 90일을 넘어 체류하려는 외국인 유학생",
+    "targetConditions": { "nationalities": [], "visaTypes": ["D-2", "D-4"], "degrees": [], "years": [] },
+    "actions": [
+      { "id": "a1", "text": "입국일부터 90일 이내에 체류지 관할 출입국·외국인관서에 신청" },
+      { "id": "a2", "text": "체류지가 바뀌면 전입일부터 15일 이내에 변경 신고" }
+    ],
+    "documents": ["외국인등록 신청서", "여권", "여권용 사진 1장", "체류지 입증서류", "재학증명서"],
+    "originalContent": "[샘플] 입국한 날부터 90일을 넘어 체류하려는 외국인 유학생은 입국일부터 90일 이내에 체류지를 관할하는 출입국·외국인관서에 외국인등록을 해야 합니다. 체류지가 바뀌면 전입일부터 15일 이내에 신고합니다.",
+    "originalLanguage": "ko",
+    "sourceUrl": "https://m.easylaw.go.kr/MOB/CsmInfoRetrieve.laf?csmSeq=2853&ccfNo=2&cciNo=3&cnpClsNo=1",
+    "sample": true
+  },
+  {
+    "noticeId": "intl-002",
+    "source": "INTERNATIONAL",
+    "title": "출국 전 외국인등록증 반납 확인 안내",
+    "analysisStatus": "CONFIRMED",
+    "deadline": null,
+    "target": "외국인등록을 하고 출국하는 외국인 유학생",
+    "targetConditions": { "nationalities": [], "visaTypes": ["D-2", "D-4"], "degrees": [], "years": [] },
+    "actions": [
+      { "id": "a1", "text": "재입국 계획에 따라 외국인등록증 반납 대상인지 확인" },
+      { "id": "a2", "text": "유효한 여권을 가지고 출입국항에서 출국심사" }
+    ],
+    "documents": ["여권", "외국인등록증"],
+    "originalContent": "[샘플] 외국인등록을 한 외국인 유학생은 출국할 때 출입국관리공무원에게 외국인등록증을 반납해야 합니다. 재입국허가를 받고 허가기간 내에 재입국하는 경우 등에는 반납하지 않아도 됩니다.",
+    "originalLanguage": "ko",
+    "sourceUrl": "https://m.easylaw.go.kr/MOB/CsmInfoRetrieve.laf?csmSeq=2853&ccfNo=4&cciNo=2&cnpClsNo=1",
+    "sample": true
+  },
+  {
+    "noticeId": "univ-001",
+    "source": "UNIVERSITY",
+    "title": "외국인 학부생 체류 서류 제출 안내",
+    "analysisStatus": "CONFIRMED",
+    "deadline": "2026-11-20T17:00:00+09:00",
+    "target": "D-2 비자 학부 재학생",
+    "targetConditions": { "nationalities": [], "visaTypes": ["D-2"], "degrees": ["BACHELOR"], "years": [] },
+    "actions": [
+      { "id": "a1", "text": "요청된 서류 3종 준비" },
+      { "id": "a2", "text": "지정 접수처와 마감 확인" }
+    ],
+    "documents": ["여권 사본", "등록증 사본", "재학증명서"],
+    "originalContent": "[샘플] D-2 비자 학부 재학생은 체류 서류를 마감일까지 지정 접수처에 제출해 주세요. 시연용 예시 공지이며 실제 학교 공지가 아닙니다.",
+    "originalLanguage": "ko",
+    "sourceUrl": null,
+    "sample": true
+  },
+  {
+    "noticeId": "univ-002",
+    "source": "UNIVERSITY",
+    "title": "외국인 유학생 장학금 신청 안내",
+    "analysisStatus": "UNCERTAIN",
+    "deadline": "2026-11-27T16:00:00+09:00",
+    "target": "성적 기준을 충족한 외국인 유학생",
+    "targetConditions": { "nationalities": [], "visaTypes": [], "degrees": [], "years": [] },
+    "actions": [
+      { "id": "a1", "text": "성적 기준 충족 여부 확인" },
+      { "id": "a2", "text": "신청서 작성 후 제출" }
+    ],
+    "documents": ["장학금 신청서", "성적증명서"],
+    "originalContent": "[샘플] 성적 기준을 충족한 외국인 유학생은 장학금을 신청할 수 있습니다. 시연용 예시 공지이며 실제 학교 공지가 아닙니다.",
+    "originalLanguage": "ko",
+    "sourceUrl": null,
+    "sample": true
+  },
+  {
+    "noticeId": "coll-001",
+    "source": "COLLEGE",
+    "title": "단과대 신입 유학생 오리엔테이션 안내",
+    "analysisStatus": "CONFIRMED",
+    "deadline": "2026-11-13T18:00:00+09:00",
+    "target": "1학년 외국인 학부생",
+    "targetConditions": { "nationalities": [], "visaTypes": [], "degrees": ["BACHELOR"], "years": ["1"] },
+    "actions": [
+      { "id": "a1", "text": "참석 신청" },
+      { "id": "a2", "text": "행사 장소와 시간 확인" }
+    ],
+    "documents": [],
+    "originalContent": "[샘플] 1학년 외국인 학부생을 위한 오리엔테이션을 진행합니다. 시연용 예시 공지이며 실제 학교 공지가 아닙니다.",
+    "originalLanguage": "ko",
+    "sourceUrl": null,
+    "sample": true
+  },
+  {
+    "noticeId": "coll-002",
+    "source": "COLLEGE",
+    "title": "대학원생 논문 지도 신청 안내",
+    "analysisStatus": "NOT_ANALYZED",
+    "deadline": null,
+    "target": null,
+    "targetConditions": null,
+    "actions": [],
+    "documents": [],
+    "originalContent": "[샘플] 대상과 일정은 원문을 확인해 주세요. 시연용 예시 공지이며 실제 학교 공지가 아닙니다.",
+    "originalLanguage": "ko",
+    "sourceUrl": null,
+    "sample": true
+  }
+]
