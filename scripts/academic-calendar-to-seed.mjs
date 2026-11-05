@@ -16,6 +16,12 @@ function date(value, subject) {
   return match[1];
 }
 
+// 학년도는 3월에 시작한다. 2027년 1~2월 일정은 2026학년도다.
+function academicYear(startDate) {
+  const [year, month] = startDate.split("-").map(Number);
+  return month >= 3 ? year : year - 1;
+}
+
 function readEvents(path) {
   const saved = JSON.parse(readFileSync(path, "utf8"));
   if (saved.status !== true) throw new Error(`정상 응답이 아닙니다: ${path}`);
@@ -28,7 +34,8 @@ if (paths.length === 0) {
   process.exit(1);
 }
 
-// 저장해 둔 개인 일정이 끊기지 않도록 날짜가 아니라 제목과 같은 제목 안의 순서로 ID를 만든다.
+// 일정 날짜가 바뀌어도 저장해 둔 개인 일정이 끊기지 않도록 학년도, 제목, 같은 학년도·제목 안의 순서로 ID를 만든다.
+// 공식 응답에는 일정 고유 ID가 없다. 학년도가 없으면 내년 같은 제목의 일정이 올해 저장한 일정과 같은 ID가 된다.
 const seen = new Map();
 const events = paths
   .flatMap(readEvents)
@@ -44,10 +51,15 @@ const events = paths
       a.title.localeCompare(b.title),
   )
   .map((event) => {
-    const order = (seen.get(event.title) ?? 0) + 1;
-    seen.set(event.title, order);
+    const year = academicYear(event.startDate);
+    const key = `${year}:${event.title}`;
+    const order = (seen.get(key) ?? 0) + 1;
+    seen.set(key, order);
     const hash = createHash("sha256").update(event.title).digest("hex");
-    return { scheduleId: `academic-${hash.slice(0, 10)}-${order}`, ...event };
+    return {
+      scheduleId: `academic-${year}-${hash.slice(0, 10)}-${order}`,
+      ...event,
+    };
   });
 
 const checkedAt = new Intl.DateTimeFormat("en-CA", {

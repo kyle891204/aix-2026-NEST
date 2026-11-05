@@ -98,12 +98,13 @@ timestamp는 실행 시각을 UTC ISO 8601 형식으로 반환한다. 인증 없
   "sourceUrl": "https://www.hanyang.ac.kr/-93",
   "checkedAt": "2026-11-04",
   "schedules": [
-    { "scheduleId": "2026-2-example", "title": "일정 제목", "startDate": "2026-11-02", "endDate": "2026-11-06" }
+    { "scheduleId": "academic-2026-0123456789-1", "title": "일정 제목", "startDate": "2026-11-02", "endDate": "2026-11-06" }
   ]
 }
 ```
 
 기간과 겹치는 일정을 시작일 순으로 돌려준다. 하루 일정은 `startDate`와 `endDate`가 같다.
+`scheduleId` 형식은 `academic-<학년도>-<제목 해시 10자>-<같은 학년도·제목 안의 순서>`다.
 `checkedAt`은 공식 페이지와 대조한 날짜이고, 일정을 넣기 전에는 null이다.
 날짜 누락·형식 오류·기간 초과는 400 `INVALID_REQUEST`(`fields.from` 또는 `fields.to`)다.
 

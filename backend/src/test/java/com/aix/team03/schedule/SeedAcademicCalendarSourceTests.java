@@ -25,6 +25,30 @@ class SeedAcademicCalendarSourceTests {
     }
 
     @Test
+    void bundledSeedIdsCarryTheAcademicYearOfTheEvent() {
+        var calendar = new SeedAcademicCalendarSource(JsonMapper.builder().build()).calendar();
+        assertThat(calendar.events()).allSatisfy(event -> {
+            var start = event.startDate();
+            var academicYear = start.getMonthValue() >= 3 ? start.getYear() : start.getYear() - 1;
+            assertThat(event.scheduleId()).matches("academic-" + academicYear + "-[0-9a-f]{10}-\\d+");
+        });
+    }
+
+    @Test
+    void missingEventsOrSourceUrlIsRejectedWithTheSameMessage() {
+        var event = new AcademicEvent("a", "개강", DAY, DAY);
+        assertThatThrownBy(() -> SeedAcademicCalendarSource.validated(new AcademicCalendar(
+                "https://example.com/calendar", DAY, null)))
+                .isInstanceOf(IllegalStateException.class).hasMessageContaining("학사일정 항목을 확인해 주세요");
+        assertThatThrownBy(() -> SeedAcademicCalendarSource.validated(new AcademicCalendar(
+                null, DAY, List.of(event))))
+                .isInstanceOf(IllegalStateException.class).hasMessageContaining("학사일정 항목을 확인해 주세요");
+        assertThatThrownBy(() -> SeedAcademicCalendarSource.validated(new AcademicCalendar(
+                " ", DAY, List.of(event))))
+                .isInstanceOf(IllegalStateException.class).hasMessageContaining("학사일정 항목을 확인해 주세요");
+    }
+
+    @Test
     void oneDayEventIsAccepted() {
         var calendar = calendarOf(new AcademicEvent("a", "개강", DAY, DAY));
         assertThat(SeedAcademicCalendarSource.validated(calendar)).isSameAs(calendar);
