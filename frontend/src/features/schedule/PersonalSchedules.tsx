@@ -1,6 +1,7 @@
 import { eventTiming, fullDateRangeLabel } from './academic-format'
 import {
   removeSchedule,
+  type PersonalChange,
   type PersonalSchedule,
 } from './personal-schedule-store'
 
@@ -13,11 +14,11 @@ export function PersonalSchedules({
   schedules: PersonalSchedule[]
   recentIds: string[]
   today: string
-  onChange: (next: PersonalSchedule[]) => boolean
+  onChange: (change: PersonalChange) => boolean
 }) {
   function remove(item: PersonalSchedule) {
     if (window.confirm(`"${item.title}" 일정을 삭제할까요?`))
-      onChange(removeSchedule(schedules, item.id))
+      onChange((current) => removeSchedule(current, item.id))
   }
 
   return (
@@ -25,7 +26,6 @@ export function PersonalSchedules({
       {recentIds.length > 0 && (
         <div className="saved-banner" role="status">
           <strong>선택한 {recentIds.length}개 일정을 저장했어요.</strong>
-          <p>이번에 저장한 항목을 확인하세요.</p>
         </div>
       )}
       {schedules.length > 0 && (

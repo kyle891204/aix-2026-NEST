@@ -2,6 +2,7 @@ import { strict as assert } from 'node:assert'
 import { test } from 'node:test'
 import {
   addAcademicSchedule,
+  changePersonalSchedules,
   isAcademicSaved,
   loadPersonalSchedules,
   removeSchedule,
@@ -97,4 +98,42 @@ test('damaged storage is read as empty and bad items are left out', () => {
     loadPersonalSchedules(storage, 'a').map((item) => item.id),
     [good.id],
   )
+})
+
+test('saving in two tabs keeps both schedules', () => {
+  const storage = memoryStorage()
+  const second = { ...event, scheduleId: 'academic-2', title: '종강' }
+  // 두 탭이 같은 빈 목록을 연 뒤 각각 저장한다.
+  const tab1 = loadPersonalSchedules(storage, 'student')
+  const tab2 = loadPersonalSchedules(storage, 'student')
+  changePersonalSchedules(storage, 'student', (current) =>
+    addAcademicSchedule(current, event, SOURCE),
+  )
+  const { current, next } = changePersonalSchedules(
+    storage,
+    'student',
+    (latest) => addAcademicSchedule(latest, second, SOURCE),
+  )
+  assert.deepEqual([tab1, tab2], [[], []])
+  assert.equal(current.length, 1)
+  assert.deepEqual(
+    next.map((item) => item.sourceId),
+    ['academic-1', 'academic-2'],
+  )
+  assert.equal(loadPersonalSchedules(storage, 'student').length, 2)
+})
+
+test('deleting in one tab does not bring back a schedule removed in another', () => {
+  const storage = memoryStorage()
+  const saved = changePersonalSchedules(storage, 'student', (current) =>
+    addAcademicSchedule(current, event, SOURCE),
+  ).next
+  changePersonalSchedules(storage, 'student', (current) =>
+    removeSchedule(current, saved[0].id),
+  )
+  // 다른 탭이 예전 목록으로 저장해도 지운 일정이 되살아나지 않는다.
+  const { next } = changePersonalSchedules(storage, 'student', (current) =>
+    removeSchedule(current, 'academic:none'),
+  )
+  assert.deepEqual(next, [])
 })

@@ -17,6 +17,14 @@ export function kstToday(now: Date = new Date()) {
   return KST_DATE.format(now)
 }
 
+const DAY_MS = 86_400_000
+const KST_OFFSET_MS = 9 * 3_600_000
+
+// 다음 KST 자정까지 남은 시간. 화면을 켜 둔 채 날짜가 바뀌면 오늘을 다시 계산하는 데 쓴다.
+export function msUntilKstMidnight(now: number = Date.now()) {
+  return DAY_MS - ((now + KST_OFFSET_MS) % DAY_MS)
+}
+
 // 학사일정은 학년도(3월~다음 해 2월) 단위로 나온다. 지난 일정도 볼 수 있게 학년도 전체를 조회한다.
 export function academicYearRange(today: string) {
   const year = Number(today.slice(0, 4))

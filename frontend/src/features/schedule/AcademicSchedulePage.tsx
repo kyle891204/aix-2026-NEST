@@ -9,12 +9,14 @@ import {
   groupByStartMonth,
   kstToday,
   monthLabel,
+  msUntilKstMidnight,
   upcomingRange,
   weekDays,
 } from './academic-format'
 import {
   addAcademicSchedule,
   isAcademicSaved,
+  type PersonalChange,
   type PersonalSchedule,
 } from './personal-schedule-store'
 import { PersonalSchedules } from './PersonalSchedules'
@@ -35,12 +37,35 @@ export function AcademicSchedulePage() {
   return <ScheduleTabs key={accountId ?? 'signed-out'} accountId={accountId} />
 }
 
+// 화면을 켜 둔 채 자정을 넘기거나 다른 앱에 있다가 돌아와도 오늘 날짜를 다시 계산한다.
+function useKstToday() {
+  const [today, setToday] = useState(() => kstToday())
+  useEffect(() => {
+    const refresh = () => setToday(kstToday())
+    // 타이머가 자정 직전에 깨어나지 않도록 1초 여유를 둔다.
+    let timer = window.setTimeout(function tick() {
+      refresh()
+      timer = window.setTimeout(tick, msUntilKstMidnight() + 1000)
+    }, msUntilKstMidnight() + 1000)
+    document.addEventListener('visibilitychange', refresh)
+    window.addEventListener('focus', refresh)
+    return () => {
+      window.clearTimeout(timer)
+      document.removeEventListener('visibilitychange', refresh)
+      window.removeEventListener('focus', refresh)
+    }
+  }, [])
+  return today
+}
+
 function ScheduleTabs({ accountId }: { accountId: string | null }) {
   // 로그인 세션(게스트 포함)을 먼저 받은 뒤 요청한다. 동시에 보내면 게스트 세션이 둘 생길 수 있다.
   const { loading: authLoading } = useAuth()
   const [searchParams, setSearchParams] = useSearchParams()
   const tab = searchParams.get('tab') === 'mine' ? 'mine' : 'academic'
-  const [today] = useState(() => kstToday())
+  const today = useKstToday()
+  // 날짜가 바뀌어도 조회 기간은 달이 바뀔 때만 달라지므로 그때만 다시 요청한다.
+  const { from, to } = upcomingRange(today)
   const [attempt, setAttempt] = useState(0)
   // 결과에 재시도 횟수를 붙여 두고, 현재 횟수와 다르면 불러오는 중으로 본다.
   const [result, setResult] = useState<{ attempt: number; load: Load } | null>(
@@ -56,7 +81,6 @@ function ScheduleTabs({ accountId }: { accountId: string | null }) {
   useEffect(() => {
     if (authLoading) return
     let active = true
-    const { from, to } = upcomingRange(today)
     getAcademicSchedules(from, to)
       .then((data) => {
         if (active) setResult({ attempt, load: { status: 'ready', data } })
@@ -78,7 +102,7 @@ function ScheduleTabs({ accountId }: { accountId: string | null }) {
     return () => {
       active = false
     }
-  }, [authLoading, attempt, today])
+  }, [authLoading, attempt, from, to])
 
   return (
     <div className="academic-schedule">
@@ -214,7 +238,7 @@ function EventList({
   data: AcademicSchedules
   today: string
   saved: PersonalSchedule[]
-  onChange: (next: PersonalSchedule[]) => boolean
+  onChange: (change: PersonalChange) => boolean
 }) {
   if (data.schedules.length === 0)
     return <p className="schedule-status">아직 올라온 일정이 없어요.</p>
@@ -251,8 +275,8 @@ function EventList({
                             : `${event.title} 내 일정에 저장`
                         }
                         onClick={() =>
-                          onChange(
-                            addAcademicSchedule(saved, event, data.sourceUrl),
+                          onChange((current) =>
+                            addAcademicSchedule(current, event, data.sourceUrl),
                           )
                         }
                       >

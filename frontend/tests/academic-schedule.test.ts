@@ -9,6 +9,7 @@ import {
   groupByStartMonth,
   kstToday,
   monthLabel,
+  msUntilKstMidnight,
   upcomingRange,
   weekDays,
 } from '../src/features/schedule/academic-format.ts'
@@ -154,4 +155,15 @@ test('events that began earlier are shown in the first month', () => {
     ]),
     [['2027-01', ['winter-break', 'a']]],
   )
+})
+
+test('the next Korean midnight is counted in Korean time', () => {
+  // 2026-11-05 23:59:00 KST
+  assert.equal(msUntilKstMidnight(Date.parse('2026-11-05T14:59:00Z')), 60_000)
+  // KST 자정 정각이면 다음 날 자정까지 하루가 남는다.
+  assert.equal(
+    msUntilKstMidnight(Date.parse('2026-11-05T15:00:00Z')),
+    86_400_000,
+  )
+  assert.equal(kstToday(new Date('2026-11-05T15:00:00Z')), '2026-11-06')
 })

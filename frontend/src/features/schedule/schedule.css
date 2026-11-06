@@ -160,18 +160,6 @@
   margin-top: 4px;
 }
 
-.schedule-event-actions small {
-  color: #657795;
-  font-size: 12px;
-}
-
-.schedule-event-actions a {
-  color: #3f5fff;
-  font-size: 12px;
-  font-weight: 600;
-  text-decoration: none;
-}
-
 .schedule-event-actions button {
   min-height: 36px;
   margin-left: auto;
@@ -270,12 +258,6 @@
   color: #3f5fff;
   font-size: 15px;
   font-weight: 700;
-}
-
-.saved-banner p {
-  margin: 6px 0 0;
-  color: #657795;
-  font-size: 12px;
 }
 
 .saved-section {

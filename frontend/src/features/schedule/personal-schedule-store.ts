@@ -16,7 +16,9 @@ export interface PersonalSchedule {
 
 type ScheduleStorage = Pick<Storage, 'getItem' | 'setItem'>
 
-function storageKey(accountId: string) {
+export type PersonalChange = (current: PersonalSchedule[]) => PersonalSchedule[]
+
+export function storageKey(accountId: string) {
   return `nest:personal-schedules:v1:${encodeURIComponent(accountId)}`
 }
 
@@ -75,6 +77,18 @@ export function savePersonalSchedules(
   schedules: PersonalSchedule[],
 ) {
   storage.setItem(storageKey(accountId), JSON.stringify(schedules))
+}
+
+// 탭을 여러 개 열어도 다른 탭에서 저장한 일정을 덮어쓰지 않도록 저장 직전에 다시 읽고 바꾼다.
+export function changePersonalSchedules(
+  storage: ScheduleStorage,
+  accountId: string,
+  change: PersonalChange,
+) {
+  const current = loadPersonalSchedules(storage, accountId)
+  const next = change(current)
+  savePersonalSchedules(storage, accountId, next)
+  return { current, next }
 }
 
 export function isAcademicSaved(
