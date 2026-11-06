@@ -43,7 +43,6 @@ export function NoticeListPage() {
   // 세션과 CSRF 토큰을 받기 전에 요청하면 게스트 세션이 둘 생길 수 있어 세션 확인을 기다린다.
   const { loading: authLoading } = useAuth()
   const profile = JSON.stringify(noticeProfile(savedProfile?.profile ?? null))
-  const [attempt, setAttempt] = useState(0)
   const [loaded, setLoaded] = useState<{
     key: string
     items: NoticeSummary[] | null
@@ -52,7 +51,7 @@ export function NoticeListPage() {
   } | null>(null)
 
   // 응답의 key가 현재 조건과 다르면 아직 불러오는 중으로 본다.
-  const key = `${source}:${match}:${profile}:${attempt}`
+  const key = `${source}:${match}:${profile}`
   const current = !authLoading && loaded?.key === key ? loaded : null
   const notices = current?.items ?? null
   const error = current?.error ?? null
@@ -124,9 +123,6 @@ export function NoticeListPage() {
       {error && (
         <div className="notice-message" role="alert">
           <p>{error}</p>
-          <button type="button" onClick={() => setAttempt((n) => n + 1)}>
-            다시 시도
-          </button>
         </div>
       )}
       {signedOut && (
