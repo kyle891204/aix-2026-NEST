@@ -16,7 +16,8 @@ import static org.mockito.Mockito.*;
 class NoticeServiceTests {
     private final NoticeRepository notices = mock(NoticeRepository.class);
     private final TranslationService translations = mock(TranslationService.class);
-    private final NoticeService service = new NoticeService(notices, new NoticeMatcher(), translations);
+    private final NoticeService service = new NoticeService(notices, new NoticeMatcher(), translations,
+            new NoticeAnalyses(mock(NoticeAnalysisClient.class)));
 
     private void noticeWithContent(String content) {
         when(notices.findById("long")).thenReturn(Optional.of(new Notice("long", Source.UNIVERSITY, "ERICA 학사",
