@@ -91,24 +91,26 @@ timestamp는 실행 시각을 UTC ISO 8601 형식으로 반환한다. 인증 없
 | 쿼리 | 필수 | 설명 |
 | --- | --- | --- |
 | `from` | Y | 조회 시작일 (`YYYY-MM-DD`) |
-| `to` | Y | 조회 종료일 (`YYYY-MM-DD`). `from` 이후, 최대 366일 범위 |
+| `to` | Y | 조회 종료일 (`YYYY-MM-DD`). `from` 이후, 시작일과 종료일을 포함해 최대 366일 |
 
 ```json
 {
   "sourceUrl": "https://www.hanyang.ac.kr/-93",
   "checkedAt": "2026-11-04",
   "schedules": [
-    { "scheduleId": "2026-2-example", "title": "일정 제목", "startDate": "2026-11-02", "endDate": "2026-11-06" }
+    { "scheduleId": "academic-2026-0123456789-1", "title": "일정 제목", "startDate": "2026-11-02", "endDate": "2026-11-06" }
   ]
 }
 ```
 
 기간과 겹치는 일정을 시작일 순으로 돌려준다. 하루 일정은 `startDate`와 `endDate`가 같다.
+`scheduleId` 형식은 `academic-<학년도>-<제목 해시 10자>-<같은 학년도·제목 안의 순서>`다.
 `checkedAt`은 공식 페이지와 대조한 날짜이고, 일정을 넣기 전에는 null이다.
 날짜 누락·형식 오류·기간 초과는 400 `INVALID_REQUEST`(`fields.from` 또는 `fields.to`)다.
 
 일정 갱신: 브라우저에서 학사일정 페이지를 연 뒤 같은 브라우저로 `get_term_events` 응답을 파일로 저장하고,
 `node scripts/academic-calendar-to-seed.mjs <파일>...`로 변환한다. 학년도별 파일을 모두 넘긴다(`sYear=2026`은 2026년 3월~2027년 2월).
+`checkedAt`은 변환한 날로 들어간다. 예전에 저장한 파일을 다시 변환할 때는 `--checked-at=YYYY-MM-DD`로 저장한 날을 넣는다.
 
 ## 구현된 LMS 개발 검사 API
 

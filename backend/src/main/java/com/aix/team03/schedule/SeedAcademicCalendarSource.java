@@ -28,9 +28,13 @@ public class SeedAcademicCalendarSource implements AcademicCalendarSource {
     public AcademicCalendar calendar() { return calendar; }
 
     static AcademicCalendar validated(AcademicCalendar calendar) {
+        if (calendar == null || calendar.sourceUrl() == null || calendar.sourceUrl().isBlank()
+                || calendar.events() == null) {
+            throw new IllegalStateException("학사일정 항목을 확인해 주세요: " + calendar);
+        }
         var ids = new HashSet<String>();
         for (AcademicEvent event : calendar.events()) {
-            if (event.scheduleId() == null || event.scheduleId().isBlank() || event.title() == null
+            if (event == null || event.scheduleId() == null || event.scheduleId().isBlank() || event.title() == null
                     || event.title().isBlank() || event.startDate() == null || event.endDate() == null
                     || event.endDate().isBefore(event.startDate()) || !ids.add(event.scheduleId())) {
                 throw new IllegalStateException("학사일정 항목을 확인해 주세요: " + event);
