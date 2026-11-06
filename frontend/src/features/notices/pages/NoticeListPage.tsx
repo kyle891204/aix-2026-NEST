@@ -1,16 +1,17 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { toDashboardProfile } from '../../dashboard/profile-codes'
 import { useAuth } from '../../auth/auth-context'
 import { useDemoProfile } from '../../profile/demo-profile-context'
 import {
   isSignedOut,
+  noticeProfile,
   searchNotices,
   type MatchFilter,
   type NoticeSource,
   type NoticeSummary,
 } from '../api'
-import { formatDeadline, matchLabel, sourceLabel } from '../notice-display'
+import { dateLine, matchLabel, sourceLabel } from '../notice-display'
+import { NoticeLoading } from '../NoticeLoading'
 import '../notices.css'
 
 const SOURCE_FILTERS: { label: string; value: NoticeSource | null }[] = [
@@ -41,9 +42,7 @@ export function NoticeListPage() {
   const { savedProfile } = useDemoProfile()
   // 세션과 CSRF 토큰을 받기 전에 요청하면 게스트 세션이 둘 생길 수 있어 세션 확인을 기다린다.
   const { loading: authLoading } = useAuth()
-  const profile = JSON.stringify(
-    toDashboardProfile(savedProfile?.profile ?? null),
-  )
+  const profile = JSON.stringify(noticeProfile(savedProfile?.profile ?? null))
   const [attempt, setAttempt] = useState(0)
   const [loaded, setLoaded] = useState<{
     key: string
@@ -91,7 +90,8 @@ export function NoticeListPage() {
       <h1>전체공지</h1>
 
       <div className="notice-total">
-        <strong>총 {notices?.length ?? 0}건</strong>
+        {/* 불러오는 동안 0건으로 보이지 않도록 다 불러온 뒤에만 건수를 보여준다. */}
+        {notices && <strong>총 {notices.length}건</strong>}
         {notices?.some((notice) => notice.sample) && <span>예시 데이터</span>}
       </div>
 
@@ -134,11 +134,7 @@ export function NoticeListPage() {
           로그인하면 공지를 볼 수 있어요. <Link to="/login">로그인하기 ›</Link>
         </p>
       )}
-      {!error && !signedOut && !notices && (
-        <p className="notice-hint" aria-live="polite">
-          공지를 불러오고 있어요…
-        </p>
-      )}
+      {!error && !signedOut && !notices && <NoticeLoading />}
       {notices?.length === 0 && (
         <p className="notice-hint">조건에 맞는 공지가 없어요.</p>
       )}
@@ -157,7 +153,9 @@ export function NoticeListPage() {
                   {badge}
                 </span>
               )}
-              <span className="notice-badge">{sourceLabel(notice.source)}</span>
+              <span className="notice-badge">
+                {notice.sourceName ?? sourceLabel(notice.source)}
+              </span>
             </span>
             <strong>{notice.title}</strong>
             {notice.matchReasons.length > 0 && (
@@ -166,7 +164,7 @@ export function NoticeListPage() {
               </span>
             )}
             <span className="notice-hint">
-              {formatDeadline(notice.deadline) ?? '마감일 없음'}
+              {dateLine(notice.deadline, notice.postedAt)}
             </span>
           </Link>
         )

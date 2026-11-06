@@ -6,15 +6,17 @@ import {
 } from '../src/features/notices/action-checks.ts'
 import {
   isSignedOut,
+  noticeProfile,
   searchNotices,
   translateNotice,
   viewNotice,
 } from '../src/features/notices/api.ts'
-import { toDashboardProfile } from '../src/features/dashboard/profile-codes.ts'
 import {
+  dateLine,
   formatDeadline,
   matchLabel,
   needsTranslation,
+  postedLabel,
   sourceLabel,
 } from '../src/features/notices/notice-display.ts'
 import {
@@ -42,7 +44,7 @@ function memoryStorage() {
   }
 }
 
-const emptyProfile = toDashboardProfile(null)
+const emptyProfile = noticeProfile(null)
 
 afterEach(() => {
   globalThis.fetch = originalFetch
@@ -81,7 +83,7 @@ test('필터는 쿼리로, 프로필은 본문으로 보낸다', async () => {
   assert.equal(calls[0].url, '/api/v1/notices/search')
   assert.equal(calls[0].init.method, 'POST')
 
-  const profile = toDashboardProfile({
+  const profile = noticeProfile({
     nationality: 'VN',
     degree: '',
     year: '',
@@ -100,21 +102,24 @@ test('공지 상세 요청은 프로필을 URL에 넣지 않는다', async () =>
   mockFetch({})
   await viewNotice(
     'univ-001',
-    toDashboardProfile({ nationality: 'VN', degree: '', year: '' }),
+    noticeProfile({ nationality: 'VN', degree: '', year: '' }),
   )
   assert.equal(calls[0].url, '/api/v1/notices/univ-001/view')
   assert.equal(JSON.parse(String(calls[0].init.body)).nationality, 'VN')
 })
 
-test('번역 요청에 목표 언어와 CSRF 토큰을 보낸다', async () => {
+test('번역 요청에 목표 언어·단과대와 CSRF 토큰을 보낸다', async () => {
   setCsrfToken('csrf-fixture')
   mockFetch({ translationStatus: 'SUCCEEDED', translated: null })
 
-  await translateNotice('univ-001', 'en')
+  await translateNotice('coll-001', 'en', 'computing')
 
-  assert.equal(calls[0].url, '/api/v1/notices/univ-001/translations')
+  assert.equal(calls[0].url, '/api/v1/notices/coll-001/translations')
   assert.equal(calls[0].init.method, 'POST')
-  assert.equal(calls[0].init.body, '{"targetLanguage":"en"}')
+  assert.equal(
+    calls[0].init.body,
+    '{"targetLanguage":"en","collegeId":"computing"}',
+  )
   assert.equal(
     new Headers(calls[0].init.headers).get('X-CSRF-Token'),
     'csrf-fixture',
@@ -170,4 +175,39 @@ test('로그인이 필요한 오류만 로그인 안내로 처리한다', () => 
   assert.equal(isSignedOut(new ApiError(401, '', 'AUTH_REQUIRED')), true)
   assert.equal(isSignedOut(new ApiError(403, '', 'AUTH_CSRF_INVALID')), false)
   assert.equal(isSignedOut(new Error('network')), false)
+})
+
+test('마감일이 없으면 게시일을, 둘 다 없으면 본문 확인을 안내한다', () => {
+  assert.equal(
+    dateLine('2026-11-20T17:00:00+09:00', '2026-10-23'),
+    '2026.11.20 17:00 · KST',
+  )
+  assert.equal(dateLine(null, '2026-10-23'), '게시 2026.10.23')
+  assert.equal(dateLine(null, null), '날짜 알 수 없음 · 본문에서 확인')
+  assert.equal(postedLabel('2026-10-23'), '2026.10.23')
+  assert.equal(postedLabel(null), '날짜 알 수 없음 · 본문에서 확인')
+})
+
+test('공지 요청에 프로필의 단과대를 함께 보낸다', () => {
+  assert.deepEqual(
+    noticeProfile({
+      nationality: 'VN',
+      degree: '석사',
+      year: '1학년',
+      collegeId: 'computing',
+    }),
+    {
+      nationality: 'VN',
+      visaType: null,
+      degree: 'MASTER',
+      year: '1',
+      collegeId: 'computing',
+    },
+  )
+  assert.equal(noticeProfile(null).collegeId, null)
+  assert.equal(
+    noticeProfile({ nationality: '', degree: '', year: '', collegeId: '' })
+      .collegeId,
+    null,
+  )
 })

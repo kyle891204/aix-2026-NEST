@@ -38,6 +38,21 @@ export function formatDeadline(deadline: string | null) {
   return `${parts.year}.${parts.month}.${parts.day} ${parts.hour}:${parts.minute} · KST`
 }
 
+const UNKNOWN_DATE = '날짜 알 수 없음 · 본문에서 확인'
+
+// 게시판에서 게시일을 읽지 못한 공지는 날짜를 비우지 않고 본문 확인을 안내한다.
+export function postedLabel(postedAt: string | null) {
+  return postedAt ? postedAt.replaceAll('-', '.') : UNKNOWN_DATE
+}
+
+// 목록에는 마감일을 먼저 보여주고, 없으면 게시일을 보여준다.
+export function dateLine(deadline: string | null, postedAt: string | null) {
+  return (
+    formatDeadline(deadline) ??
+    (postedAt ? `게시 ${postedLabel(postedAt)}` : UNKNOWN_DATE)
+  )
+}
+
 export function needsTranslation(language: string, originalLanguage: string) {
   return language !== originalLanguage
 }
