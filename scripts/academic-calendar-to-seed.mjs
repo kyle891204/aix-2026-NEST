@@ -1,5 +1,6 @@
 // 브라우저에서 저장한 학사일정 파일(sYear별 get_term_events 응답)을 백엔드 seed로 변환한다.
-// 사용: node scripts/academic-calendar-to-seed.mjs <저장한 파일>...
+// 사용: node scripts/academic-calendar-to-seed.mjs [--checked-at=YYYY-MM-DD] <저장한 파일>...
+// checkedAt은 공식 페이지와 대조한 날이다. 예전에 저장한 파일을 다시 변환할 때는 저장한 날을 넣는다(기본값: 오늘).
 import { createHash } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";
 
@@ -28,7 +29,14 @@ function readEvents(path) {
   return JSON.parse(saved.data).flatMap((month) => month.events);
 }
 
-const paths = process.argv.slice(2);
+const CHECKED_AT = /^--checked-at=(\d{4}-\d{2}-\d{2})$/;
+const args = process.argv.slice(2);
+const checkedAtArg = args.find((arg) => arg.startsWith("--checked-at"));
+if (checkedAtArg && !CHECKED_AT.test(checkedAtArg)) {
+  console.error("--checked-at=YYYY-MM-DD 형식으로 입력해 주세요.");
+  process.exit(1);
+}
+const paths = args.filter((arg) => arg !== checkedAtArg);
 if (paths.length === 0) {
   console.error("저장한 학사일정 파일 경로를 입력해 주세요.");
   process.exit(1);
@@ -62,9 +70,11 @@ const events = paths
     };
   });
 
-const checkedAt = new Intl.DateTimeFormat("en-CA", {
-  timeZone: "Asia/Seoul",
-}).format(new Date());
+const checkedAt = checkedAtArg
+  ? CHECKED_AT.exec(checkedAtArg)[1]
+  : new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul" }).format(
+      new Date(),
+    );
 writeFileSync(
   OUTPUT,
   `${JSON.stringify({ sourceUrl: SOURCE_URL, checkedAt, events }, null, 2)}\n`,

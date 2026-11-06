@@ -3,6 +3,7 @@ package com.aix.team03.schedule;
 import com.aix.team03.schedule.ScheduleModels.AcademicCalendar;
 import com.aix.team03.schedule.ScheduleModels.AcademicEvent;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.json.JsonMapper;
@@ -45,6 +46,15 @@ class SeedAcademicCalendarSourceTests {
                 .isInstanceOf(IllegalStateException.class).hasMessageContaining("학사일정 항목을 확인해 주세요");
         assertThatThrownBy(() -> SeedAcademicCalendarSource.validated(new AcademicCalendar(
                 " ", DAY, List.of(event))))
+                .isInstanceOf(IllegalStateException.class).hasMessageContaining("학사일정 항목을 확인해 주세요");
+    }
+
+    @Test
+    void nullEventIsRejectedWithTheSameMessage() {
+        var events = new ArrayList<AcademicEvent>();
+        events.add(null);
+        assertThatThrownBy(() -> SeedAcademicCalendarSource.validated(new AcademicCalendar(
+                "https://example.com/calendar", DAY, events)))
                 .isInstanceOf(IllegalStateException.class).hasMessageContaining("학사일정 항목을 확인해 주세요");
     }
 

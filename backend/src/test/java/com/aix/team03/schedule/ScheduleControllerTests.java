@@ -53,8 +53,8 @@ class ScheduleControllerTests {
     }
 
     @Test
-    void rangeOfExactly366DaysIsAllowed() throws Exception {
-        call("?from=2026-01-01&to=2027-01-02").andExpect(status().isOk());
+    void leapAcademicYearOf366DaysIsAllowed() throws Exception {
+        call("?from=2027-03-01&to=2028-02-29").andExpect(status().isOk());
     }
 
     @Test
@@ -72,7 +72,8 @@ class ScheduleControllerTests {
     void reversedOrTooLongRangesAreRejected() throws Exception {
         call("?from=2026-11-30&to=2026-11-01").andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.fields.to").exists());
-        call("?from=2026-01-01&to=2027-01-03").andExpect(status().isBadRequest())
+        // 시작일과 종료일을 모두 세면 367일이다.
+        call("?from=2026-01-01&to=2027-01-02").andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.fields.to").exists());
     }
 

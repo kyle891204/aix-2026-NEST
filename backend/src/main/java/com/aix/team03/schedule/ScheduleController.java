@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/schedules")
 public class ScheduleController {
+    // 시작일과 종료일을 모두 센다. 윤년이 든 학년도 전체(366일)도 한 번에 조회할 수 있다.
     private static final int MAX_RANGE_DAYS = 366;
 
     private final ScheduleService schedules;
@@ -29,7 +30,7 @@ public class ScheduleController {
             @RequestParam(required = false) String to) {
         LocalDate start = date("from", from);
         LocalDate end = date("to", to);
-        if (end.isBefore(start) || ChronoUnit.DAYS.between(start, end) > MAX_RANGE_DAYS) {
+        if (end.isBefore(start) || ChronoUnit.DAYS.between(start, end) + 1 > MAX_RANGE_DAYS) {
             throw new InvalidQueryException("to", "from 이후 날짜여야 하며 최대 366일까지 조회할 수 있습니다.");
         }
         return schedules.academic(start, end);

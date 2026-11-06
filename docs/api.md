@@ -91,7 +91,7 @@ timestamp는 실행 시각을 UTC ISO 8601 형식으로 반환한다. 인증 없
 | 쿼리 | 필수 | 설명 |
 | --- | --- | --- |
 | `from` | Y | 조회 시작일 (`YYYY-MM-DD`) |
-| `to` | Y | 조회 종료일 (`YYYY-MM-DD`). `from` 이후, 최대 366일 범위 |
+| `to` | Y | 조회 종료일 (`YYYY-MM-DD`). `from` 이후, 시작일과 종료일을 포함해 최대 366일 |
 
 ```json
 {
@@ -110,6 +110,7 @@ timestamp는 실행 시각을 UTC ISO 8601 형식으로 반환한다. 인증 없
 
 일정 갱신: 브라우저에서 학사일정 페이지를 연 뒤 같은 브라우저로 `get_term_events` 응답을 파일로 저장하고,
 `node scripts/academic-calendar-to-seed.mjs <파일>...`로 변환한다. 학년도별 파일을 모두 넘긴다(`sYear=2026`은 2026년 3월~2027년 2월).
+`checkedAt`은 변환한 날로 들어간다. 예전에 저장한 파일을 다시 변환할 때는 `--checked-at=YYYY-MM-DD`로 저장한 날을 넣는다.
 
 ## 구현된 LMS 개발 검사 API
 
