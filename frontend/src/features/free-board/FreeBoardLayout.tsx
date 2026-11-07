@@ -1,3 +1,4 @@
+import { BoardTranslations } from '../translation/BoardTranslations'
 import { useState } from 'react'
 import { Outlet } from 'react-router-dom'
 import { useAuth } from '../auth/auth-context'
@@ -63,7 +64,13 @@ function FreeBoardSession() {
             {error}
           </p>
         )}
-        <Outlet />
+        <BoardTranslations
+          board="free"
+          posts={posts}
+          targetLanguage={actor.language}
+        >
+          <Outlet />
+        </BoardTranslations>
         <p className="market-footnote">
           자유게시판 · 작성한 글과 댓글은 이 탭에서만 유지되며 다른 사용자에게
           전송되지 않아요.

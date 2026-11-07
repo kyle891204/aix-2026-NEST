@@ -1,3 +1,4 @@
+import { BoardTranslations, TranslationText, ReplyLanguageSelect } from '../translation/BoardTranslations'
 import { questionMessages } from './question-messages'
 import {
   createContext,
@@ -92,7 +93,9 @@ function QuestionSession() {
             {error}
           </p>
         )}
+        <BoardTranslations board="questions" posts={posts} targetLanguage={actor.language}>
         <Outlet />
+        </BoardTranslations>
         <p className="market-footnote">
           목업 질문게시판 · 작성한 글과 답글은 이 탭에서만 유지되며 다른
           사용자에게 전송되지 않아요.
@@ -181,8 +184,12 @@ export function QuestionListPage() {
             <p className="market-meta">
               {post.author} · {post.example ? '예시 사용자' : '작성자'}
             </p>
+            <TranslationText itemId={`${post.id}:title`}>
             <h2>{post.title}</h2>
+            </TranslationText>
+            <TranslationText itemId={`${post.id}:preview`}>
             <p className="market-excerpt">{post.content.split('\n')[0]}</p>
+            </TranslationText>
             <p className="market-meta">
               원문 · {languageLabels[post.language]} |{' '}
               {categoryLabels[post.category]} · {statusLabels[post.status]}
@@ -221,6 +228,7 @@ export function QuestionDetailPage() {
   const { postId } = useParams()
   const { posts, actor, commit, writable } = useQuestion()
   const [reply, setReply] = useState('')
+  const [replyLanguage, setReplyLanguage] = useState<QuestionLanguage>(actor.language)
   const navigate = useNavigate()
   const [confirmation, setConfirmation] = useState<'resolve' | 'delete' | null>(
     null,
@@ -260,6 +268,7 @@ export function QuestionDetailPage() {
       content: reply.trim(),
       createdAt: new Date().toISOString(),
     }
+    entry.language = replyLanguage
     if (
       commit(
         posts.map((item) =>
@@ -283,13 +292,17 @@ export function QuestionDetailPage() {
         <span className="market-badge">
           {categoryLabels[post.category]} · {statusLabels[post.status]}
         </span>
+        <TranslationText itemId={`${post.id}:title`}>
         <h1>{post.title}</h1>
+        </TranslationText>
 
         <p className="market-meta">
           {dateLabel(post.createdAt)} · KST · {languageLabels[post.language]}{' '}
           원문
         </p>
+        <TranslationText itemId={`${post.id}:content`}>
         <p className="market-body">{post.content}</p>
+        </TranslationText>
 
         {!post.example &&
           post.authorId === actor.id &&
@@ -390,6 +403,7 @@ export function QuestionDetailPage() {
           <QuestionReplyCard key={item.id} postId={post.id} reply={item} />
         ))}
         <form onSubmit={submitReply}>
+          <ReplyLanguageSelect value={replyLanguage} onChange={setReplyLanguage} disabled={!writable} />
           <label>
             답글 작성
             <textarea
@@ -485,7 +499,9 @@ function QuestionReplyCard({
           </div>
         </form>
       ) : (
+        <TranslationText itemId={`${postId}:reply:${reply.id}`}>
         <p className="market-body">{reply.content}</p>
+        </TranslationText>
       )}
       <p className="market-meta">{dateLabel(reply.createdAt)} · KST</p>
       {canManage &&
