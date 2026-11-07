@@ -1,3 +1,4 @@
+import { useLanguage } from '../../../shared/i18n/language-context'
 import { useEffect, useRef, useState } from 'react'
 import { EmergencyContacts } from '../components/EmergencyContacts'
 import '../life.css'
@@ -19,25 +20,27 @@ declare global {
 }
 
 export function LifeGuidePage() {
+  const { t } = useLanguage()
+
   const [selectedTab, setSelectedTab] = useState<
     'facilities' | 'emergency' | null
   >(null)
 
   return (
     <section className="life-guide">
-      <h1>생활안내</h1>
+      <h1>{t('생활안내')}</h1>
 
       <div
         className="life-guide-options"
         role="group"
-        aria-label="생활안내 선택"
+        aria-label={t('생활안내 선택')}
       >
         <button
           type="button"
           aria-pressed={selectedTab === 'facilities'}
           onClick={() => setSelectedTab('facilities')}
         >
-          주변 편의시설 안내
+          {t('주변 편의시설 안내')}
         </button>
         <button
           type="button"
@@ -45,20 +48,20 @@ export function LifeGuidePage() {
           aria-pressed={selectedTab === 'emergency'}
           onClick={() => setSelectedTab('emergency')}
         >
-          긴급연락처
+          {t('긴급연락처')}
         </button>
       </div>
 
       {selectedTab === 'facilities' && (
         <section aria-labelledby="facilities-title">
-          <h2 id="facilities-title">주변 편의시설 안내</h2>
+          <h2 id="facilities-title">{t('주변 편의시설 안내')}</h2>
           <NearbyFacilitiesMap />
         </section>
       )}
 
       {selectedTab === 'emergency' && (
         <section aria-labelledby="emergency-title">
-          <h2 id="emergency-title">긴급연락처</h2>
+          <h2 id="emergency-title">{t('긴급연락처')}</h2>
           <EmergencyContacts />
         </section>
       )}
@@ -67,6 +70,8 @@ export function LifeGuidePage() {
 }
 
 function NearbyFacilitiesMap() {
+  const { t } = useLanguage()
+
   const mapRef = useRef<HTMLDivElement>(null)
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>(() =>
     window.kakao?.maps ? 'loading' : 'error',
@@ -114,18 +119,20 @@ function NearbyFacilitiesMap() {
         ref={mapRef}
         className="life-guide-map"
         role="region"
-        aria-label="한양대학교 ERICA 주변 지도"
+        aria-label={t('한양대학교 ERICA 주변 지도')}
       />
       {status === 'loading' && (
         <div className="life-guide-map-message" role="status">
-          지도를 불러오고 있습니다…
+          {t('지도를 불러오고 있습니다…')}
         </div>
       )}
       {status === 'error' && (
         <div className="life-guide-map-message" role="alert">
-          <p>지도를 불러오지 못했습니다. 새로고침 후 다시 시도해 주세요.</p>
+          <p>
+            {t('지도를 불러오지 못했습니다. 새로고침 후 다시 시도해 주세요.')}
+          </p>
           <button type="button" onClick={() => window.location.reload()}>
-            새로고침
+            {t('새로고침')}
           </button>
         </div>
       )}

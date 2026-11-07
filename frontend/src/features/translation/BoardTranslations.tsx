@@ -1,3 +1,4 @@
+import { useLanguage } from '../../shared/i18n/language-context'
 import {
   cloneElement,
   createContext,
@@ -186,9 +187,10 @@ export function ReplyLanguageSelect({
   onChange: (language: Language) => void
   disabled?: boolean
 }) {
+  const { t } = useLanguage()
   return (
     <label className="translation-reply-language">
-      작성 언어 / Writing language / 撰写语言
+      {t('작성 언어')}
       <select
         value={value}
         onChange={(event) => onChange(event.target.value as Language)}
