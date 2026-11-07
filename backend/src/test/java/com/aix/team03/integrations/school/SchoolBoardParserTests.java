@@ -343,6 +343,7 @@ class SchoolBoardParserTests {
         assertThat(collectAll(collector)).singleElement().satisfies(notice -> {
             assertThat(notice.detailRead()).isTrue();
             assertThat(notice.content()).isEmpty();
+            assertThat(notice.detailFailed()).isTrue();
         });
     }
 

@@ -44,16 +44,21 @@ public class NoticeService {
     private final NoticeRepository notices;
     private final NoticeMatcher matcher;
     private final TranslationService translations;
+    private final NoticeAnalyses analyses;
 
-    public NoticeService(NoticeRepository notices, NoticeMatcher matcher, TranslationService translations) {
+    public NoticeService(NoticeRepository notices, NoticeMatcher matcher, TranslationService translations,
+            NoticeAnalyses analyses) {
         this.notices = notices;
         this.matcher = matcher;
         this.translations = translations;
+        this.analyses = analyses;
     }
 
+    // 목록은 Gemini를 기다리지 않도록 이미 분석한 공지만 분석 결과로 판별한다.
     public List<NoticeSummary> search(Source source, MatchFilter match, StudentProfile profile, String collegeId) {
         return notices.findAll().stream()
                 .filter(notice -> visibleTo(notice, collegeId))
+                .map(analyses::cached)
                 .filter(notice -> source == null || notice.source() == source)
                 .map(notice -> summary(notice, profile))
                 .filter(summary -> match == null || summary.matchStatus().name().equals(match.name()))
@@ -65,6 +70,8 @@ public class NoticeService {
         var notice = find(noticeId);
         // 다른 단과대 공지는 주소로 직접 열어도 없는 공지로 처리한다.
         if (!visibleTo(notice, collegeId)) throw new NoticeNotFoundException();
+        // 처음 여는 실제 공지는 여기서 분석한다. 실패하면 분석 전 공지를 그대로 보여준다.
+        notice = analyses.analyze(notice);
         var result = match(notice, profile);
         // savedScheduleId는 #10 일정 서비스가 생기면 채운다.
         return new NoticeDetail(notice.noticeId(), notice.source(), notice.sourceName(), notice.category(),
@@ -77,6 +84,8 @@ public class NoticeService {
     public TranslationResponse translate(String noticeId, String targetLanguage, String collegeId) {
         var notice = find(noticeId);
         if (!visibleTo(notice, collegeId)) throw new NoticeNotFoundException();
+        // 상세에 보이는 해야 할 일·서류와 같은 내용을 번역한다.
+        notice = analyses.cached(notice);
         try {
             // 번역된 필드는 TranslationService 캐시에 남으므로 재시도하면 실패한 필드부터 이어서 호출한다.
             return new TranslationResponse(noticeId, targetLanguage, "SUCCEEDED",
