@@ -88,8 +88,8 @@ function NearbyFacilitiesMap() {
       if (cancelled) return
 
       new maps.Map(container, {
-        // 한양대학교 서울캠퍼스 주변
-        center: new maps.LatLng(37.5572, 127.0453),
+        // 한양대학교 ERICA캠퍼스 주변
+        center: new maps.LatLng(37.29667, 126.83559),
         level: 4,
       })
       window.clearTimeout(timeout)
@@ -114,7 +114,7 @@ function NearbyFacilitiesMap() {
         ref={mapRef}
         className="life-guide-map"
         role="region"
-        aria-label="한양대학교 서울캠퍼스 주변 지도"
+        aria-label="한양대학교 ERICA 주변 지도"
       />
       {status === 'loading' && (
         <div className="life-guide-map-message" role="status">
