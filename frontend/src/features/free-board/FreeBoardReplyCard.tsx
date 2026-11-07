@@ -1,3 +1,4 @@
+import { TranslationText } from '../translation/BoardTranslations'
 import { useState } from 'react'
 import { useFreeBoard } from './free-board-context'
 import {
@@ -77,7 +78,9 @@ export function FreeBoardReplyCard({
           </div>
         </form>
       ) : (
-        <p className="market-body">{reply.content}</p>
+        <TranslationText itemId={`${postId}:reply:${reply.id}`}>
+          <p className="market-body">{reply.content}</p>
+        </TranslationText>
       )}
       <p className="market-meta">{dateLabel(reply.createdAt)} · KST</p>
       {canManage &&

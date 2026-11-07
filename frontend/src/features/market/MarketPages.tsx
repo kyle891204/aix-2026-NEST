@@ -1,3 +1,4 @@
+import { BoardTranslations, TranslationText, ReplyLanguageSelect } from '../translation/BoardTranslations'
 import {
   createContext,
   useContext,
@@ -90,7 +91,9 @@ function MarketSession() {
             {error}
           </p>
         )}
+        <BoardTranslations board="market" posts={posts} targetLanguage={actor.language}>
         <Outlet />
+        </BoardTranslations>
         <p className="market-footnote">
           목업 장터 · 작성한 글과 답글은 이 탭에서만 유지되며 다른 사용자에게
           전송되지 않아요.
@@ -178,14 +181,18 @@ export function MarketListPage() {
             <p className="market-meta">
               {post.author} · {post.example ? '예시 사용자' : '작성자'}
             </p>
+            <TranslationText itemId={`${post.id}:title`} prefix={`[${typeLabels[post.type]}] `}>
             <h2>
               [{typeLabels[post.type]}] {post.title}
             </h2>
+            </TranslationText>
             <p>
               가격: {post.example && '예시 '}
               {post.price.toLocaleString('ko-KR')}원
             </p>
+            <TranslationText itemId={`${post.id}:preview`}>
             <p className="market-excerpt">{post.content.split('\n')[0]}</p>
+            </TranslationText>
             <p className="market-meta">
               원문 · {languageLabels[post.language]} |{' '}
               {statusLabels[post.status]}
@@ -224,6 +231,7 @@ export function MarketDetailPage() {
   const { postId } = useParams()
   const { posts, actor, commit, writable } = useMarket()
   const [reply, setReply] = useState('')
+  const [replyLanguage, setReplyLanguage] = useState<MarketLanguage>(actor.language)
   const post = posts.find((item) => item.id === postId)
   if (!post) return <MissingPost />
   function submitReply(event: FormEvent) {
@@ -237,6 +245,7 @@ export function MarketDetailPage() {
       content: reply.trim(),
       createdAt: new Date().toISOString(),
     }
+    entry.language = replyLanguage
     if (
       commit(
         posts.map((item) =>
@@ -258,16 +267,22 @@ export function MarketDetailPage() {
           {post.author} · {post.example ? '예시 사용자' : '작성자'}
         </p>
         <span className="market-badge">{statusLabels[post.status]}</span>
+        <TranslationText itemId={`${post.id}:title`} prefix={`[${typeLabels[post.type]}] `}>
         <h1>
           [{typeLabels[post.type]}] {post.title}
         </h1>
+        </TranslationText>
         <p className="market-price">{post.price.toLocaleString('ko-KR')}원</p>
         <p className="market-meta">
           {dateLabel(post.createdAt)} · KST · {languageLabels[post.language]}{' '}
           원문
         </p>
+        <TranslationText itemId={`${post.id}:content`}>
         <p className="market-body">{post.content}</p>
+        </TranslationText>
+        <TranslationText itemId={`${post.id}:location`} prefix={'거래 희망 장소: '}>
         <p>거래 희망 장소: {post.location || '답글에서 협의'}</p>
+        </TranslationText>
         {!post.example && post.authorId === actor.id && (
           <Link className="market-secondary" to="edit">
             글·거래 상태 수정
@@ -283,6 +298,7 @@ export function MarketDetailPage() {
           <MarketReplyCard key={item.id} postId={post.id} reply={item} />
         ))}
         <form onSubmit={submitReply}>
+          <ReplyLanguageSelect value={replyLanguage} onChange={setReplyLanguage} disabled={!writable} />
           <label>
             답글 작성
             <textarea
@@ -369,7 +385,9 @@ function MarketReplyCard({ postId, reply }: { postId: string; reply: Reply }) {
           </div>
         </form>
       ) : (
+        <TranslationText itemId={`${postId}:reply:${reply.id}`}>
         <p className="market-body">{reply.content}</p>
+        </TranslationText>
       )}
       <p className="market-meta">{dateLabel(reply.createdAt)} · KST</p>
       {canManage &&

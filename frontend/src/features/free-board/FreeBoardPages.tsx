@@ -1,3 +1,7 @@
+import {
+  TranslationText,
+  ReplyLanguageSelect,
+} from '../translation/BoardTranslations'
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useFreeBoard } from './free-board-context'
@@ -39,8 +43,12 @@ export function FreeBoardListPage() {
             <p className="market-meta">
               {post.author} · {post.example ? '예시 사용자' : '작성자'}
             </p>
-            <h2>{post.title}</h2>
-            <p className="market-excerpt">{post.content.split('\n')[0]}</p>
+            <TranslationText itemId={`${post.id}:title`}>
+              <h2>{post.title}</h2>
+            </TranslationText>
+            <TranslationText itemId={`${post.id}:preview`}>
+              <p className="market-excerpt">{post.content.split('\n')[0]}</p>
+            </TranslationText>
             <p className="market-meta">
               {languageLabels[post.language]} 원문 · 댓글 {post.replies.length}
             </p>
@@ -82,6 +90,9 @@ function FreeBoardDetail({ post }: { post: FreeBoardPost }) {
   const { posts, actor, writable, commit } = useFreeBoard()
   const navigate = useNavigate()
   const [reply, setReply] = useState('')
+  const [replyLanguage, setReplyLanguage] = useState<FreeBoardLanguage>(
+    actor.language,
+  )
   const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState('')
   const canManage = writable && !post.example && post.authorId === actor.id
@@ -102,7 +113,16 @@ function FreeBoardDetail({ post }: { post: FreeBoardPost }) {
     event.preventDefault()
     if (!writable) return
     try {
-      if (commit(addFreeBoardReply(posts, post.id, actor, reply))) {
+      if (
+        commit(
+          addFreeBoardReply(
+            posts,
+            post.id,
+            { ...actor, language: replyLanguage },
+            reply,
+          ),
+        )
+      ) {
         setReply('')
         setError('')
       }
@@ -122,12 +142,16 @@ function FreeBoardDetail({ post }: { post: FreeBoardPost }) {
         <p className="market-meta">
           {post.author} · {post.example ? '예시 사용자' : '작성자'}
         </p>
-        <h1>{post.title}</h1>
+        <TranslationText itemId={`${post.id}:title`}>
+          <h1>{post.title}</h1>
+        </TranslationText>
         <p className="market-meta">
           {dateLabel(post.createdAt)} · KST · {languageLabels[post.language]}{' '}
           원문
         </p>
-        <p className="market-body">{post.content}</p>
+        <TranslationText itemId={`${post.id}:content`}>
+          <p className="market-body">{post.content}</p>
+        </TranslationText>
         {canManage && (
           <>
             <div className="free-board-actions">
@@ -189,6 +213,11 @@ function FreeBoardDetail({ post }: { post: FreeBoardPost }) {
           <FreeBoardReplyCard key={item.id} postId={post.id} reply={item} />
         ))}
         <form onSubmit={submitReply}>
+          <ReplyLanguageSelect
+            value={replyLanguage}
+            onChange={setReplyLanguage}
+            disabled={!writable}
+          />
           <label>
             댓글 작성
             <textarea
