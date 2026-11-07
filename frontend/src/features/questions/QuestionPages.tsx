@@ -1,4 +1,10 @@
-import { BoardTranslations, TranslationText, ReplyLanguageSelect } from '../translation/BoardTranslations'
+import { formatBoardDate as dateLabel } from '../../shared/i18n/language'
+import { useLanguage } from '../../shared/i18n/language-context'
+import {
+  BoardTranslations,
+  TranslationText,
+  ReplyLanguageSelect,
+} from '../translation/BoardTranslations'
 import { questionMessages } from './question-messages'
 import {
   createContext,
@@ -50,6 +56,8 @@ export function QuestionLayout() {
   return <QuestionSession key={session?.user?.id ?? 'preview'} />
 }
 function QuestionSession() {
+  const { t, language: uiLanguage } = useLanguage()
+
   const { session } = useAuth()
   const { savedProfile } = useDemoProfile()
   const [initial] = useState(() => {
@@ -67,8 +75,8 @@ function QuestionSession() {
   const [error, setError] = useState(initial.error)
   const actor = {
     id: session?.user?.id ?? 'local-preview',
-    name: savedProfile?.profile.nickname ?? '체험 사용자',
-    language: savedProfile?.profile.language ?? 'ko',
+    name: savedProfile?.profile.nickname ?? t('체험 사용자'),
+    language: uiLanguage,
   }
   const writable = !initial.error && (!!session?.user || import.meta.env.DEV)
   function commit(next: QuestionPost[]) {
@@ -90,15 +98,20 @@ function QuestionSession() {
       <section className="market-page">
         {error && (
           <p className="market-error" role="alert">
-            {error}
+            {t(error)}
           </p>
         )}
-        <BoardTranslations board="questions" posts={posts} targetLanguage={actor.language}>
-        <Outlet />
+        <BoardTranslations
+          board="questions"
+          posts={posts}
+          targetLanguage={actor.language}
+        >
+          <Outlet />
         </BoardTranslations>
         <p className="market-footnote">
-          목업 질문게시판 · 작성한 글과 답글은 이 탭에서만 유지되며 다른
-          사용자에게 전송되지 않아요.
+          {t(
+            '목업 질문게시판 · 작성한 글과 답글은 이 탭에서만 유지되며 다른 사용자에게 전송되지 않아요.',
+          )}
         </p>
       </section>
     </QuestionContext.Provider>
@@ -115,8 +128,10 @@ function Segments<T extends string>({
   options: { value: T; label: string }[]
   onChange: (value: T) => void
 }) {
+  const { t } = useLanguage()
+
   return (
-    <div className="market-segments" role="group" aria-label={label}>
+    <div className="market-segments" role="group" aria-label={t(label)}>
       {options.map((option) => (
         <button
           key={option.value}
@@ -124,13 +139,15 @@ function Segments<T extends string>({
           aria-pressed={value === option.value}
           onClick={() => onChange(option.value)}
         >
-          {option.label}
+          {t(option.label)}
         </button>
       ))}
     </div>
   )
 }
 export function QuestionListPage() {
+  const { t } = useLanguage()
+
   const { posts } = useQuestion()
   const [query, setQuery] = useSearchParams()
   const category = query.get('category') ?? 'all'
@@ -148,87 +165,92 @@ export function QuestionListPage() {
   return (
     <>
       <p className="market-eyebrow">L04</p>
-      <h1>질문게시판</h1>
-      <p className="market-intro">궁금한 점을 나누고 함께 답을 찾아요.</p>
+      <h1>{t('질문게시판')}</h1>
+      <p className="market-intro">
+        {t('궁금한 점을 나누고 함께 답을 찾아요.')}
+      </p>
       <div className="market-count">
-        <strong aria-live="polite">총 {visible.length}건</strong>
-        <span>예시 데이터 · 탭 저장</span>
+        <strong aria-live="polite">
+          {t('총 {count}건', { count: visible.length })}
+        </strong>
+        <span>{t('예시 데이터 · 탭 저장')}</span>
       </div>
       <Segments
-        label="질문 카테고리"
+        label={t('질문 카테고리')}
         value={category}
         onChange={(v) => filter('category', v)}
         options={[
-          { value: 'all', label: '전체' },
-          { value: 'school', label: '학교생활' },
-          { value: 'class', label: '수업' },
-          { value: 'life', label: '생활' },
+          { value: 'all', label: t('전체') },
+          { value: 'school', label: t('학교생활') },
+          { value: 'class', label: t('수업') },
+          { value: 'life', label: t('생활') },
         ]}
       />
       <Segments
-        label="해결 상태"
+        label={t('해결 상태')}
         value={status}
         onChange={(v) => filter('status', v)}
         options={[
-          { value: 'all', label: '전체 상태' },
-          { value: 'unresolved', label: '미해결' },
-          { value: 'resolved', label: '해결' },
+          { value: 'all', label: t('전체 상태') },
+          { value: 'unresolved', label: t('미해결') },
+          { value: 'resolved', label: t('해결') },
         ]}
       />
       <Link className="market-primary" to="new">
-        질문하기
+        {t('질문하기')}
       </Link>
       <div className="market-list">
         {visible.map((post) => (
           <Link className="market-card" key={post.id} to={post.id}>
             <p className="market-meta">
-              {post.author} · {post.example ? '예시 사용자' : '작성자'}
+              {post.author} · {post.example ? t('예시 사용자') : t('작성자')}
             </p>
             <TranslationText itemId={`${post.id}:title`}>
-            <h2>{post.title}</h2>
+              <h2>{post.title}</h2>
             </TranslationText>
             <TranslationText itemId={`${post.id}:preview`}>
-            <p className="market-excerpt">{post.content.split('\n')[0]}</p>
+              <p className="market-excerpt">{post.content.split('\n')[0]}</p>
             </TranslationText>
             <p className="market-meta">
-              원문 · {languageLabels[post.language]} |{' '}
-              {categoryLabels[post.category]} · {statusLabels[post.status]}
-              {` · 답글 ${post.replies.length}`}
+              {t('원문 ·')} {languageLabels[post.language]} |{' '}
+              {t(categoryLabels[post.category])} ·{' '}
+              {t(statusLabels[post.status])}
+              {` · ${t('답글 {count}', { count: post.replies.length })}`}
             </p>
           </Link>
         ))}
       </div>
       {!visible.length && (
         <div className="market-card market-empty">
-          <h2>아직 해당하는 글이 없어요</h2>
-          <p>다른 필터를 선택하거나 첫 글을 남겨보세요.</p>
-          <button onClick={() => setQuery({})}>전체 글 보기</button>
+          <h2>{t('아직 해당하는 글이 없어요')}</h2>
+          <p>{t('다른 필터를 선택하거나 첫 글을 남겨보세요.')}</p>
+          <button onClick={() => setQuery({})}>{t('전체 글 보기')}</button>
         </div>
       )}
     </>
   )
 }
 function MissingPost({ children }: { children?: ReactNode }) {
+  const { t } = useLanguage()
+
   return (
     <>
-      <h1>{children ?? '게시글을 찾을 수 없어요'}</h1>
+      <h1>{children ?? t('게시글을 찾을 수 없어요')}</h1>
       <Link className="market-back" to="/life/questions">
-        ← 질문 목록
+        {t('← 질문 목록')}
       </Link>
     </>
   )
 }
-const dateLabel = (date: string) =>
-  new Intl.DateTimeFormat('ko-KR', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-    timeZone: 'Asia/Seoul',
-  }).format(new Date(date))
 export function QuestionDetailPage() {
+  const { t, language: uiLanguage } = useLanguage()
+
   const { postId } = useParams()
   const { posts, actor, commit, writable } = useQuestion()
   const [reply, setReply] = useState('')
-  const [replyLanguage, setReplyLanguage] = useState<QuestionLanguage>(actor.language)
+  const [replyLanguage, setReplyLanguage] = useState<QuestionLanguage>(
+    actor.language,
+  )
   const navigate = useNavigate()
   const [confirmation, setConfirmation] = useState<'resolve' | 'delete' | null>(
     null,
@@ -283,25 +305,25 @@ export function QuestionDetailPage() {
   return (
     <>
       <Link className="market-back" to="/life/questions">
-        ← 질문 목록
+        {t('← 질문 목록')}
       </Link>
       <article className="market-card market-detail">
         <p className="market-meta">
-          {post.author} · {post.example ? '예시 사용자' : '작성자'}
+          {post.author} · {post.example ? t('예시 사용자') : t('작성자')}
         </p>
         <span className="market-badge">
-          {categoryLabels[post.category]} · {statusLabels[post.status]}
+          {t(categoryLabels[post.category])} · {t(statusLabels[post.status])}
         </span>
         <TranslationText itemId={`${post.id}:title`}>
-        <h1>{post.title}</h1>
+          <h1>{post.title}</h1>
         </TranslationText>
 
         <p className="market-meta">
-          {dateLabel(post.createdAt)} · KST · {languageLabels[post.language]}{' '}
-          원문
+          {dateLabel(post.createdAt, uiLanguage)} · KST ·{' '}
+          {languageLabels[post.language]} {t('원문')}
         </p>
         <TranslationText itemId={`${post.id}:content`}>
-        <p className="market-body">{post.content}</p>
+          <p className="market-body">{post.content}</p>
         </TranslationText>
 
         {!post.example &&
@@ -386,40 +408,44 @@ export function QuestionDetailPage() {
               )}
               {actionError && (
                 <p className="market-error" role="alert">
-                  {actionError}
+                  {t(actionError)}
                 </p>
               )}
             </div>
           ))}
       </article>
       <section className="market-replies">
-        <h2>답글 {post.replies.length}</h2>
+        <h2>{t('답글 {count}', { count: post.replies.length })}</h2>
         {!post.replies.length && (
           <p className="market-meta">
-            아는 정보가 있다면 첫 답글을 남겨주세요.
+            {t('아는 정보가 있다면 첫 답글을 남겨주세요.')}
           </p>
         )}
         {post.replies.map((item) => (
           <QuestionReplyCard key={item.id} postId={post.id} reply={item} />
         ))}
         <form onSubmit={submitReply}>
-          <ReplyLanguageSelect value={replyLanguage} onChange={setReplyLanguage} disabled={!writable} />
+          <ReplyLanguageSelect
+            value={replyLanguage}
+            onChange={setReplyLanguage}
+            disabled={!writable}
+          />
           <label>
-            답글 작성
+            {t('답글 작성')}
             <textarea
               value={reply}
               onChange={(e) => setReply(e.target.value)}
               maxLength={1000}
               required
               rows={3}
-              placeholder="질문에 도움이 되는 답글을 남겨주세요."
+              placeholder={t('질문에 도움이 되는 답글을 남겨주세요.')}
             />
           </label>
           <button
             className="market-primary"
             disabled={!writable || !reply.trim()}
           >
-            답글 등록
+            {t('답글 등록')}
           </button>
         </form>
       </section>
@@ -433,6 +459,8 @@ function QuestionReplyCard({
   postId: string
   reply: Reply
 }) {
+  const { t, language: uiLanguage } = useLanguage()
+
   const { posts, actor, commit, writable } = useQuestion()
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(reply.content)
@@ -463,7 +491,7 @@ function QuestionReplyCard({
   return (
     <article className="market-card">
       <p className="market-meta">
-        {reply.author} · {languageLabels[reply.language]} 원문
+        {reply.author} · {languageLabels[reply.language]} {t('원문')}
       </p>
       {editing && canManage ? (
         <form
@@ -473,7 +501,7 @@ function QuestionReplyCard({
           }}
         >
           <label>
-            답글 수정
+            {t('답글 수정')}
             <textarea
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
@@ -485,7 +513,7 @@ function QuestionReplyCard({
           </label>
           <div className="market-reply-actions">
             <button type="submit" disabled={!draft.trim()}>
-              저장
+              {t('저장')}
             </button>
             <button
               type="button"
@@ -494,24 +522,26 @@ function QuestionReplyCard({
                 setError('')
               }}
             >
-              취소
+              {t('취소')}
             </button>
           </div>
         </form>
       ) : (
         <TranslationText itemId={`${postId}:reply:${reply.id}`}>
-        <p className="market-body">{reply.content}</p>
+          <p className="market-body">{reply.content}</p>
         </TranslationText>
       )}
-      <p className="market-meta">{dateLabel(reply.createdAt)} · KST</p>
+      <p className="market-meta">
+        {dateLabel(reply.createdAt, uiLanguage)} · KST
+      </p>
       {canManage &&
         !editing &&
         (deleting ? (
           <div>
-            <p>이 답글을 삭제할까요?</p>
+            <p>{t('이 답글을 삭제할까요?')}</p>
             <div className="market-reply-actions">
               <button type="button" onClick={() => apply({ type: 'delete' })}>
-                삭제 확인
+                {t('삭제 확인')}
               </button>
               <button
                 type="button"
@@ -520,7 +550,7 @@ function QuestionReplyCard({
                   setError('')
                 }}
               >
-                취소
+                {t('취소')}
               </button>
             </div>
           </div>
@@ -534,33 +564,37 @@ function QuestionReplyCard({
                 setError('')
               }}
             >
-              수정
+              {t('수정')}
             </button>
             <button type="button" onClick={() => setDeleting(true)}>
-              삭제
+              {t('삭제')}
             </button>
           </div>
         ))}
       {error && (
         <p className="market-error" role="alert">
-          {error}
+          {t(error)}
         </p>
       )}
     </article>
   )
 }
 export function QuestionFormPage() {
+  const { t } = useLanguage()
+
   const { postId } = useParams()
   const { posts, actor } = useQuestion()
   const existing = posts.find((post) => post.id === postId)
   if (postId && !existing) return <MissingPost />
   if (existing && (existing.example || existing.authorId !== actor.id))
-    return <MissingPost>내가 작성한 글만 수정할 수 있어요</MissingPost>
+    return <MissingPost>{t('내가 작성한 글만 수정할 수 있어요')}</MissingPost>
   if (existing?.status === 'resolved')
     return <MissingPost>{questionMessages[actor.language].locked}</MissingPost>
   return <QuestionForm key={postId ?? 'new'} existing={existing} />
 }
 function QuestionForm({ existing }: { existing?: QuestionPost }) {
+  const { t } = useLanguage()
+
   const { posts, actor, commit, writable } = useQuestion()
   const navigate = useNavigate()
   const [category, setCategory] = useState<QuestionCategory>(
@@ -608,62 +642,64 @@ function QuestionForm({ existing }: { existing?: QuestionPost }) {
         className="market-back"
         to={existing ? `/life/questions/${existing.id}` : '/life/questions'}
       >
-        ← {existing ? '게시글로 돌아가기' : '질문 목록'}
+        ← {existing ? t('게시글로 돌아가기') : t('질문 목록')}
       </Link>
-      <h1>{existing ? '질문 글 수정' : '질문하기'}</h1>
-      <p className="market-intro">상황과 궁금한 점을 자세히 알려주세요.</p>
+      <h1>{existing ? t('질문 글 수정') : t('질문하기')}</h1>
+      <p className="market-intro">
+        {t('상황과 궁금한 점을 자세히 알려주세요.')}
+      </p>
       <form className="market-form" onSubmit={submit}>
         <Segments
-          label="질문 카테고리"
+          label={t('질문 카테고리')}
           value={category}
           onChange={setCategory}
           options={[
-            { value: 'school', label: '학교생활' },
-            { value: 'class', label: '수업' },
-            { value: 'life', label: '생활' },
+            { value: 'school', label: t('학교생활') },
+            { value: 'class', label: t('수업') },
+            { value: 'life', label: t('생활') },
           ]}
         />
         <label>
-          제목
+          {t('제목')}
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
             maxLength={80}
-            placeholder="어떤 점이 궁금한가요?"
+            placeholder={t('어떤 점이 궁금한가요?')}
           />
         </label>
         <label>
-          작성 언어
+          {t('작성 언어')}
           <select
             value={language}
             onChange={(e) => setLanguage(e.target.value as QuestionLanguage)}
           >
             {Object.entries(languageLabels).map(([key, label]) => (
               <option key={key} value={key}>
-                {label}
+                {t(label)}
               </option>
             ))}
           </select>
         </label>
         <label>
-          내용
+          {t('내용')}
           <textarea
             rows={7}
             required
             maxLength={3000}
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="질문의 배경과 궁금한 내용을 적어주세요."
+            placeholder={t('질문의 배경과 궁금한 내용을 적어주세요.')}
           />
         </label>
         {error && (
           <p className="market-error" role="alert">
-            {error}
+            {t(error)}
           </p>
         )}
         <button className="market-primary" disabled={!writable}>
-          {existing ? '수정 내용 저장' : '글 등록'}
+          {existing ? t('수정 내용 저장') : t('글 등록')}
         </button>
       </form>
     </>
