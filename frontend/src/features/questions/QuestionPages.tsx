@@ -128,10 +128,8 @@ function Segments<T extends string>({
   options: { value: T; label: string }[]
   onChange: (value: T) => void
 }) {
-  const { t } = useLanguage()
-
   return (
-    <div className="market-segments" role="group" aria-label={t(label)}>
+    <div className="market-segments" role="group" aria-label={label}>
       {options.map((option) => (
         <button
           key={option.value}
@@ -139,7 +137,7 @@ function Segments<T extends string>({
           aria-pressed={value === option.value}
           onClick={() => onChange(option.value)}
         >
-          {t(option.label)}
+          {option.label}
         </button>
       ))}
     </div>
