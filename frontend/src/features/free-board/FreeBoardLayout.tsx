@@ -1,3 +1,5 @@
+import { useLanguage } from '../../shared/i18n/language-context'
+import { BoardTranslations } from '../translation/BoardTranslations'
 import { useState } from 'react'
 import { Outlet } from 'react-router-dom'
 import { useAuth } from '../auth/auth-context'
@@ -18,6 +20,8 @@ export function FreeBoardLayout() {
 }
 
 function FreeBoardSession() {
+  const { t, language: uiLanguage } = useLanguage()
+
   const { session } = useAuth()
   const { savedProfile } = useDemoProfile()
   const [initial] = useState(() => {
@@ -35,8 +39,8 @@ function FreeBoardSession() {
   const [error, setError] = useState(initial.error)
   const actor: FreeBoardActor = {
     id: session?.user?.id ?? 'local-preview',
-    name: savedProfile?.profile.nickname ?? '체험 사용자',
-    language: savedProfile?.profile.language ?? 'ko',
+    name: savedProfile?.profile.nickname ?? t('체험 사용자'),
+    language: uiLanguage,
   }
   const writable = !initial.error && (!!session?.user || import.meta.env.DEV)
 
@@ -60,13 +64,20 @@ function FreeBoardSession() {
       <section className="market-page free-board-page">
         {error && (
           <p className="market-error" role="alert">
-            {error}
+            {t(error)}
           </p>
         )}
-        <Outlet />
+        <BoardTranslations
+          board="free"
+          posts={posts}
+          targetLanguage={actor.language}
+        >
+          <Outlet />
+        </BoardTranslations>
         <p className="market-footnote">
-          자유게시판 · 작성한 글과 댓글은 이 탭에서만 유지되며 다른 사용자에게
-          전송되지 않아요.
+          {t(
+            '자유게시판 · 작성한 글과 댓글은 이 탭에서만 유지되며 다른 사용자에게 전송되지 않아요.',
+          )}
         </p>
       </section>
     </FreeBoardContext.Provider>

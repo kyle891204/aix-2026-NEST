@@ -29,6 +29,12 @@ public class NoticeService {
     private static final Map<String, String> LANGUAGE_NAMES =
             Map.of("ko", "Korean", "en", "English", "zh", "Simplified Chinese");
     private static final String TRANSLATION_FAILED = "번역하지 못했습니다. 원문을 확인하거나 다시 시도해 주세요.";
+    // 커뮤니티 번역과 같은 길이 제한이다.
+    static final int MAX_CONTENT = 3000;
+    private static final Map<String, String> CONTENT_CUT = Map.of(
+            "ko", "(본문이 길어 앞부분만 번역했어요. 나머지는 원문에서 확인해 주세요.)",
+            "en", "(This notice is long, so only the first part was translated. Please check the original for the rest.)",
+            "zh", "（公告较长，仅翻译了前半部分。其余内容请查看原文。）");
 
     // 해당 → 확인 필요 → 해당 안 됨 순으로, 같은 상태 안에서는 마감 임박순으로 보여준다. 마감이 없으면 뒤로 간다.
     private static final Comparator<NoticeSummary> LIST_ORDER = Comparator
@@ -45,8 +51,9 @@ public class NoticeService {
         this.translations = translations;
     }
 
-    public List<NoticeSummary> search(Source source, MatchFilter match, StudentProfile profile) {
+    public List<NoticeSummary> search(Source source, MatchFilter match, StudentProfile profile, String collegeId) {
         return notices.findAll().stream()
+                .filter(notice -> visibleTo(notice, collegeId))
                 .filter(notice -> source == null || notice.source() == source)
                 .map(notice -> summary(notice, profile))
                 .filter(summary -> match == null || summary.matchStatus().name().equals(match.name()))
@@ -54,18 +61,22 @@ public class NoticeService {
                 .toList();
     }
 
-    public NoticeDetail view(String noticeId, StudentProfile profile) {
+    public NoticeDetail view(String noticeId, StudentProfile profile, String collegeId) {
         var notice = find(noticeId);
+        // 다른 단과대 공지는 주소로 직접 열어도 없는 공지로 처리한다.
+        if (!visibleTo(notice, collegeId)) throw new NoticeNotFoundException();
         var result = match(notice, profile);
         // savedScheduleId는 #10 일정 서비스가 생기면 채운다.
-        return new NoticeDetail(notice.noticeId(), notice.source(), notice.title(), notice.analysisStatus(),
-                result.status(), result.reasons(), notice.deadline(), notice.target(), notice.targetConditions(),
-                notice.actions(), notice.documents(), notice.originalContent(), notice.originalLanguage(),
-                notice.sourceUrl(), null, notice.sample());
+        return new NoticeDetail(notice.noticeId(), notice.source(), notice.sourceName(), notice.category(),
+                notice.title(), notice.postedAt(), notice.analysisStatus(), result.status(), result.reasons(),
+                notice.deadline(), notice.target(), notice.targetConditions(), notice.actions(), notice.documents(),
+                notice.attachments(), notice.originalContent(), notice.originalLanguage(), notice.sourceUrl(), null,
+                notice.sample());
     }
 
-    public TranslationResponse translate(String noticeId, String targetLanguage) {
+    public TranslationResponse translate(String noticeId, String targetLanguage, String collegeId) {
         var notice = find(noticeId);
+        if (!visibleTo(notice, collegeId)) throw new NoticeNotFoundException();
         try {
             // 번역된 필드는 TranslationService 캐시에 남으므로 재시도하면 실패한 필드부터 이어서 호출한다.
             return new TranslationResponse(noticeId, targetLanguage, "SUCCEEDED",
@@ -84,7 +95,17 @@ public class NoticeService {
                 notice.actions().stream().map(action -> new Action(action.id(),
                         translate(notice, action.text(), "공지에서 해야 할 일", language))).toList(),
                 notice.documents().stream().map(document -> translate(notice, document, "준비 서류", language)).toList(),
-                translate(notice, notice.originalContent(), "공지 원문", language));
+                content(notice, language));
+    }
+
+    // 긴 원문은 앞부분만 번역하고 나머지는 원문에서 보도록 안내해 Gemini 비용과 대기 시간을 줄인다.
+    private String content(Notice notice, String language) {
+        var original = notice.originalContent();
+        if (original == null || original.length() <= MAX_CONTENT || language.equals(notice.originalLanguage())) {
+            return translate(notice, original, "공지 원문", language);
+        }
+        return translate(notice, original.substring(0, MAX_CONTENT), "공지 원문 앞부분", language)
+                + "\n\n" + CONTENT_CUT.get(language);
     }
 
     private String translate(Notice notice, String text, String context, String language) {
@@ -95,8 +116,14 @@ public class NoticeService {
 
     private NoticeSummary summary(Notice notice, StudentProfile profile) {
         var result = match(notice, profile);
-        return new NoticeSummary(notice.noticeId(), notice.source(), notice.title(), notice.analysisStatus(),
-                result.status(), result.reasons(), notice.deadline(), notice.sample());
+        return new NoticeSummary(notice.noticeId(), notice.source(), notice.sourceName(), notice.category(),
+                notice.title(), notice.postedAt(), notice.analysisStatus(), result.status(), result.reasons(),
+                notice.deadline(), notice.sample());
+    }
+
+    /** ERICA 전체 공지는 모두에게, 단과대 공지는 프로필의 단과대가 같은 학생에게만 보여준다. */
+    private static boolean visibleTo(Notice notice, String collegeId) {
+        return notice.collegeId() == null || notice.collegeId().equals(collegeId);
     }
 
     private MatchResult match(Notice notice, StudentProfile profile) {

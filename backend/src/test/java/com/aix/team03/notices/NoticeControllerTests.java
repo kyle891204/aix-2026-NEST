@@ -28,11 +28,12 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest(properties = {"spring.config.import=", "app.lms.api-token="})
+// 학교 사이트에 접속하지 않도록 수집을 끄고 샘플 공지로 확인한다.
+@SpringBootTest(properties = {"spring.config.import=", "app.lms.api-token=", "NOTICE_COLLECTION_ENABLED=false"})
 class NoticeControllerTests {
     private static final String PATH = "/api/v1/notices";
     private static final String UNDERGRADUATE =
-            "{\"nationality\":\"VN\",\"visaType\":\"D-2\",\"degree\":\"BACHELOR\",\"year\":\"2\"}";
+            "{\"nationality\":\"VN\",\"visaType\":\"D-2\",\"degree\":\"BACHELOR\",\"year\":\"2\",\"collegeId\":\"computing\"}";
 
     @Autowired WebApplicationContext context;
     @MockitoBean TranslationService translations;
@@ -78,7 +79,7 @@ class NoticeControllerTests {
 
     @Test
     void listsSampleNoticesWithoutDetailFields() throws Exception {
-        search("", "{}")
+        search("", "{\"collegeId\":\"computing\"}")
                 .andExpect(status().isOk())
                 .andExpect(header().string("Cache-Control", "no-store"))
                 .andExpect(jsonPath("$.items", hasSize(6)))
@@ -121,7 +122,7 @@ class NoticeControllerTests {
     void missingOrFreeTextProfileStaysVisibleAsNeedsReview() throws Exception {
         for (var body : new String[] {"{}", "{\"nationality\":\"베트남\",\"degree\":\"학부생\",\"year\":\"2학년\"}"}) {
             search("?match=NEEDS_REVIEW", body)
-                    .andExpect(jsonPath("$.items", hasSize(6)))
+                    .andExpect(jsonPath("$.items", hasSize(4)))
                     .andExpect(jsonPath("$.items[*].matchStatus", everyItem(is("NEEDS_REVIEW"))));
         }
         search("?match=APPLICABLE", "{}").andExpect(status().isOk()).andExpect(jsonPath("$.items", hasSize(0)));
@@ -131,7 +132,7 @@ class NoticeControllerTests {
     void profileBodyIsOptional() throws Exception {
         mvc.perform(post(PATH + "/search").session(signedIn()).header("X-CSRF-Token", "csrf-fixture"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.items", hasSize(6)));
+                .andExpect(jsonPath("$.items", hasSize(4)));
     }
 
     @Test
@@ -159,7 +160,7 @@ class NoticeControllerTests {
         var body = "{\"nationality\":\"" + "가".repeat(51) + "\"}";
         search("?match=NEEDS_REVIEW", body)
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.items", hasSize(6)));
+                .andExpect(jsonPath("$.items", hasSize(4)));
         send(PATH + "/univ-001/view", body)
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.matchStatus").value("NEEDS_REVIEW"));
@@ -172,6 +173,38 @@ class NoticeControllerTests {
                         contains("univ-001", "intl-001", "intl-002", "univ-002", "coll-002", "coll-001")))
                 .andExpect(jsonPath("$.items[*].matchStatus", contains("APPLICABLE", "APPLICABLE", "APPLICABLE",
                         "NEEDS_REVIEW", "NEEDS_REVIEW", "NOT_APPLICABLE")));
+    }
+
+    @Test
+    void collegeNoticesAreShownOnlyToThatCollege() throws Exception {
+        search("?source=COLLEGE", "{\"collegeId\":\"computing\"}")
+                .andExpect(jsonPath("$.items[*].noticeId", containsInAnyOrder("coll-001", "coll-002")));
+        search("?source=COLLEGE", "{\"collegeId\":\"pharmacy\"}")
+                .andExpect(jsonPath("$.items", hasSize(0)));
+        search("", "{}")
+                .andExpect(jsonPath("$.items[*].noticeId", containsInAnyOrder("intl-001", "intl-002", "univ-001", "univ-002")));
+        send(PATH + "/coll-001/view", "{\"collegeId\":\"pharmacy\"}")
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("NOTICE_NOT_FOUND"));
+        send(PATH + "/coll-001/view", "{}")
+                .andExpect(status().isNotFound());
+        send(PATH + "/coll-001/view", "{\"collegeId\":\"computing\"}")
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void otherCollegeNoticeIsNotTranslated() throws Exception {
+        translationsSucceed();
+
+        translate("coll-001", "{\"targetLanguage\":\"en\",\"collegeId\":\"pharmacy\"}")
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("NOTICE_NOT_FOUND"));
+        translate("coll-001", "{\"targetLanguage\":\"en\"}")
+                .andExpect(status().isNotFound());
+        verifyNoInteractions(translations);
+        translate("coll-001", "{\"targetLanguage\":\"en\",\"collegeId\":\"computing\"}")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.translationStatus").value("SUCCEEDED"));
     }
 
     @Test
@@ -238,7 +271,7 @@ class NoticeControllerTests {
     void missingTargetIsNotSentToGemini() throws Exception {
         translationsSucceed();
 
-        translate("coll-002", "{\"targetLanguage\":\"en\"}")
+        translate("coll-002", "{\"targetLanguage\":\"en\",\"collegeId\":\"computing\"}")
                 .andExpect(jsonPath("$.translationStatus").value("SUCCEEDED"))
                 .andExpect(jsonPath("$.translated.target", nullValue()));
         verify(translations, never()).translate(eq(null), any(), any());

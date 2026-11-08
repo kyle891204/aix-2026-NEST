@@ -10,8 +10,10 @@
 - `FreeBoardLayout.tsx`: 로그인·프로필의 작성자 정보 연결, 탭 저장 및 저장 실패 처리
 - `FreeBoardPages.tsx`: 목록, 상세, 작성·수정 화면
 - `FreeBoardReplyCard.tsx`: 댓글 표시와 본인 댓글 수정·삭제
-- `free-board-format.ts`: 한국 시간 날짜 표시
 - `free-board.css`: 자유게시판 전용 스타일. 기존 `market.css`는 import만 한다.
+
+날짜 표시는 공통 `shared/i18n/language.ts`의 `formatBoardDate`를 사용한다.
+표시 언어는 선호 언어를 따르고 시간대는 한국 시간(`Asia/Seoul`)을 유지한다.
 
 ## 동작 기준
 

@@ -1,0 +1,38 @@
+.translation-toolbar {
+  margin: 0 0 1rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid #dbe4f0;
+  border-radius: 12px;
+  background: #f5f8ff;
+  color: #243552;
+}
+.translation-toolbar p {
+  margin: 0 0 0.6rem;
+}
+.translation-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.translation-actions button {
+  border: 1px solid #b8c9e3;
+  border-radius: 8px;
+  background: white;
+  color: inherit;
+  padding: 0.45rem 0.7rem;
+  cursor: pointer;
+  font: inherit;
+}
+.translation-actions button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+.translation-actions button:focus-visible {
+  outline: 2px solid #2864c5;
+  outline-offset: 2px;
+}
+.translation-reply-language {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0.75rem 0;
+}
