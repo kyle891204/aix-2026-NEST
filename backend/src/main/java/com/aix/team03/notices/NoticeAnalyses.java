@@ -9,13 +9,18 @@ import com.aix.team03.notices.NoticeModels.Notice;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
@@ -38,7 +43,7 @@ public class NoticeAnalyses {
     private static final int MAX_DOCUMENTS = 8;
     private static final int MAX_TEXT = 200;
     private static final Pattern NATIONALITY = Pattern.compile("[A-Z]{2}");
-    private static final Pattern VISA_TYPE = Pattern.compile("[A-Z]-\\d{1,2}(-\\d{1,2})?");
+    private static final ZoneOffset KOREA = ZoneOffset.ofHours(9);
     private static final Pattern YEAR = Pattern.compile("[1-6]");
 
     private final NoticeAnalysisClient client;
@@ -46,6 +51,7 @@ public class NoticeAnalyses {
     // 공지 ID와 본문이 같으면 같은 분석을 쓴다. 오래 안 쓴 결과부터 지운다.
     private final Map<String, Notice> analyzed = new LinkedHashMap<>(16, 0.75f, true);
     private final Map<String, Instant> failedAt = new LinkedHashMap<>();
+    private final Map<String, CompletableFuture<Notice>> inProgress = new HashMap<>();
 
     @Autowired
     public NoticeAnalyses(NoticeAnalysisClient client) { this(client, Clock.systemUTC()); }
@@ -60,24 +66,36 @@ public class NoticeAnalyses {
         return analyzed.getOrDefault(key(notice), notice);
     }
 
-    /** 분석한 적이 없으면 Gemini로 분석한다. 분석할 수 없거나 실패하면 받은 공지를 그대로 돌려준다. */
+    /**
+     * 분석한 적이 없으면 Gemini로 분석한다. 분석할 수 없거나 실패하면 받은 공지를 그대로 돌려준다.
+     * 같은 공지를 동시에 열면 먼저 온 요청만 Gemini를 부르고, 나머지는 그 결과를 기다린다.
+     */
     public Notice analyze(Notice notice) {
         if (notice.sample() || CollectedNotices.isPlaceholder(notice.originalContent())) return notice;
         var key = key(notice);
+        CompletableFuture<Notice> pending;
         synchronized (this) {
             var saved = analyzed.get(key);
             if (saved != null) return saved;
             var failed = failedAt.get(key);
             if (failed != null && failed.plus(RETRY_AFTER).isAfter(clock.instant())) return notice;
+            var running = inProgress.get(key);
+            if (running != null) pending = running;
+            else {
+                pending = null;
+                inProgress.put(key, new CompletableFuture<>());
+            }
         }
+        if (pending != null) return pending.join();
+
+        var result = notice;
         try {
-            var result = merge(notice, client.analyze(notice.title(), notice.postedAt(), notice.originalContent()));
+            result = merge(notice, client.analyze(notice.title(), notice.postedAt(), notice.originalContent()));
             synchronized (this) {
                 failedAt.remove(key);
                 analyzed.put(key, result);
                 if (analyzed.size() > MAX_ENTRIES) analyzed.remove(analyzed.keySet().iterator().next());
             }
-            return result;
         } catch (RuntimeException exception) {
             // 키 미설정·응답 오류·네트워크 실패는 로그에만 남기고 분석 전 공지를 보여준다.
             log.warn("Notice analysis failed for {}: {}", notice.noticeId(), exception.toString());
@@ -85,8 +103,15 @@ public class NoticeAnalyses {
                 failedAt.put(key, clock.instant());
                 if (failedAt.size() > MAX_ENTRIES) failedAt.remove(failedAt.keySet().iterator().next());
             }
-            return notice;
+        } finally {
+            // 실패해도 기다리던 요청이 멈추지 않도록 결과(실패면 분석 전 공지)를 넘긴다.
+            CompletableFuture<Notice> running;
+            synchronized (this) {
+                running = inProgress.remove(key);
+            }
+            running.complete(result);
         }
+        return result;
     }
 
     /** Gemini 결과에서 형식에 맞는 값만 공지에 붙인다. 게시판 분류에서 읽은 학위과정은 Gemini가 비워도 남긴다. */
@@ -96,9 +121,9 @@ public class NoticeAnalyses {
         if (degrees.isEmpty() && notice.targetConditions() != null && notice.targetConditions().degrees() != null) {
             degrees = notice.targetConditions().degrees();
         }
+        // 프로필에서 비자를 받지 않으므로 비자 조건은 비워 둔다.
         var conditions = new TargetConditions(codes(analysis.nationalities(), NATIONALITY.asMatchPredicate()),
-                codes(analysis.visaTypes(), VISA_TYPE.asMatchPredicate()), degrees,
-                codes(analysis.years(), YEAR.asMatchPredicate()));
+                List.of(), degrees, codes(analysis.years(), YEAR.asMatchPredicate()));
         var deadline = deadline(analysis.deadline());
         // 마감을 적었는데 날짜로 읽을 수 없으면 분석을 확실하다고 보지 않는다.
         var deadlineBroken = deadline == null && analysis.deadline() != null && !analysis.deadline().isBlank();
@@ -115,13 +140,25 @@ public class NoticeAnalyses {
         return notice.noticeId() + ":" + notice.originalContent().hashCode();
     }
 
+    // 학교 공지는 모두 한국 시간이라, 시간대가 빠지면 +09:00을 붙이고 날짜만 있으면 그날 23:59로 본다.
     private static String deadline(String value) {
         if (value == null || value.isBlank()) return null;
+        var text = value.strip();
+        OffsetDateTime parsed;
         try {
-            return OffsetDateTime.parse(value.strip()).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-        } catch (DateTimeParseException exception) {
-            return null;
+            parsed = OffsetDateTime.parse(text);
+        } catch (DateTimeParseException withoutOffset) {
+            try {
+                parsed = LocalDateTime.parse(text).atOffset(KOREA);
+            } catch (DateTimeParseException withoutTime) {
+                try {
+                    parsed = LocalDate.parse(text).atTime(23, 59).atOffset(KOREA);
+                } catch (DateTimeParseException unreadable) {
+                    return null;
+                }
+            }
         }
+        return parsed.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
     }
 
     private static String text(String value) {

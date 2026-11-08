@@ -10,6 +10,9 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -30,8 +33,7 @@ class NoticeAnalysesTests {
 
     private static Analysis analysis(String deadline, List<String> degrees, boolean certain) {
         return new Analysis("D-2 비자 유학생", deadline, List.of("서류 제출", " ", "서류 제출", "출입국 방문 예약"),
-                List.of("여권 사본", "재학증명서"), List.of("vn", "Vietnam"), List.of("D-2", "학생비자"), degrees,
-                List.of("1", "7"), certain);
+                List.of("여권 사본", "재학증명서"), List.of("vn", "Vietnam"), degrees, List.of("1", "7"), certain);
     }
 
     @Test
@@ -46,7 +48,8 @@ class NoticeAnalysesTests {
         assertThat(merged.actions()).extracting(NoticeModels.Action::text).containsExactly("서류 제출", "출입국 방문 예약");
         assertThat(merged.documents()).containsExactly("여권 사본", "재학증명서");
         assertThat(merged.targetConditions().nationalities()).containsExactly("VN");
-        assertThat(merged.targetConditions().visaTypes()).containsExactly("D-2");
+        // 프로필에서 비자를 받지 않으므로 비자 조건은 늘 비어 있다.
+        assertThat(merged.targetConditions().visaTypes()).isEmpty();
         assertThat(merged.targetConditions().degrees()).containsExactly("BACHELOR");
         assertThat(merged.targetConditions().years()).containsExactly("1");
         assertThat(merged.originalContent()).isEqualTo("본문");
@@ -61,6 +64,78 @@ class NoticeAnalysesTests {
                 });
         assertThat(NoticeAnalyses.merge(notice("본문", null, false), analysis("", List.of(), false)).analysisStatus())
                 .isEqualTo(AnalysisStatus.UNCERTAIN);
+    }
+
+    @Test
+    void deadlineWithoutOffsetIsReadAsKoreanTime() {
+        var withTime = NoticeAnalyses.merge(notice("본문", null, false),
+                analysis("2026-11-20T17:00:00", List.of(), true));
+        var dateOnly = NoticeAnalyses.merge(notice("본문", null, false), analysis("2026-11-20", List.of(), true));
+
+        assertThat(withTime.deadline()).isEqualTo("2026-11-20T17:00:00+09:00");
+        assertThat(withTime.analysisStatus()).isEqualTo(AnalysisStatus.CONFIRMED);
+        assertThat(dateOnly.deadline()).isEqualTo("2026-11-20T23:59:00+09:00");
+        assertThat(dateOnly.analysisStatus()).isEqualTo(AnalysisStatus.CONFIRMED);
+    }
+
+    @Test
+    void sameNoticeOpenedTogetherIsAnalyzedOnce() throws Exception {
+        var called = new CountDownLatch(1);
+        var release = new CountDownLatch(1);
+        when(client.analyze(any(), any(), any())).thenAnswer(call -> {
+            called.countDown();
+            release.await(5, TimeUnit.SECONDS);
+            return analysis("", List.of(), true);
+        });
+        var original = notice("본문", null, false);
+        var pool = Executors.newFixedThreadPool(2);
+        try {
+            var first = pool.submit(() -> analyses.analyze(original));
+            assertThat(called.await(5, TimeUnit.SECONDS)).isTrue();
+            var waiter = new Thread[1];
+            var second = pool.submit(() -> {
+                waiter[0] = Thread.currentThread();
+                return analyses.analyze(original);
+            });
+            awaitWaiting(waiter);
+            release.countDown();
+
+            assertThat(second.get(5, TimeUnit.SECONDS)).isSameAs(first.get(5, TimeUnit.SECONDS));
+            assertThat(first.get().analysisStatus()).isEqualTo(AnalysisStatus.CONFIRMED);
+            verify(client, times(1)).analyze(any(), any(), any());
+        } finally {
+            pool.shutdownNow();
+        }
+    }
+
+    @Test
+    void waitingRequestGetsOriginalWhenAnalysisFails() throws Exception {
+        var called = new CountDownLatch(1);
+        var release = new CountDownLatch(1);
+        when(client.analyze(any(), any(), any())).thenAnswer(call -> {
+            called.countDown();
+            release.await(5, TimeUnit.SECONDS);
+            throw new IllegalStateException("quota");
+        });
+        var original = notice("본문", null, false);
+        var pool = Executors.newFixedThreadPool(2);
+        try {
+            var first = pool.submit(() -> analyses.analyze(original));
+            assertThat(called.await(5, TimeUnit.SECONDS)).isTrue();
+            var waiter = new Thread[1];
+            var second = pool.submit(() -> {
+                waiter[0] = Thread.currentThread();
+                return analyses.analyze(original);
+            });
+            awaitWaiting(waiter);
+            release.countDown();
+
+            assertThat(first.get(5, TimeUnit.SECONDS)).isSameAs(original);
+            assertThat(second.get(5, TimeUnit.SECONDS)).isSameAs(original);
+            verify(client, times(1)).analyze(any(), any(), any());
+        } finally {
+            pool.shutdownNow();
+        }
     }
 
     @Test
@@ -120,6 +195,15 @@ class NoticeAnalysesTests {
         analyses.analyze(notice(CollectedNotices.MISSING_CONTENT, null, false));
 
         verifyNoInteractions(client);
+    }
+
+    // 두 번째 요청이 첫 분석을 기다리기 시작할 때까지 기다린다. 그 뒤에 Gemini 응답을 돌려줘야 동시 요청을 검사할 수 있다.
+    private static void awaitWaiting(Thread[] waiter) {
+        var deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+        while ((waiter[0] == null || waiter[0].getState() != Thread.State.WAITING) && System.nanoTime() < deadline) {
+            Thread.onSpinWait();
+        }
+        assertThat(waiter[0].getState()).isEqualTo(Thread.State.WAITING);
     }
 
     private static class MutableClock extends Clock {
