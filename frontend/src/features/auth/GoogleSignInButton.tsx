@@ -107,6 +107,7 @@ export function GoogleSignInButton({
           width: Math.floor(element.clientWidth),
           locale: language === 'zh' ? 'zh-CN' : language,
         })
+        setError(false)
         setReady(true)
       })
       .catch(() => {

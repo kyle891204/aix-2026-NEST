@@ -96,7 +96,6 @@ export function LoginPage() {
                 inert={submitting}
               >
                 <GoogleSignInButton
-                  key={language}
                   clientId={session.googleClientId}
                   nonce={session.nonce}
                   onCredential={(credential) => void authenticate(credential)}
