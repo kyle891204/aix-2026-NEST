@@ -1,3 +1,4 @@
+import { useLanguage } from '../../shared/i18n/language-context'
 import { useEffect, useRef, useState } from 'react'
 
 interface GoogleIdentity {
@@ -69,6 +70,8 @@ export function GoogleSignInButton({
   nonce: string
   onCredential: (credential: string) => void
 }) {
+  const { t, language } = useLanguage()
+
   const container = useRef<HTMLDivElement>(null)
   const callback = useRef(onCredential)
   const [error, setError] = useState(false)
@@ -102,8 +105,9 @@ export function GoogleSignInButton({
           text: 'signin_with',
           shape: 'rectangular',
           width: Math.floor(element.clientWidth),
-          locale: 'ko',
+          locale: language === 'zh' ? 'zh-CN' : language,
         })
+        setError(false)
         setReady(true)
       })
       .catch(() => {
@@ -114,15 +118,21 @@ export function GoogleSignInButton({
       identity?.cancel()
       element?.replaceChildren()
     }
-  }, [clientId, nonce, attempt])
+  }, [clientId, nonce, attempt, language])
 
   return (
     <div className="google-sign-in">
       <div ref={container} />
-      {!ready && !error && <p role="status">Google 로그인 불러오는 중…</p>}
+      {!ready && !error && (
+        <p role="status">{t('Google 로그인 불러오는 중…')}</p>
+      )}
       {error && (
         <div role="alert">
-          <p>Google 로그인을 불러오지 못했습니다. 연결 상태를 확인해 주세요.</p>
+          <p>
+            {t(
+              'Google 로그인을 불러오지 못했습니다. 연결 상태를 확인해 주세요.',
+            )}
+          </p>
           <button
             type="button"
             onClick={() => {
@@ -131,7 +141,7 @@ export function GoogleSignInButton({
               setAttempt((value) => value + 1)
             }}
           >
-            다시 불러오기
+            {t('다시 불러오기')}
           </button>
         </div>
       )}

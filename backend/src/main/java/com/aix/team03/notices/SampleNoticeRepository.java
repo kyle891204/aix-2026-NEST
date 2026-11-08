@@ -9,7 +9,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Repository;
 import tools.jackson.databind.json.JsonMapper;
 
-/** 실제 공지 수집 전까지 쓰는 샘플 공지다. 모든 항목은 sample: true로 응답한다. */
+/** 수집을 끈 경우(테스트, 오프라인 개발)에만 쓰는 샘플 공지다. 모든 항목은 sample: true로 응답한다. */
 @Repository
 public class SampleNoticeRepository implements NoticeRepository {
     private final List<Notice> notices;

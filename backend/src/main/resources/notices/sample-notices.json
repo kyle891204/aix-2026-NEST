@@ -2,6 +2,9 @@
   {
     "noticeId": "intl-001",
     "source": "INTERNATIONAL",
+    "sourceName": "국제처",
+    "category": "VISA",
+    "postedAt": "2026-10-20",
     "title": "외국인등록 신청 안내",
     "analysisStatus": "CONFIRMED",
     "deadline": null,
@@ -20,6 +23,9 @@
   {
     "noticeId": "intl-002",
     "source": "INTERNATIONAL",
+    "sourceName": "국제처",
+    "category": "VISA",
+    "postedAt": "2026-10-21",
     "title": "출국 전 외국인등록증 반납 확인 안내",
     "analysisStatus": "CONFIRMED",
     "deadline": null,
@@ -38,6 +44,9 @@
   {
     "noticeId": "univ-001",
     "source": "UNIVERSITY",
+    "sourceName": "학교",
+    "category": "VISA",
+    "postedAt": "2026-10-22",
     "title": "외국인 학부생 체류 서류 제출 안내",
     "analysisStatus": "CONFIRMED",
     "deadline": "2026-11-20T17:00:00+09:00",
@@ -56,6 +65,9 @@
   {
     "noticeId": "univ-002",
     "source": "UNIVERSITY",
+    "sourceName": "학교",
+    "category": "SCHOLARSHIP",
+    "postedAt": "2026-10-23",
     "title": "외국인 유학생 장학금 신청 안내",
     "analysisStatus": "UNCERTAIN",
     "deadline": "2026-11-27T16:00:00+09:00",
@@ -74,6 +86,10 @@
   {
     "noticeId": "coll-001",
     "source": "COLLEGE",
+    "sourceName": "소프트웨어융합대학",
+    "collegeId": "computing",
+    "category": "EVENT",
+    "postedAt": "2026-10-24",
     "title": "단과대 신입 유학생 오리엔테이션 안내",
     "analysisStatus": "CONFIRMED",
     "deadline": "2026-11-13T18:00:00+09:00",
@@ -92,6 +108,10 @@
   {
     "noticeId": "coll-002",
     "source": "COLLEGE",
+    "sourceName": "소프트웨어융합대학",
+    "collegeId": "computing",
+    "category": "ACADEMIC",
+    "postedAt": null,
     "title": "대학원생 논문 지도 신청 안내",
     "analysisStatus": "NOT_ANALYZED",
     "deadline": null,

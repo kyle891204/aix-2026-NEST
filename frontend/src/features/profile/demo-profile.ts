@@ -29,10 +29,10 @@ export interface StoredDemoProfile extends ProfileDraft {
 
 type ProfileStorage = Pick<Storage, 'getItem' | 'setItem'>
 
-export function createEmptyProfile(): SignupProfile {
+export function createEmptyProfile(language: Language = 'ko'): SignupProfile {
   return {
     nickname: '',
-    language: 'ko',
+    language,
     schoolId: '',
     collegeId: '',
     department: '',
