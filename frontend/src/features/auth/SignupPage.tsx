@@ -1,3 +1,5 @@
+import { LanguageScope } from '../../shared/i18n/LanguageProvider'
+import { useLanguage } from '../../shared/i18n/language-context'
 import { useState } from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { ConsentPage } from './ConsentPage'
@@ -14,14 +16,20 @@ import './auth.css'
 type SignupStep = 'consent' | 'profile'
 
 export function SignupPage() {
+  const { t } = useLanguage()
+
   const { session, loading, error, reload } = useAuth()
   if (loading || error) {
     return (
       <div className="auth-shell">
         <main className="auth-content" aria-live="polite">
-          <h1>프로필 설정</h1>
-          <p>{loading ? '로그인 정보를 확인하고 있습니다…' : error}</p>
-          {!loading && <button onClick={() => void reload()}>다시 시도</button>}
+          <h1>{t('프로필 설정')}</h1>
+          <p>
+            {loading ? t('로그인 정보를 확인하고 있습니다…') : t(error ?? '')}
+          </p>
+          {!loading && (
+            <button onClick={() => void reload()}>{t('다시 시도')}</button>
+          )}
         </main>
       </div>
     )
@@ -33,6 +41,8 @@ export function SignupPage() {
 }
 
 function SignupForm() {
+  const { language } = useLanguage()
+
   const { savedProfile, storageError, saveProfile } = useDemoProfile()
   const location = useLocation()
   const navigate = useNavigate()
@@ -49,7 +59,7 @@ function SignupForm() {
   )
 
   const [profile, setProfile] = useState(
-    () => savedProfile?.profile ?? createEmptyProfile(),
+    () => savedProfile?.profile ?? createEmptyProfile(language),
   )
 
   function changePersonalizedConsent(checked: boolean) {
@@ -60,25 +70,30 @@ function SignupForm() {
     }
   }
 
+  const changeLanguage = (next: typeof language) =>
+    setProfile((current) => ({ ...current, language: next }))
+
   if (step === 'consent') {
     return (
-      <ConsentPage
-        basicConsent={basicConsent}
-        personalizedConsent={personalizedConsent}
-        onBasicConsentChange={setBasicConsent}
-        onPersonalizedConsentChange={changePersonalizedConsent}
-        onNext={() => {
-          if (basicConsent) setStep('profile')
-        }}
-      />
+      <LanguageScope language={profile.language} onChange={changeLanguage}>
+        <ConsentPage
+          basicConsent={basicConsent}
+          personalizedConsent={personalizedConsent}
+          onBasicConsentChange={setBasicConsent}
+          onPersonalizedConsentChange={changePersonalizedConsent}
+          onNext={() => {
+            if (basicConsent) setStep('profile')
+          }}
+        />
+      </LanguageScope>
     )
   }
 
   return (
-    <>
+    <LanguageScope language={profile.language} onChange={changeLanguage}>
       {(saveError || storageError) && (
         <p className="signup-storage-error error-text" role="alert">
-          {saveError || storageError}
+          <SignupError message={saveError || storageError || ''} />
         </p>
       )}
       <SignupProfilePage
@@ -101,6 +116,11 @@ function SignupForm() {
           }
         }}
       />
-    </>
+    </LanguageScope>
   )
+}
+
+function SignupError({ message }: { message: string }) {
+  const { t } = useLanguage()
+  return t(message)
 }

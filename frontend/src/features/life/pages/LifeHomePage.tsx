@@ -1,3 +1,4 @@
+import { useLanguage } from '../../../shared/i18n/language-context'
 import { Link } from 'react-router-dom'
 import '../life.css'
 
@@ -20,17 +21,21 @@ const boards = [
 ]
 
 export function LifeHomePage() {
+  const { t } = useLanguage()
+
   return (
     <div className="life-home">
       <h1>LIFE</h1>
       <p className="dashboard-description">
-        내 언어로 이야기하고, 함께 학교생활해요.
+        {t('내 언어로 이야기하고, 함께 학교생활해요.')}
       </p>
 
       <section className="dashboard-card translation-card">
-        <h2>글·답글 자동 번역</h2>
+        <h2>{t('글·답글 자동 번역')}</h2>
         <p>
-          작성자의 원문을 보존하고, 읽는 사람의 선호 언어로 자동 번역합니다.
+          {t(
+            '작성자의 원문을 보존하고, 읽는 사람의 선호 언어로 자동 번역합니다.',
+          )}
         </p>
       </section>
 
@@ -38,8 +43,10 @@ export function LifeHomePage() {
         {boards.map((board) => (
           <Link key={board.title} className="life-menu-row" to={board.to}>
             <span>
-              <strong>{board.title}</strong>
-              <span className="dashboard-description">{board.description}</span>
+              <strong>{t(board.title)}</strong>
+              <span className="dashboard-description">
+                {t(board.description)}
+              </span>
             </span>
             <span aria-hidden="true">›</span>
           </Link>
@@ -49,18 +56,18 @@ export function LifeHomePage() {
       <section className="dashboard-card life-links">
         <div className="life-menu-row">
           <span>
-            <strong>병원·마트 등 편의시설</strong>
+            <strong>{t('병원·마트 등 편의시설')}</strong>
             <span className="dashboard-description">
-              캠퍼스·지역별 지도와 위치 안내
+              {t('캠퍼스·지역별 지도와 위치 안내')}
             </span>
           </span>
         </div>
 
         <div className="life-menu-row">
           <span>
-            <strong>긴급 연락처</strong>
+            <strong>{t('긴급 연락처')}</strong>
             <span className="dashboard-description">
-              경찰·소방·구급·자국 대사관
+              {t('경찰·소방·구급·자국 대사관')}
             </span>
           </span>
         </div>
