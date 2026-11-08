@@ -40,6 +40,7 @@ export function NoticeDetailPage() {
     }
   })
   const [checkError, setCheckError] = useState(false)
+  const [attempt, setAttempt] = useState(0)
   const [tab, setTab] = useState<'easy' | 'original'>('easy')
   const [translationAttempt, setTranslationAttempt] = useState(0)
   const [loaded, setLoaded] = useState<{
@@ -54,7 +55,7 @@ export function NoticeDetailPage() {
   } | null>(null)
 
   // 응답의 key가 현재 요청과 다르면 아직 불러오는 중으로 본다.
-  const loadKey = `${noticeId}:${profile}`
+  const loadKey = `${noticeId}:${profile}:${attempt}`
   const current = !authLoading && loaded?.key === loadKey ? loaded : null
   const notice = current?.notice ?? null
   const loadError = current?.error ?? null
@@ -145,6 +146,9 @@ export function NoticeDetailPage() {
         </Link>
         <div className="notice-message" role="alert">
           <p>{loadError}</p>
+          <button type="button" onClick={() => setAttempt((n) => n + 1)}>
+            다시 시도
+          </button>
         </div>
       </div>
     )
