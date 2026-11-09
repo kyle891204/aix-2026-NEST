@@ -43,6 +43,7 @@ public class NoticeAnalyses {
     private static final int MAX_DOCUMENTS = 8;
     private static final int MAX_TEXT = 200;
     private static final Pattern NATIONALITY = Pattern.compile("[A-Z]{2}");
+    private static final Pattern VISA_TYPE = Pattern.compile("[A-Z]-\\d{1,2}(-\\d{1,2})?");
     private static final ZoneOffset KOREA = ZoneOffset.ofHours(9);
     private static final Pattern YEAR = Pattern.compile("[1-6]");
 
@@ -121,9 +122,9 @@ public class NoticeAnalyses {
         if (degrees.isEmpty() && notice.targetConditions() != null && notice.targetConditions().degrees() != null) {
             degrees = notice.targetConditions().degrees();
         }
-        // 프로필에서 비자를 받지 않으므로 비자 조건은 비워 둔다.
         var conditions = new TargetConditions(codes(analysis.nationalities(), NATIONALITY.asMatchPredicate()),
-                List.of(), degrees, codes(analysis.years(), YEAR.asMatchPredicate()));
+                codes(analysis.visaTypes(), VISA_TYPE.asMatchPredicate()), degrees,
+                codes(analysis.years(), YEAR.asMatchPredicate()));
         var deadline = deadline(analysis.deadline());
         // 마감을 적었는데 날짜로 읽을 수 없으면 분석을 확실하다고 보지 않는다.
         var deadlineBroken = deadline == null && analysis.deadline() != null && !analysis.deadline().isBlank();

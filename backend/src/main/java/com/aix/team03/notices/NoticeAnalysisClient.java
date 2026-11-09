@@ -31,12 +31,13 @@ public class NoticeAnalysisClient {
                     "actions", STRINGS,
                     "documents", STRINGS,
                     "nationalities", STRINGS,
+                    "visaTypes", STRINGS,
                     "degrees", Map.of("type", "array", "items", Map.of("type", "string",
                             "enum", List.of("BACHELOR", "MASTER", "DOCTORAL", "EXCHANGE", "LANGUAGE"))),
                     "years", STRINGS,
                     "certain", Map.of("type", "boolean")),
-            "required", List.of("target", "deadline", "actions", "documents", "nationalities", "degrees",
-                    "years", "certain"),
+            "required", List.of("target", "deadline", "actions", "documents", "nationalities", "visaTypes",
+                    "degrees", "years", "certain"),
             "additionalProperties", false);
 
     private static final String INSTRUCTION = """
@@ -47,6 +48,7 @@ public class NoticeAnalysisClient {
             actions: 학생이 해야 할 일을 짧은 문장으로 최대 5개. 없으면 빈 배열.
             documents: 학생이 준비해 제출할 서류 이름 최대 8개. 공지에 붙은 첨부파일·안내자료 이름은 넣지 않는다. 없으면 빈 배열.
             nationalities: 대상 국적을 ISO 3166 두 글자 코드로. 국적 제한이 없으면 빈 배열.
+            visaTypes: 대상 비자(예: D-2, D-4). 제한이 없으면 빈 배열.
             degrees: 대상 학위과정. 제한이 없으면 빈 배열.
             years: 대상 학년 "1"~"6". 제한이 없으면 빈 배열.
             certain: 대상 조건과 마감을 본문에서 분명히 읽었으면 true, 애매하면 false.
@@ -102,9 +104,10 @@ public class NoticeAnalysisClient {
 
     /**
      * Gemini가 돌려준 그대로의 분석. 빈 문자열과 빈 배열은 "본문에 없음"이다.
-     * 프로필에서 비자를 받지 않으므로 비자 조건은 뽑지 않는다. 뽑으면 학생이 채울 수 없는 "확인 필요"가 생긴다.
+     * 프로필에서 비자를 받지 않지만 비자 조건은 뽑는다. 비자 제한이 있는 공지는 "확인 필요"로 남기는 게 팀 결정이다.
      */
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Analysis(String target, String deadline, List<String> actions, List<String> documents,
-            List<String> nationalities, List<String> degrees, List<String> years, boolean certain) {}
+            List<String> nationalities, List<String> visaTypes, List<String> degrees, List<String> years,
+            boolean certain) {}
 }

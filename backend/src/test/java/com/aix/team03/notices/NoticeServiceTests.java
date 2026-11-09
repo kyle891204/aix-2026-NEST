@@ -57,7 +57,8 @@ class NoticeServiceTests {
         when(notices.findAll()).thenReturn(List.of(notice));
         when(notices.findById("real")).thenReturn(Optional.of(notice));
         when(analysisClient.analyze(any(), any(), any())).thenReturn(new NoticeAnalysisClient.Analysis(
-                "재학생", "2026-11-20", List.of("신청서 제출"), List.of(), List.of(), List.of(), List.of(), true));
+                "재학생", "2026-11-20", List.of("신청서 제출"), List.of(), List.of(), List.of(), List.of(), List.of(),
+                true));
 
         // 상세를 열기 전 목록은 Gemini를 부르지 않고 분석 전 상태를 보여준다.
         assertThat(service.search(null, null, null, null)).singleElement()

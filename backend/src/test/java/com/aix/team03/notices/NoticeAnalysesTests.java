@@ -33,7 +33,8 @@ class NoticeAnalysesTests {
 
     private static Analysis analysis(String deadline, List<String> degrees, boolean certain) {
         return new Analysis("D-2 비자 유학생", deadline, List.of("서류 제출", " ", "서류 제출", "출입국 방문 예약"),
-                List.of("여권 사본", "재학증명서"), List.of("vn", "Vietnam"), degrees, List.of("1", "7"), certain);
+                List.of("여권 사본", "재학증명서"), List.of("vn", "Vietnam"), List.of("D-2", "학생비자"), degrees,
+                List.of("1", "7"), certain);
     }
 
     @Test
@@ -48,8 +49,7 @@ class NoticeAnalysesTests {
         assertThat(merged.actions()).extracting(NoticeModels.Action::text).containsExactly("서류 제출", "출입국 방문 예약");
         assertThat(merged.documents()).containsExactly("여권 사본", "재학증명서");
         assertThat(merged.targetConditions().nationalities()).containsExactly("VN");
-        // 프로필에서 비자를 받지 않으므로 비자 조건은 늘 비어 있다.
-        assertThat(merged.targetConditions().visaTypes()).isEmpty();
+        assertThat(merged.targetConditions().visaTypes()).containsExactly("D-2");
         assertThat(merged.targetConditions().degrees()).containsExactly("BACHELOR");
         assertThat(merged.targetConditions().years()).containsExactly("1");
         assertThat(merged.originalContent()).isEqualTo("본문");
