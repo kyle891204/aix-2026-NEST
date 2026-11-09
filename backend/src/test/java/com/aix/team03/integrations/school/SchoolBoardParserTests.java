@@ -306,7 +306,8 @@ class SchoolBoardParserTests {
                         <span class="subject">일반 공지</span><span class="datetime">2026-10-01</span></a></li></ul>""",
                 "https://pharmacy.hanyang.ac.kr/front/information/notice/notice-view?id=1",
                 "<div class=\"board-default-view\"><div class=\"content\">본문</div></div>");
-        var requested = new java.util.ArrayList<String>();
+        // 수집기는 게시판을 동시에 읽으므로 여러 스레드가 함께 기록해도 빠지지 않는 목록을 쓴다.
+        var requested = new java.util.concurrent.CopyOnWriteArrayList<String>();
         var collector = new SchoolNoticeCollector(List.of(global, pharmacy), url -> {
             requested.add(url);
             if (!pages.containsKey(url)) throw new java.io.IOException("unreachable " + url);
@@ -348,7 +349,8 @@ class SchoolBoardParserTests {
     }
 
     private static List<SchoolNotice> collectAll(SchoolNoticeCollector collector) {
-        var read = new java.util.ArrayList<SchoolNotice>();
+        // 게시판마다 다른 스레드에서 결과를 넘기므로 함께 기록해도 빠지지 않는 목록을 쓴다.
+        var read = new java.util.concurrent.CopyOnWriteArrayList<SchoolNotice>();
         collector.collectDetails(collector.collectLists(), read::addAll);
         return read;
     }
