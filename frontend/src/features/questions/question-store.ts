@@ -57,6 +57,62 @@ export const examplePosts: QuestionPost[] = [
     example: true,
     replies: [],
   },
+  {
+    id: 'example-library-en',
+    authorId: 'example-emma',
+    author: 'Emma',
+    language: 'en',
+    category: 'school',
+    status: 'unresolved',
+    title: 'How can I reserve a group study room?',
+    content:
+      'Our group has four students and wants to study at the library from 3 PM to 5 PM on November 12.\nDo we need to reserve a room online, and does everyone need to bring a student ID?',
+    createdAt: '2026-11-07T00:00:00Z',
+    example: true,
+    replies: [],
+  },
+  {
+    id: 'example-assignment-en',
+    authorId: 'example-alex',
+    author: 'Alex',
+    language: 'en',
+    category: 'class',
+    status: 'unresolved',
+    title: 'Does saving a draft count as submitting an assignment?',
+    content:
+      'My assignment is due at 11:59 PM on November 15. I uploaded a PDF, but the page still says it is a draft.\nDo I need to press a separate submit button? I want to check the submission status before the deadline.',
+    createdAt: '2026-11-07T01:00:00Z',
+    example: true,
+    replies: [],
+  },
+  {
+    id: 'example-bus-zh',
+    authorId: 'example-xiaoyu',
+    author: '小雨',
+    language: 'zh',
+    category: 'life',
+    status: 'unresolved',
+    title: '周末怎么从学校去地铁站？',
+    content:
+      '我想在11月14日星期六上午9点从ERICA校区去地铁站。\n周末有校车吗？如果没有，应该在哪里乘坐公交车？请告诉我在哪里可以查看最新时刻表。',
+    createdAt: '2026-11-07T02:00:00Z',
+    example: true,
+    replies: [],
+  },
+  {
+    id: 'example-presentation-zh',
+    authorId: 'example-chen',
+    author: 'Chen',
+    language: 'zh',
+    category: 'class',
+    status: 'unresolved',
+    title: '小组展示需要每个人都发言吗？',
+    content:
+      '我们小组有三个人，计划在11月16日进行10分钟的课堂展示。\n一般需要每个人都发言吗？我还不太熟悉韩语，想先和组员分配好时间，再向老师确认要求。',
+    createdAt: '2026-11-07T03:00:00Z',
+    example: true,
+    replies: [],
+  },
 ]
 type StorageLike = Pick<Storage, 'getItem' | 'setItem'>
 const record = (v: unknown): v is Record<string, unknown> =>
@@ -95,7 +151,12 @@ export function loadQuestion(storage: StorageLike): QuestionPost[] {
     !data.posts.every(validPost)
   )
     throw new Error('저장된 질문게시판 데이터를 읽을 수 없습니다.')
-  return data.posts
+  // 기존 탭의 글·답글은 보존하고 새 외국어 예시만 ID 기준으로 추가한다.
+  const ids = new Set(data.posts.map((post) => post.id))
+  const missing = examplePosts.filter(
+    (post) => post.language !== 'ko' && !ids.has(post.id),
+  )
+  return [...data.posts, ...structuredClone(missing)]
 }
 export function saveQuestion(storage: StorageLike, posts: QuestionPost[]) {
   if (!posts.every(validPost)) throw new Error('게시글 내용을 확인해 주세요.')
