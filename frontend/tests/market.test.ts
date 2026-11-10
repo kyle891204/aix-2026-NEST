@@ -136,3 +136,74 @@ test('only the reply author can edit or delete, including when actor owns the po
     }),
   )
 })
+
+test('new language examples join existing posts without overwriting replies or duplicating', () => {
+  const store = storage()
+  const examples = loadMarket(store)
+  for (const language of ['ko', 'en', 'zh'])
+    assert.equal(
+      examples.filter((post) => post.language === language).length,
+      2,
+    )
+  const original = {
+    ...examples[0],
+    title: 'Preserved title',
+    replies: [
+      {
+        id: 'existing-reply',
+        authorId: 'student',
+        author: 'Student',
+        language: 'en' as const,
+        content: 'Keep this reply',
+        createdAt: '2026-11-01T00:00:00Z',
+      },
+    ],
+  }
+  const own = {
+    ...examples[1],
+    id: 'own-saved-post',
+    authorId: 'student',
+    example: false,
+  }
+  saveMarket(store, [own, original])
+  const loaded = loadMarket(store)
+  assert.deepEqual(loaded.slice(0, 2), [own, original])
+  assert.equal(loaded.length, 6)
+  assert.equal(loaded.filter((post) => post.language === 'en').length, 2)
+  assert.equal(loaded.filter((post) => post.language === 'zh').length, 2)
+  saveMarket(store, loaded)
+  assert.deepEqual(loadMarket(store), loaded)
+})
+
+test('legacy chair example wording updates while saved replies and user posts remain intact', () => {
+  const store = storage()
+  const chair = loadMarket(store).find(
+    (post) => post.id === 'example-chair-zh',
+  )!
+  const legacy = {
+    ...chair,
+    title: '出售二手书桌椅',
+    content: '出售一把二手书桌椅，价格为20,000韩元。',
+    replies: [
+      {
+        id: 'kept',
+        authorId: 'student',
+        author: 'Student',
+        language: 'en' as const,
+        content: 'Is this available?',
+        createdAt: '2026-11-10T00:00:00Z',
+      },
+    ],
+  }
+  const own = { ...legacy, id: 'student-chair', example: false }
+  saveMarket(store, [legacy, own])
+  const raw = store.getItem(MARKET_KEY)
+  const loaded = loadMarket(store)
+  assert.equal(loaded[0].title, chair.title)
+  assert.equal(loaded[0].content, chair.content)
+  assert.deepEqual(loaded[0].replies, legacy.replies)
+  assert.deepEqual(loaded[1], own)
+  assert.equal(store.getItem(MARKET_KEY), raw)
+  saveMarket(store, loaded)
+  assert.deepEqual(loadMarket(store), loaded)
+})

@@ -1,4 +1,5 @@
-import { requestJson } from '../../shared/api/client.ts'
+import { getSession } from '../auth/api.ts'
+import { ApiError, requestJson } from '../../shared/api/client.ts'
 import type { Language } from '../../shared/types/language.ts'
 
 export interface TranslationItem {
@@ -102,7 +103,11 @@ export function readTranslationResponse(value: unknown, request: BatchRequest) {
 
 /** 성공 결과·진행 중 요청을 공유한다. 계정별로 분리하며 브라우저 영구 저장은 하지 않는다. */
 export function createTranslationClient(
-  send: (request: BatchRequest, csrfToken?: string) => Promise<unknown>,
+  send: (
+    request: BatchRequest,
+    csrfToken?: string,
+    account?: string,
+  ) => Promise<unknown>,
   now: () => number = Date.now,
 ) {
   const cache = new Map<string, { text: string; expiresAt: number }>()
@@ -161,7 +166,7 @@ export function createTranslationClient(
           let results: TranslationResult[]
           try {
             results = readTranslationResponse(
-              await send(request, csrfToken),
+              await send(request, csrfToken, account),
               request,
             )
           } catch {
@@ -190,16 +195,39 @@ export function createTranslationClient(
   }
 }
 
-export const translationClient = createTranslationClient((request, csrfToken) =>
-  requestJson('/community/translations/batch', {
-    method: 'POST',
-    credentials: 'same-origin',
-    cache: 'no-store',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
-    },
-    body: JSON.stringify(request),
-    signal: AbortSignal.timeout(70_000),
-  }),
-)
+// 세션 쿠키가 바뀌어도 화면의 CSRF 값은 이전 값일 수 있다.
+// 번역은 읽기 작업이므로 같은 계정의 최신 토큰으로 한 번만 복구한다.
+export async function sendTranslationBatch(
+  request: BatchRequest,
+  csrfToken?: string,
+  account?: string,
+) {
+  const send = (token?: string) =>
+    requestJson('/community/translations/batch', {
+      method: 'POST',
+      credentials: 'same-origin',
+      cache: 'no-store',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'X-CSRF-Token': token } : {}),
+      },
+      body: JSON.stringify(request),
+      signal: AbortSignal.timeout(70_000),
+    })
+  try {
+    return await send(csrfToken)
+  } catch (cause) {
+    if (
+      !(cause instanceof ApiError) ||
+      cause.status !== 403 ||
+      cause.code !== 'AUTH_CSRF_INVALID'
+    )
+      throw cause
+    const current = await getSession()
+    // 계정이 바뀌었다면 이전 계정의 요청을 새 계정으로 전송하지 않는다.
+    if (!account || current.user?.id !== account) throw cause
+    return send(current.csrfToken)
+  }
+}
+
+export const translationClient = createTranslationClient(sendTranslationBatch)
