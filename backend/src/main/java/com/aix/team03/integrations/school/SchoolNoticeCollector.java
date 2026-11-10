@@ -3,7 +3,12 @@ package com.aix.team03.integrations.school;
 import com.aix.team03.integrations.school.SchoolNoticeModels.Detail;
 import com.aix.team03.integrations.school.SchoolNoticeModels.ListEntry;
 import com.aix.team03.integrations.school.SchoolNoticeModels.SchoolNotice;
+import java.io.EOFException;
 import java.io.IOException;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -11,14 +16,18 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import javax.net.ssl.SSLException;
+import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -41,42 +50,80 @@ public class SchoolNoticeCollector {
         }
     }
 
-    private static final HtmlFetcher JSOUP = new HtmlFetcher() {
-        @Override
-        public Document fetch(String url) throws IOException {
-            return Jsoup.connect(url).userAgent(USER_AGENT).timeout(10_000).get();
-        }
-
-        @Override
-        public Document post(String url, Map<String, String> form) throws IOException {
-            return Jsoup.connect(url).userAgent(USER_AGENT).timeout(10_000).data(form).post();
-        }
-    };
-
-    private final List<SchoolBoard> boards;
-    private final HtmlFetcher fetcher;
-    private final long delayMillis;
-    private final Map<String, BoardList> lists = new ConcurrentHashMap<>();
-
-    @Autowired
-    public SchoolNoticeCollector(List<SchoolBoard> boards) {
-        this(boards, JSOUP, 300);
-    }
-
-    SchoolNoticeCollector(List<SchoolBoard> boards, HtmlFetcher fetcher, long delayMillis) {
-        this.boards = boards;
-        this.delayMillis = delayMillis;
-        // 상세를 폼으로 여는 게시판도 요청 사이를 똑같이 띄우도록 모든 요청을 여기로 모은다.
-        this.fetcher = new HtmlFetcher() {
+    private static HtmlFetcher jsoupFetcher(int timeoutMillis) {
+        requireRange("NOTICE_FETCH_TIMEOUT_MS", timeoutMillis, 1_000, 120_000);
+        return new HtmlFetcher() {
             @Override
             public Document fetch(String url) throws IOException {
-                pause();
-                return fetcher.fetch(url);
+                return Jsoup.connect(url).userAgent(USER_AGENT).timeout(timeoutMillis).get();
             }
 
             @Override
             public Document post(String url, Map<String, String> form) throws IOException {
-                pause();
+                return Jsoup.connect(url).userAgent(USER_AGENT).timeout(timeoutMillis).data(form).post();
+            }
+        };
+    }
+
+    private final List<SchoolBoard> boards;
+    private final HtmlFetcher fetcher;
+    private final int parallelism;
+    private final int retries;
+    private final long retryDelayMillis;
+    private final String testBoard;
+    private final Map<String, BoardList> lists = new ConcurrentHashMap<>();
+
+    @Autowired
+    public SchoolNoticeCollector(List<SchoolBoard> boards,
+            @Value("${NOTICE_FETCH_TIMEOUT_MS:60000}") int timeoutMillis,
+            @Value("${NOTICE_FETCH_PARALLELISM:3}") int parallelism,
+            @Value("${NOTICE_FETCH_RETRIES:1}") int retries,
+            @Value("${NOTICE_FETCH_RETRY_DELAY_MS:2000}") long retryDelayMillis,
+            @Value("${NOTICE_TEST_BOARD:}") String testBoard) {
+        this(boards, jsoupFetcher(timeoutMillis), 300, parallelism, retries, retryDelayMillis, testBoard);
+        log.info("School notice fetch settings: timeoutMs={} parallelism={} retries={} retryDelayMs={} testBoard={}",
+                timeoutMillis, parallelism, retries, retryDelayMillis, this.testBoard.isEmpty() ? "all" : this.testBoard);
+    }
+
+    SchoolNoticeCollector(List<SchoolBoard> boards, HtmlFetcher fetcher, long delayMillis) {
+        this(boards, fetcher, delayMillis, 3, 1, 2_000, "");
+    }
+
+    SchoolNoticeCollector(List<SchoolBoard> boards, HtmlFetcher fetcher, long delayMillis, int parallelism,
+            int retries, long retryDelayMillis, String testBoard) {
+        requireRange("NOTICE_FETCH_PARALLELISM", parallelism, 1, 12);
+        requireRange("NOTICE_FETCH_RETRIES", retries, 0, 2);
+        requireRange("NOTICE_FETCH_RETRY_DELAY_MS", retryDelayMillis, 0, 30_000);
+        this.boards = List.copyOf(boards);
+        this.parallelism = parallelism;
+        this.retries = retries;
+        this.retryDelayMillis = retryDelayMillis;
+        this.testBoard = testBoard == null ? "" : testBoard.trim();
+        if (!this.testBoard.isEmpty() && boards.stream().noneMatch(board -> board.key().equals(this.testBoard))) {
+            throw new IllegalArgumentException("NOTICE_TEST_BOARD must match a registered school board key");
+        }
+        // 상세를 폼으로 여는 게시판도 요청 사이를 똑같이 띄우도록 모든 요청을 여기로 모은다.
+        this.fetcher = new HtmlFetcher() {
+            @Override
+            public Document fetch(String url) throws IOException {
+                for (int attempt = 0; ; attempt++) {
+                    pause(delayMillis);
+                    try {
+                        return fetcher.fetch(url);
+                    } catch (IOException exception) {
+                        if (Thread.currentThread().isInterrupted() || attempt >= retries || !isRetryable(exception))
+                            throw exception;
+                        log.warn("School GET {} failed: {}; retry {}/{} in {}ms", url,
+                                exception.toString(), attempt + 1, retries, retryDelayMillis);
+                        pause(retryDelayMillis);
+                    }
+                }
+            }
+
+            @Override
+            public Document post(String url, Map<String, String> form) throws IOException {
+                // 폼 토큰을 쓰는 상세 POST는 자동 재전송하지 않는다.
+                pause(delayMillis);
                 return fetcher.post(url, form);
             }
         };
@@ -87,15 +134,26 @@ public class SchoolNoticeCollector {
      * 상세는 {@link #collectDetails}로 따로 읽는다. 목록 12쪽만 읽어 첫 화면을 빨리 보여주기 위해서다.
      */
     public List<SchoolNotice> collectLists() {
-        return inParallel(boards, board -> {
+        var targets = boards.stream()
+                .filter(board -> testBoard.isEmpty() || board.key().equals(testBoard))
+                .toList();
+        if (!testBoard.isEmpty()) log.warn("NOTICE_TEST_BOARD active: collecting only {}", testBoard);
+
+        return inParallel(targets, board -> {
+            long started = System.nanoTime();
             try {
                 var page = fetcher.fetch(board.listUrl());
+                log.info("School board {} HTML fetched in {}ms (finalUrl={})", board.key(), elapsedMillis(started),
+                        page.location());
                 var entries = board.parseList(page).stream().limit(NOTICES_PER_BOARD).toList();
+                log.info("School board {} parsed {} entries", board.key(), entries.size());
+                if (entries.isEmpty())
+                    log.warn("School board {} returned HTML but no notice entries (title={})", board.key(), page.title());
                 // LIONS칼리지처럼 상세를 목록 페이지의 폼으로 여는 게시판을 위해 마지막 목록 페이지를 둔다.
                 lists.put(board.key(), new BoardList(board, page, entries));
                 return entries.stream().map(entry -> notice(board, entry, null)).toList();
             } catch (IOException | RuntimeException exception) {
-                log.warn("School board {} could not be read: {}", board.key(), exception.toString());
+                log.warn("School board {} could not be read after {}ms", board.key(), elapsedMillis(started), exception);
                 return List.of();
             }
         });
@@ -133,7 +191,7 @@ public class SchoolNoticeCollector {
     // 게시판마다 사이트가 달라 동시에 읽는다. 한 게시판 안에서는 요청 사이를 띄우므로 사이트마다 부담은 그대로다.
     private <T> List<SchoolNotice> inParallel(List<T> items, Function<T, List<SchoolNotice>> work) {
         if (items.isEmpty()) return List.of();
-        try (var pool = Executors.newFixedThreadPool(items.size())) {
+        try (var pool = Executors.newFixedThreadPool(Math.min(parallelism, items.size()))) {
             var results = items.stream().map(item -> pool.submit(() -> work.apply(item))).toList();
             var notices = new ArrayList<SchoolNotice>();
             for (var result : results) {
@@ -143,7 +201,7 @@ public class SchoolNoticeCollector {
                     Thread.currentThread().interrupt();
                     break;
                 } catch (ExecutionException exception) {
-                    log.warn("School board collection failed: {}", exception.getCause().toString());
+                    log.warn("School board collection failed", exception.getCause());
                 }
             }
             return notices;
@@ -155,12 +213,32 @@ public class SchoolNoticeCollector {
         try {
             return list.board().parseDetail(list.board().fetchDetail(list.page(), entry, fetcher));
         } catch (IOException | RuntimeException exception) {
-            log.warn("School notice {} could not be read: {}", entry.url(), exception.toString());
+            log.warn("School notice {} could not be read", entry.url(), exception);
             return new Detail("", null, List.of());
         }
     }
 
-    private void pause() throws IOException {
+    private static boolean isRetryable(IOException exception) {
+        if (exception instanceof HttpStatusException status)
+            return status.getStatusCode() == 429 || status.getStatusCode() >= 500;
+        // 인증서 검증 실패는 재시도로 해결하거나 검증을 생략하지 않는다.
+        for (Throwable cause = exception; cause != null; cause = cause.getCause())
+            if (cause instanceof GeneralSecurityException) return false;
+        return exception instanceof SocketTimeoutException || exception instanceof SocketException
+                || exception instanceof SSLException || exception instanceof EOFException
+                || exception instanceof UnknownHostException;
+    }
+
+    private static long elapsedMillis(long started) {
+        return TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - started);
+    }
+
+    private static void requireRange(String name, long value, long min, long max) {
+        if (value < min || value > max)
+            throw new IllegalArgumentException(name + " must be between " + min + " and " + max);
+    }
+
+    private static void pause(long delayMillis) throws IOException {
         if (delayMillis <= 0) return;
         try {
             Thread.sleep(delayMillis);
