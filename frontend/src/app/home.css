@@ -1,3 +1,26 @@
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.account-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  flex-shrink: 0;
+  color: #526179;
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.bottom-nav a {
+  padding: 4px;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
 /* SCHOOL / LIFE 전환 메뉴 */
 .mode-switch {
     display: inline-flex;

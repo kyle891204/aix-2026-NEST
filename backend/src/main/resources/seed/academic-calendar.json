@@ -1,0 +1,294 @@
+{
+  "sourceUrl": "https://www.hanyang.ac.kr/-93",
+  "checkedAt": "2026-11-04",
+  "events": [
+    {
+      "scheduleId": "academic-2026-0aa2a8cf57-1",
+      "title": "2026학년도 1학기 개강",
+      "startDate": "2026-03-03",
+      "endDate": "2026-03-03"
+    },
+    {
+      "scheduleId": "academic-2026-102474560e-1",
+      "title": "조기졸업 신청기간",
+      "startDate": "2026-03-03",
+      "endDate": "2026-03-06"
+    },
+    {
+      "scheduleId": "academic-2026-58ae339c80-1",
+      "title": "2026학년도 1학기 수강신청 최종 정정기간",
+      "startDate": "2026-03-05",
+      "endDate": "2026-03-10"
+    },
+    {
+      "scheduleId": "academic-2026-69f133b174-1",
+      "title": "2026학년도 1학기 중간 강의평가 기간",
+      "startDate": "2026-03-30",
+      "endDate": "2026-04-10"
+    },
+    {
+      "scheduleId": "academic-2026-2297559d43-1",
+      "title": "2025학년도 후기 졸업예정자 졸업논문 제출기간",
+      "startDate": "2026-04-06",
+      "endDate": "2026-04-10"
+    },
+    {
+      "scheduleId": "academic-2026-ed9223c938-1",
+      "title": "휴학자의 학기인정 기준일",
+      "startDate": "2026-04-21",
+      "endDate": "2026-04-21"
+    },
+    {
+      "scheduleId": "academic-2026-9d72de0a91-1",
+      "title": "2026학년도 1학기 학점포기 신청기간",
+      "startDate": "2026-04-21",
+      "endDate": "2026-04-23"
+    },
+    {
+      "scheduleId": "academic-2026-ac6e7cb360-1",
+      "title": "2026학년도 여름 계절학기 신청기간",
+      "startDate": "2026-05-11",
+      "endDate": "2026-05-14"
+    },
+    {
+      "scheduleId": "academic-2026-fa2fc2ae25-1",
+      "title": "다중 · 복수 · 부전공 신청 및 포기기간",
+      "startDate": "2026-05-11",
+      "endDate": "2026-05-15"
+    },
+    {
+      "scheduleId": "academic-2026-b3e64c8a18-1",
+      "title": "2026학년도 1학기 S/U등급 신청기간",
+      "startDate": "2026-05-19",
+      "endDate": "2026-05-21"
+    },
+    {
+      "scheduleId": "academic-2026-b42b2c8f80-1",
+      "title": "2026학년도 1학기 기말 강의평가 기간",
+      "startDate": "2026-06-01",
+      "endDate": "2026-06-29"
+    },
+    {
+      "scheduleId": "academic-2026-aa9423488d-1",
+      "title": "2026학년도 2학기 재입학 접수기간",
+      "startDate": "2026-06-02",
+      "endDate": "2026-06-05"
+    },
+    {
+      "scheduleId": "academic-2026-75017b1a99-1",
+      "title": "2026학년도 1학기 성적입력 및 열람기간 (이의신청 및 정정포함)",
+      "startDate": "2026-06-16",
+      "endDate": "2026-06-29"
+    },
+    {
+      "scheduleId": "academic-2026-a58ffa262e-1",
+      "title": "2026학년도 1학기 종강",
+      "startDate": "2026-06-22",
+      "endDate": "2026-06-22"
+    },
+    {
+      "scheduleId": "academic-2026-6c78c4696f-1",
+      "title": "보강가능일",
+      "startDate": "2026-06-23",
+      "endDate": "2026-06-23"
+    },
+    {
+      "scheduleId": "academic-2026-ceceac4b75-1",
+      "title": "2026학년도 여름 계절학기",
+      "startDate": "2026-06-24",
+      "endDate": "2026-07-14"
+    },
+    {
+      "scheduleId": "academic-2026-9dceb50f49-1",
+      "title": "하계방학",
+      "startDate": "2026-06-24",
+      "endDate": "2026-08-31"
+    },
+    {
+      "scheduleId": "academic-2026-c9937233db-1",
+      "title": "2026학년도 1학기 학사학위취득유예 신청기간",
+      "startDate": "2026-07-06",
+      "endDate": "2026-07-10"
+    },
+    {
+      "scheduleId": "academic-2026-7a24b2b67b-1",
+      "title": "2026학년도 2학기 휴학 신청기간",
+      "startDate": "2026-07-06",
+      "endDate": "2026-09-04"
+    },
+    {
+      "scheduleId": "academic-2026-2d3b784e91-1",
+      "title": "2025학년도 후기 졸업사정",
+      "startDate": "2026-07-29",
+      "endDate": "2026-07-31"
+    },
+    {
+      "scheduleId": "academic-2026-99c31216fc-1",
+      "title": "2026학년도 2학기 수강신청기간",
+      "startDate": "2026-08-06",
+      "endDate": "2026-08-13"
+    },
+    {
+      "scheduleId": "academic-2026-c7fc70ccb6-1",
+      "title": "2025학년도 후기 학위수여식(ERICA)",
+      "startDate": "2026-08-19",
+      "endDate": "2026-08-19"
+    },
+    {
+      "scheduleId": "academic-2026-a353637a3a-1",
+      "title": "2026학년도 2학기 개강",
+      "startDate": "2026-09-01",
+      "endDate": "2026-09-01"
+    },
+    {
+      "scheduleId": "academic-2026-102474560e-2",
+      "title": "조기졸업 신청기간",
+      "startDate": "2026-09-01",
+      "endDate": "2026-09-04"
+    },
+    {
+      "scheduleId": "academic-2026-8137127e38-1",
+      "title": "2026학년도 2학기 수강신청 최종 정정기간",
+      "startDate": "2026-09-07",
+      "endDate": "2026-09-08"
+    },
+    {
+      "scheduleId": "academic-2026-53ade293bf-1",
+      "title": "2026학년도 2학기 중간 강의평가 기간",
+      "startDate": "2026-09-28",
+      "endDate": "2026-10-08"
+    },
+    {
+      "scheduleId": "academic-2026-ca36eccaf5-1",
+      "title": "2026학년도 전기 졸업예정자 졸업논문 제출기간",
+      "startDate": "2026-10-08",
+      "endDate": "2026-10-14"
+    },
+    {
+      "scheduleId": "academic-2026-ed9223c938-2",
+      "title": "휴학자의 학기인정 기준일",
+      "startDate": "2026-10-20",
+      "endDate": "2026-10-20"
+    },
+    {
+      "scheduleId": "academic-2026-77c76e95de-1",
+      "title": "2026학년도 2학기 학점포기 신청기간",
+      "startDate": "2026-10-20",
+      "endDate": "2026-10-22"
+    },
+    {
+      "scheduleId": "academic-2026-5ba2f7885f-1",
+      "title": "2027학년도 1학기 재입학 접수기간",
+      "startDate": "2026-11-02",
+      "endDate": "2026-11-06"
+    },
+    {
+      "scheduleId": "academic-2026-94ddae49e6-1",
+      "title": "2026학년도 겨울 계절학기 신청기간",
+      "startDate": "2026-11-09",
+      "endDate": "2026-11-12"
+    },
+    {
+      "scheduleId": "academic-2026-fa2fc2ae25-2",
+      "title": "다중 · 복수 · 부전공 신청 및 포기기간",
+      "startDate": "2026-11-09",
+      "endDate": "2026-11-13"
+    },
+    {
+      "scheduleId": "academic-2026-46d4f81344-1",
+      "title": "2026학년도 2학기 S/U등급 신청기간",
+      "startDate": "2026-11-17",
+      "endDate": "2026-11-19"
+    },
+    {
+      "scheduleId": "academic-2026-a40dc2dd26-1",
+      "title": "2026학년도 2학기 기말 강의평가 기간",
+      "startDate": "2026-12-01",
+      "endDate": "2026-12-29"
+    },
+    {
+      "scheduleId": "academic-2026-e3f83d798c-1",
+      "title": "2026학년도 2학기 성적입력 및 열람기간 (이의신청 및 정정포함)",
+      "startDate": "2026-12-11",
+      "endDate": "2026-12-29"
+    },
+    {
+      "scheduleId": "academic-2026-6731f411f9-1",
+      "title": "2026학년도 2학기 종강",
+      "startDate": "2026-12-21",
+      "endDate": "2026-12-21"
+    },
+    {
+      "scheduleId": "academic-2026-6c78c4696f-2",
+      "title": "보강가능일",
+      "startDate": "2026-12-22",
+      "endDate": "2026-12-22"
+    },
+    {
+      "scheduleId": "academic-2026-87e4a6534a-1",
+      "title": "2026학년도 겨울 계절학기",
+      "startDate": "2026-12-23",
+      "endDate": "2027-01-14"
+    },
+    {
+      "scheduleId": "academic-2026-2063d9d0a7-1",
+      "title": "동계방학",
+      "startDate": "2026-12-23",
+      "endDate": "2027-02-28"
+    },
+    {
+      "scheduleId": "academic-2026-51837decd5-1",
+      "title": "2026학년도 2학기 학사학위취득유예 신청기간",
+      "startDate": "2027-01-04",
+      "endDate": "2027-01-08"
+    },
+    {
+      "scheduleId": "academic-2026-de5fef9186-1",
+      "title": "2027학년도 1학기 휴 ∙ 복학 신청기간",
+      "startDate": "2027-01-04",
+      "endDate": "2027-01-15"
+    },
+    {
+      "scheduleId": "academic-2026-12f3f5d1dc-1",
+      "title": "2027학년도 전과 접수기간",
+      "startDate": "2027-01-13",
+      "endDate": "2027-01-22"
+    },
+    {
+      "scheduleId": "academic-2026-82ed19bf09-1",
+      "title": "2027학년도 전과 면접",
+      "startDate": "2027-01-26",
+      "endDate": "2027-01-27"
+    },
+    {
+      "scheduleId": "academic-2026-68ddf864cc-1",
+      "title": "2026학년도 전기 졸업사정",
+      "startDate": "2027-02-01",
+      "endDate": "2027-02-03"
+    },
+    {
+      "scheduleId": "academic-2026-ec23cd31da-1",
+      "title": "2027학년도 1학기 수강신청기간",
+      "startDate": "2027-02-10",
+      "endDate": "2027-02-16"
+    },
+    {
+      "scheduleId": "academic-2026-439844b6d1-1",
+      "title": "2026학년도 전기 학위수여식(ERICA)",
+      "startDate": "2027-02-17",
+      "endDate": "2027-02-17"
+    },
+    {
+      "scheduleId": "academic-2026-0cac42fc63-1",
+      "title": "2027학년도 입학식(ERICA)",
+      "startDate": "2027-02-25",
+      "endDate": "2027-02-25"
+    },
+    {
+      "scheduleId": "academic-2026-e8abf17b5b-1",
+      "title": "신 ∙ 편입생 수강신청기간",
+      "startDate": "2027-02-26",
+      "endDate": "2027-03-02"
+    }
+  ]
+}

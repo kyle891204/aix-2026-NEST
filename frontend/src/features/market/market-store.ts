@@ -61,6 +61,70 @@ export const examplePosts: MarketPost[] = [
     example: true,
     replies: [],
   },
+  {
+    id: 'example-bike-en',
+    authorId: 'example-emma',
+    author: 'Emma',
+    language: 'en',
+    type: 'sell',
+    status: 'available',
+    title: 'City bike for sale',
+    content:
+      'I am selling my city bike for 50,000 KRW. The brakes and lights work well.\nWe can meet at the ERICA main gate at 3 PM on November 12. Please check the bike before paying; no advance payment is needed.',
+    price: 50000,
+    location: 'ERICA main gate',
+    createdAt: '2026-11-07T00:00:00Z',
+    example: true,
+    replies: [],
+  },
+  {
+    id: 'example-kettle-en',
+    authorId: 'example-alex',
+    author: 'Alex',
+    language: 'en',
+    type: 'buy',
+    status: 'available',
+    title: 'Looking for a small electric kettle',
+    content:
+      'I am looking for a clean electric kettle with a capacity of about 1 liter. My budget is up to 15,000 KRW.\nI can pick it up near the dormitory after 6 PM. Please leave a reply with its condition and price.',
+    price: 15000,
+    location: 'Near the ERICA dormitory',
+    createdAt: '2026-11-07T01:00:00Z',
+    example: true,
+    replies: [],
+  },
+  {
+    id: 'example-chair-zh',
+    authorId: 'example-xiaoyu',
+    author: '小雨',
+    language: 'zh',
+    type: 'sell',
+    status: 'available',
+    title: '出售一把二手学习椅（仅椅子）',
+    content:
+      '出售一把二手学习椅，价格为20,000韩元。只出售椅子，不包含书桌。椅子高度可以调节，没有明显损坏。\n可以在11月13日下午4点到宿舍门口当面交易。请先检查椅子，不需要提前付款。',
+    price: 20000,
+    location: 'ERICA宿舍门口',
+    createdAt: '2026-11-07T02:00:00Z',
+    example: true,
+    replies: [],
+  },
+  {
+    id: 'example-backpack-zh',
+    authorId: 'example-chen',
+    author: 'Chen',
+    language: 'zh',
+    type: 'buy',
+    status: 'available',
+    title: '求购能装笔记本电脑的双肩包',
+    content:
+      '想买一个能装下14英寸笔记本电脑的双肩包，预算为10,000韩元。\n希望拉链完好，肩带没有破损。可以在图书馆门口见面，请在回复中说明价格和使用情况。',
+    price: 10000,
+    location: 'ERICA图书馆门口',
+    createdAt: '2026-11-07T03:00:00Z',
+    example: true,
+    replies: [],
+  },
 ]
 type StorageLike = Pick<Storage, 'getItem' | 'setItem'>
 const record = (v: unknown): v is Record<string, unknown> =>
@@ -103,7 +167,19 @@ export function loadMarket(storage: StorageLike): MarketPost[] {
     !data.posts.every(validPost)
   )
     throw new Error('저장된 장터 데이터를 읽을 수 없습니다.')
-  return data.posts
+  // 기존 탭의 글·답글은 보존하고 새 외국어 예시만 ID 기준으로 추가한다.
+  // 이전 내장 의자 예시의 문구만 갱신하고 저장된 답글과 사용자 글은 유지한다.
+  const chair = examplePosts.find((post) => post.id === 'example-chair-zh')!
+  const posts = data.posts.map((post) =>
+    post.example && post.id === chair.id && post.title === '出售二手书桌椅'
+      ? { ...post, title: chair.title, content: chair.content }
+      : post,
+  )
+  const ids = new Set(posts.map((post) => post.id))
+  const missing = examplePosts.filter(
+    (post) => post.language !== 'ko' && !ids.has(post.id),
+  )
+  return [...posts, ...structuredClone(missing)]
 }
 export function saveMarket(storage: StorageLike, posts: MarketPost[]) {
   if (!posts.every(validPost)) throw new Error('게시글 내용을 확인해 주세요.')

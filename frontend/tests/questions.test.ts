@@ -155,7 +155,7 @@ test('reply ownership is independent of question ownership and changes persist',
 test('invalid data and storage errors are reported; question data uses a separate key', () => {
   const store = storage()
   store.setItem('nest:market-demo:v1', 'market')
-  assert.equal(loadQuestion(store).length, 2)
+  assert.equal(loadQuestion(store).length, 6)
   store.setItem(QUESTIONS_KEY, '{')
   assert.throws(() => loadQuestion(store))
   store.setItem(
@@ -204,4 +204,42 @@ test('zero replies allows deletion but prevents resolution; replies reverse thos
   const store = storage()
   saveQuestion(store, deleted)
   assert.deepEqual(loadQuestion(store), deleted)
+})
+
+test('new language examples join existing posts without overwriting replies or duplicating', () => {
+  const store = storage()
+  const examples = loadQuestion(store)
+  for (const language of ['ko', 'en', 'zh'])
+    assert.equal(
+      examples.filter((post) => post.language === language).length,
+      2,
+    )
+  const original = {
+    ...examples[0],
+    title: 'Preserved title',
+    replies: [
+      {
+        id: 'existing-reply',
+        authorId: 'student',
+        author: 'Student',
+        language: 'en' as const,
+        content: 'Keep this reply',
+        createdAt: '2026-11-01T00:00:00Z',
+      },
+    ],
+  }
+  const own = {
+    ...examples[1],
+    id: 'own-saved-post',
+    authorId: 'student',
+    example: false,
+  }
+  saveQuestion(store, [own, original])
+  const loaded = loadQuestion(store)
+  assert.deepEqual(loaded.slice(0, 2), [own, original])
+  assert.equal(loaded.length, 6)
+  assert.equal(loaded.filter((post) => post.language === 'en').length, 2)
+  assert.equal(loaded.filter((post) => post.language === 'zh').length, 2)
+  saveQuestion(store, loaded)
+  assert.deepEqual(loadQuestion(store), loaded)
 })

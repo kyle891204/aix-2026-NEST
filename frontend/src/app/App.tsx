@@ -1,3 +1,5 @@
+import { LanguageProvider } from '../shared/i18n/LanguageProvider'
+import { useLanguage } from '../shared/i18n/language-context'
 import {
   QuestionLayout,
   QuestionListPage,
@@ -28,6 +30,7 @@ import { EntryExitPage } from '../features/immigration/pages/EntryExitPage'
 import { NoticeListPage } from '../features/notices/pages/NoticeListPage'
 import { NoticeDetailPage } from '../features/notices/pages/NoticeDetailPage'
 import { CourseNoticesPage } from '../features/courses/CourseNoticesPage'
+import { AcademicSchedulePage } from '../features/schedule/AcademicSchedulePage'
 import { ProfilePage } from '../features/profile/pages/ProfilePage'
 import { DemoProfileProvider } from '../features/profile/DemoProfileProvider'
 import { useDemoProfile } from '../features/profile/demo-profile-context'
@@ -65,80 +68,78 @@ export default function App() {
   return (
     <AuthProvider>
       <DemoProfileProvider>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup/consent" element={<SignupPage />} />
+        <LanguageProvider>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup/consent" element={<SignupPage />} />
 
-          <Route element={<ProtectedApp />}>
-            <Route path="/" element={<SchoolHomePage />} />
-            <Route path="/life" element={<LifeHomePage />} />
-            <Route path="/life/guide" element={<LifeGuidePage />} />
-            <Route path="/life/free" element={<FreeBoardLayout />}>
-              <Route index element={<FreeBoardListPage />} />
-              <Route path="new" element={<FreeBoardFormPage />} />
-              <Route path=":postId" element={<FreeBoardDetailPage />} />
-              <Route path=":postId/edit" element={<FreeBoardFormPage />} />
+            <Route element={<ProtectedApp />}>
+              <Route path="/" element={<SchoolHomePage />} />
+              <Route path="/life" element={<LifeHomePage />} />
+              <Route path="/life/guide" element={<LifeGuidePage />} />
+              <Route path="/life/free" element={<FreeBoardLayout />}>
+                <Route index element={<FreeBoardListPage />} />
+                <Route path="new" element={<FreeBoardFormPage />} />
+                <Route path=":postId" element={<FreeBoardDetailPage />} />
+                <Route path=":postId/edit" element={<FreeBoardFormPage />} />
+              </Route>
+              <Route path="/life/market" element={<MarketLayout />}>
+                <Route index element={<MarketListPage />} />
+                <Route path="new" element={<MarketFormPage />} />
+                <Route path=":postId" element={<MarketDetailPage />} />
+                <Route path=":postId/edit" element={<MarketFormPage />} />
+              </Route>
+              <Route path="/life/questions" element={<QuestionLayout />}>
+                <Route index element={<QuestionListPage />} />
+                <Route path="new" element={<QuestionFormPage />} />
+                <Route path=":postId" element={<QuestionDetailPage />} />
+                <Route path=":postId/edit" element={<QuestionFormPage />} />
+              </Route>
+              <Route path="/entry-exit" element={<EntryExitPage />} />
+              <Route
+                path="/entry-exit/entry"
+                element={<ChecklistPage key="entry" direction="entry" />}
+              />
+              <Route
+                path="/entry-exit/exit"
+                element={<ChecklistPage key="exit" direction="exit" />}
+              />
+              <Route path="/notices" element={<NoticeListPage />} />
+              <Route path="/notices/:noticeId" element={<NoticeDetailPage />} />
+              <Route path="/course-notices" element={<CourseNoticesPage />} />
+              <Route path="/schedule" element={<AcademicSchedulePage />} />
+              <Route path="/community" element={<CommunityPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/lms-test" element={<LmsTestPage />} />
+              <Route
+                path="*"
+                element={
+                  <LocalizedEmptyState
+                    title="페이지를 찾을 수 없습니다"
+                    description="하단 메뉴에서 이동해 주세요."
+                  />
+                }
+              />
             </Route>
-            <Route path="/life/market" element={<MarketLayout />}>
-              <Route index element={<MarketListPage />} />
-              <Route path="new" element={<MarketFormPage />} />
-              <Route path=":postId" element={<MarketDetailPage />} />
-              <Route path=":postId/edit" element={<MarketFormPage />} />
-            </Route>
-            <Route path="/life/questions" element={<QuestionLayout />}>
-              <Route index element={<QuestionListPage />} />
-              <Route path="new" element={<QuestionFormPage />} />
-              <Route path=":postId" element={<QuestionDetailPage />} />
-              <Route path=":postId/edit" element={<QuestionFormPage />} />
-            </Route>
-            <Route path="/entry-exit" element={<EntryExitPage />} />
             <Route
-              path="/entry-exit/entry"
-              element={<ChecklistPage key="entry" direction="entry" />}
-            />
-            <Route
-              path="/entry-exit/exit"
-              element={<ChecklistPage key="exit" direction="exit" />}
-            />
-            <Route path="/notices" element={<NoticeListPage />} />
-            <Route path="/notices/:noticeId" element={<NoticeDetailPage />} />
-            <Route path="/course-notices" element={<CourseNoticesPage />} />
-            <Route path="/community" element={<CommunityPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/lms-test" element={<LmsTestPage />} />
-            <Route
-              path="*"
+              path="/life/*"
               element={
-                <EmptyState
-                  title="페이지를 찾을 수 없습니다"
-                  description="하단 메뉴에서 이동해 주세요."
+                <LocalizedEmptyState
+                  title="LIFE"
+                  description="준비 중인 화면입니다."
                 />
               }
             />
-          </Route>
-          <Route
-            path="/schedule"
-            element={
-              <EmptyState
-                title="학사일정"
-                description="준비 중인 화면입니다."
-              />
-            }
-          />
-
-          <Route
-            path="/life/*"
-            element={
-              <EmptyState title="LIFE" description="준비 중인 화면입니다." />
-            }
-          />
-        </Routes>
+          </Routes>
+        </LanguageProvider>
       </DemoProfileProvider>
     </AuthProvider>
   )
 }
 
 function ProtectedApp() {
+  const { t } = useLanguage()
+
   const { session, loading, error, reload } = useAuth()
   const { savedProfile } = useDemoProfile()
   const location = useLocation()
@@ -163,9 +164,13 @@ function ProtectedApp() {
       <div className="app-shell">
         <section className="page-intro" aria-live="polite">
           <h1>NEST</h1>
-          <p>{loading ? '로그인 정보를 확인하고 있습니다…' : error}</p>
-          {loading && <p>첫 접속은 약 1분이 걸릴 수 있어요.</p>}
-          {!loading && <button onClick={() => void reload()}>다시 시도</button>}
+          <p>
+            {loading ? t('로그인 정보를 확인하고 있습니다…') : t(error ?? '')}
+          </p>
+          {loading && <p>{t('첫 접속은 약 1분이 걸릴 수 있어요.')}</p>}
+          {!loading && (
+            <button onClick={() => void reload()}>{t('다시 시도')}</button>
+          )}
         </section>
       </div>
     )
@@ -181,10 +186,13 @@ function ProtectedApp() {
     <div className="app-shell">
       <header className="site-header">
         <NavLink className="brand" to="/">
-          NEST <span>캠퍼스 생활의 시작</span>
+          NEST <span>{t('캠퍼스 생활의 시작')}</span>
+        </NavLink>
+        <NavLink className="account-link" to="/profile">
+          {t('내 계정')}
         </NavLink>
       </header>
-      <div className="mode-switch" role="group" aria-label="서비스 영역">
+      <div className="mode-switch" role="group" aria-label={t('서비스 영역')}>
         <NavLink to="/" end className={() => (isLife ? '' : 'active')}>
           SCHOOL
         </NavLink>
@@ -201,7 +209,7 @@ function ProtectedApp() {
         className={`bottom-nav ${
           isLife ? 'bottom-nav--life' : 'bottom-nav--school'
         }`}
-        aria-label={isLife ? 'LIFE 메뉴' : 'SCHOOL 메뉴'}
+        aria-label={isLife ? t('LIFE 메뉴') : t('SCHOOL 메뉴')}
       >
         {menus.map((menu) => (
           <NavLink
@@ -209,11 +217,22 @@ function ProtectedApp() {
             to={menu.to}
             end={menu.to === '/' || menu.to === '/life'}
           >
-            {menu.label}
+            {t(menu.label)}
           </NavLink>
         ))}
       </nav>
-      <footer>외국인 유학생을 위한 학사·생활 지원 서비스</footer>
+      <footer>{t('외국인 유학생을 위한 학사·생활 지원 서비스')}</footer>
     </div>
   )
+}
+
+function LocalizedEmptyState({
+  title,
+  description,
+}: {
+  title: string
+  description: string
+}) {
+  const { t } = useLanguage()
+  return <EmptyState title={t(title)} description={t(description)} />
 }
