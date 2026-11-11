@@ -32,7 +32,9 @@ public class DashboardController {
         if (limit < 1 || limit > 50) throw new InvalidLimitException();
         // 본문이 없거나 맞춤정보 동의를 해제한 경우 빈 프로필로 판별한다.
         StudentProfile profile = body == null ? new StudentProfile(null, null, null, null) : body.toProfile();
-        return dashboard.dashboard(profile, limit);
+        String collegeId = body == null || body.collegeId() == null || body.collegeId().isBlank() ? null
+                : body.collegeId();
+        return dashboard.dashboard(profile, collegeId, limit);
     }
 
     @ExceptionHandler({InvalidLimitException.class, MethodArgumentTypeMismatchException.class})

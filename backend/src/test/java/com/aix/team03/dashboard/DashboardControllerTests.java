@@ -12,13 +12,13 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-/** 실제 예시 공지(SeedNoticeSource)로 요청부터 응답 형식까지 확인한다. */
+/** #8 공지 저장소의 공지로 요청부터 응답 형식까지 확인한다. 테스트에서는 수집을 꺼서 샘플 공지를 쓴다. */
 @SpringBootTest(properties = {"spring.config.import=", "app.lms.api-token="})
 class DashboardControllerTests {
     private static final String TOKEN = "csrf-fixture";
@@ -40,18 +40,29 @@ class DashboardControllerTests {
     }
 
     @Test
-    void returnsMatchedSeedNoticesInTheSpecifiedShape() throws Exception {
+    void returnsMatchedNoticesInTheSpecifiedShape() throws Exception {
         call("", """
                 {"nationality":"VN","visaType":null,"degree":"BACHELOR","year":"2"}""")
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.profileCompleted").value(false))
                 .andExpect(jsonPath("$.missingProfileFields[0]").value("visaType"))
                 .andExpect(jsonPath("$.matchedNotices[*].noticeId", not(hasSize(0))))
-                .andExpect(jsonPath("$.matchedNotices[*].title", everyItem(startsWith("[예시]"))))
                 .andExpect(jsonPath("$.matchedNotices[*].matchStatus", everyItem(not("NOT_APPLICABLE"))))
                 .andExpect(jsonPath("$.matchedNotices[0].matchReasons").isArray())
                 .andExpect(jsonPath("$.matchedNotices[0].analysisStatus").exists())
                 .andExpect(jsonPath("$.matchedNotices[0].savedScheduleId").isEmpty());
+    }
+
+    @Test
+    void collegeNoticesAreShownOnlyToStudentsOfThatCollege() throws Exception {
+        // coll-002는 computing 단과대의 마감 없는 샘플 공지다.
+        call("?limit=50", "{}")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.matchedNotices[*].noticeId", not(hasItem("coll-002"))));
+        call("?limit=50", "{\"collegeId\":\"computing\"}")
+                .andExpect(jsonPath("$.matchedNotices[*].noticeId", hasItem("coll-002")));
+        call("?limit=50", "{\"collegeId\":\"design\"}")
+                .andExpect(jsonPath("$.matchedNotices[*].noticeId", not(hasItem("coll-002"))));
     }
 
     @Test

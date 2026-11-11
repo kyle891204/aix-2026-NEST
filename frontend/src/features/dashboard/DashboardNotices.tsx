@@ -3,14 +3,14 @@ import { Link } from 'react-router-dom'
 import { ApiError } from '../../shared/api/client'
 import { kstLabel } from '../../shared/format/kst'
 import { useAuth } from '../auth/auth-context'
+import { noticeProfile } from '../notices/api'
 import type { SignupProfile } from '../profile/demo-profile'
 import {
   getDashboard,
   type DashboardNotice,
-  type DashboardProfile,
+  type DashboardRequest,
   type DashboardResult,
 } from './api'
-import { toDashboardProfile } from './profile-codes'
 import './dashboard.css'
 
 const HOME_LIMIT = 3
@@ -44,7 +44,8 @@ export function DashboardNotices({
 }) {
   // 로그인 세션(게스트 포함)과 CSRF 토큰을 먼저 받은 뒤 요청한다. 동시에 보내면 게스트 세션이 둘 생길 수 있다.
   const { loading: authLoading } = useAuth()
-  const requestKey = JSON.stringify(toDashboardProfile(profile))
+  // 전체공지와 같은 값을 보내 같은 공지 중에서 고른다.
+  const requestKey = JSON.stringify(noticeProfile(profile))
   const [attempt, setAttempt] = useState(0)
   // 결과에 요청 키(프로필·재시도 횟수)를 붙여 두고, 현재 키와 다르면 불러오는 중으로 본다.
   const [result, setResult] = useState<{ key: string; load: Load } | null>(null)
@@ -56,7 +57,7 @@ export function DashboardNotices({
     if (authLoading) return
     let active = true
     const current = `${requestKey}#${attempt}`
-    getDashboard(JSON.parse(requestKey) as DashboardProfile, HOME_LIMIT)
+    getDashboard(JSON.parse(requestKey) as DashboardRequest, HOME_LIMIT)
       .then((data) => {
         if (active) setResult({ key: current, load: { status: 'ready', data } })
       })
@@ -107,10 +108,6 @@ export function DashboardNotices({
         </div>
       )}
       {load.status === 'ready' && <NoticeCards data={load.data} />}
-
-      <p className="dashboard-description">
-        검토용 예시 공지 · 실제 학교 공지는 연결 전
-      </p>
     </section>
   )
 }
@@ -141,8 +138,12 @@ function NoticeCards({ data }: { data: DashboardResult }) {
 
 function NoticeCard({ notice }: { notice: DashboardNotice }) {
   const deadline = kstLabel(notice.deadline)
-  const content = (
-    <>
+  // 앱의 공지 상세로 연다. 쉬운 설명·번역을 볼 수 있고, 처음 열면 공지 대상도 분석한다.
+  return (
+    <Link
+      className="home-card dashboard-notice"
+      to={`/notices/${encodeURIComponent(notice.noticeId)}`}
+    >
       <div className="notice-badges">
         <span
           className={`dashboard-status dashboard-status--${notice.matchStatus}`}
@@ -158,18 +159,6 @@ function NoticeCard({ notice }: { notice: DashboardNotice }) {
         ))}
       </ul>
       <p>{deadline ? `마감 ${deadline} · KST` : '마감일 없음'}</p>
-    </>
-  )
-  return notice.sourceUrl ? (
-    <a
-      className="home-card dashboard-notice"
-      href={notice.sourceUrl}
-      target="_blank"
-      rel="noreferrer"
-    >
-      {content}
-    </a>
-  ) : (
-    <article className="home-card dashboard-notice">{content}</article>
+    </Link>
   )
 }

@@ -22,6 +22,9 @@ export interface DashboardNotice {
   savedScheduleId: string | null
 }
 
+// collegeId가 있으면 ERICA 전체 공지와 그 단과대 공지 중에서 고른다.
+export type DashboardRequest = DashboardProfile & { collegeId: string | null }
+
 export interface DashboardResult {
   profileCompleted: boolean
   missingProfileFields: string[]
@@ -51,7 +54,7 @@ function isNotice(value: unknown) {
 
 // 프로필은 브라우저에만 있어 조회지만 POST 본문으로 보낸다. 서버는 저장하지 않는다.
 export async function getDashboard(
-  profile: DashboardProfile,
+  profile: DashboardRequest,
   limit: number,
 ): Promise<DashboardResult> {
   const value = await requestJson(`/dashboard?limit=${limit}`, {

@@ -23,9 +23,10 @@ const profile = {
   visaType: null,
   degree: 'BACHELOR',
   year: '2',
+  collegeId: 'computing',
 }
 
-test('the profile is posted as the body with the requested limit', async () => {
+test('the profile and college are posted as the body with the requested limit', async () => {
   mockFetch({
     profileCompleted: false,
     missingProfileFields: ['visaType'],
@@ -41,8 +42,8 @@ test('the profile is posted as the body with the requested limit', async () => {
 
 test('notices must carry a known match status and string reasons', async () => {
   const notice = {
-    noticeId: 'seed-1',
-    title: '[예시] 공지',
+    noticeId: 'erica-global-1',
+    title: '공지',
     matchStatus: 'NEEDS_REVIEW',
     matchReasons: ['비자 정보가 없어 확인이 필요해요'],
   }
