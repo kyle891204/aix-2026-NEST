@@ -55,7 +55,7 @@ public class DashboardService {
                     var result = matcher.match(notice.targetConditions(), notice.analysisStatus(), profile);
                     return new DashboardNotice(notice.noticeId(), notice.title(), notice.category(),
                             notice.postedAt(), notice.deadline(), notice.sourceUrl(), result.reasons(),
-                            result.status(), notice.analysisStatus(), null);
+                            result.status(), notice.analysisStatus(), null, notice.sample());
                 })
                 .filter(notice -> notice.matchStatus() != MatchStatus.NOT_APPLICABLE)
                 .sorted(Comparator.comparing((DashboardNotice notice) -> notice.matchStatus() != MatchStatus.APPLICABLE)

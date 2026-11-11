@@ -6,6 +6,7 @@ import { useAuth } from '../auth/auth-context'
 import { noticeProfile } from '../notices/api'
 import type { SignupProfile } from '../profile/demo-profile'
 import {
+  dashboardErrorMessage,
   getDashboard,
   type DashboardNotice,
   type DashboardRequest,
@@ -67,12 +68,7 @@ export function DashboardNotices({
         const load: Load =
           code === 'AUTH_REQUIRED'
             ? { status: 'signed-out' }
-            : {
-                status: 'error',
-                message: code
-                  ? `맞춤 공지를 불러오지 못했어요. (${code})`
-                  : '맞춤 공지를 불러오지 못했어요.',
-              }
+            : { status: 'error', message: dashboardErrorMessage(cause) }
         if (active) setResult({ key: current, load })
       })
     return () => {
@@ -151,6 +147,7 @@ function NoticeCard({ notice }: { notice: DashboardNotice }) {
           {STATUS_LABELS[notice.matchStatus]}
         </span>
         <span>{CATEGORY_LABELS[notice.category] ?? notice.category}</span>
+        {notice.sample && <span>예시 데이터</span>}
       </div>
       <h3>{notice.title}</h3>
       <ul className="dashboard-reasons">

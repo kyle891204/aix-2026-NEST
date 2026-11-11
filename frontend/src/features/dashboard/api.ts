@@ -1,4 +1,4 @@
-import { requestJson } from '../../shared/api/client.ts'
+import { ApiError, requestJson } from '../../shared/api/client.ts'
 
 export type MatchStatus = 'APPLICABLE' | 'NEEDS_REVIEW'
 
@@ -20,6 +20,8 @@ export interface DashboardNotice {
   matchStatus: MatchStatus
   analysisStatus: string
   savedScheduleId: string | null
+  // 공지 수집을 끈 환경(로컬·자동 테스트)의 예시 공지
+  sample: boolean
 }
 
 // collegeId가 있으면 ERICA 전체 공지와 그 단과대 공지 중에서 고른다.
@@ -50,6 +52,16 @@ function isNotice(value: unknown) {
     STATUSES.includes(value.matchStatus) &&
     isStringArray(value.matchReasons)
   )
+}
+
+// 학교 공지를 하나도 읽지 못했으면 서버 안내(잠시 후 다시 시도)를 그대로 보여주고, 그 밖의 오류는 코드만 붙인다.
+export function dashboardErrorMessage(cause: unknown) {
+  const code = cause instanceof ApiError ? cause.code : null
+  if (cause instanceof ApiError && code === 'NOTICE_SOURCE_UNAVAILABLE')
+    return cause.message
+  return code
+    ? `맞춤 공지를 불러오지 못했어요. (${code})`
+    : '맞춤 공지를 불러오지 못했어요.'
 }
 
 // 프로필은 브라우저에만 있어 조회지만 POST 본문으로 보낸다. 서버는 저장하지 않는다.

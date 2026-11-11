@@ -17,13 +17,16 @@ public final class DashboardModels {
         StudentProfile toProfile() { return new StudentProfile(nationality, visaType, degree, year); }
     }
 
-    /** 대상 조건이 붙은 공지. #8 공지 저장소의 공지를 대시보드 판별에 필요한 값만 남겨 받는다. */
+    /**
+     * 대상 조건이 붙은 공지. #8 공지 저장소의 공지를 대시보드 판별에 필요한 값만 남겨 받는다.
+     * sample은 공지 수집을 끈 환경(로컬·자동 테스트)의 예시 공지다.
+     */
     public record TargetedNotice(String noticeId, String title, String category, String postedAt, String deadline,
-            String sourceUrl, TargetConditions targetConditions, AnalysisStatus analysisStatus) {}
+            String sourceUrl, TargetConditions targetConditions, AnalysisStatus analysisStatus, boolean sample) {}
 
     public record DashboardNotice(String noticeId, String title, String category, String postedAt, String deadline,
             String sourceUrl, List<String> matchReasons, MatchStatus matchStatus, AnalysisStatus analysisStatus,
-            String savedScheduleId) {}
+            String savedScheduleId, boolean sample) {}
 
     public record DashboardResponse(boolean profileCompleted, List<String> missingProfileFields,
             List<DashboardNotice> matchedNotices) {}

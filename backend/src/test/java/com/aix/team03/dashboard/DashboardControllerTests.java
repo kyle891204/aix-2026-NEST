@@ -14,6 +14,7 @@ import org.springframework.web.context.WebApplicationContext;
 import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -50,7 +51,9 @@ class DashboardControllerTests {
                 .andExpect(jsonPath("$.matchedNotices[*].matchStatus", everyItem(not("NOT_APPLICABLE"))))
                 .andExpect(jsonPath("$.matchedNotices[0].matchReasons").isArray())
                 .andExpect(jsonPath("$.matchedNotices[0].analysisStatus").exists())
-                .andExpect(jsonPath("$.matchedNotices[0].savedScheduleId").isEmpty());
+                .andExpect(jsonPath("$.matchedNotices[0].savedScheduleId").isEmpty())
+                // 테스트는 수집을 꺼서 샘플 공지를 쓰므로 예시 공지로 표시된다.
+                .andExpect(jsonPath("$.matchedNotices[*].sample", everyItem(is(true))));
     }
 
     @Test

@@ -17,7 +17,7 @@ public class CollectedNoticeSource implements NoticeSource {
         return notices.visibleNotices(collegeId).stream()
                 .map(notice -> new TargetedNotice(notice.noticeId(), notice.title(), notice.category().name(),
                         notice.postedAt(), notice.deadline(), notice.sourceUrl(), notice.targetConditions(),
-                        notice.analysisStatus()))
+                        notice.analysisStatus(), notice.sample()))
                 .toList();
     }
 }

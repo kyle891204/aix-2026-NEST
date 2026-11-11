@@ -21,7 +21,7 @@ class DashboardServiceTests {
 
     private static TargetedNotice notice(String id, String postedAt, String deadline, TargetConditions conditions,
             AnalysisStatus analysis) {
-        return new TargetedNotice(id, "공지 " + id, "ETC", postedAt, deadline, null, conditions, analysis);
+        return new TargetedNotice(id, "공지 " + id, "ETC", postedAt, deadline, null, conditions, analysis, false);
     }
 
     private static DashboardService service(TargetedNotice... notices) {
