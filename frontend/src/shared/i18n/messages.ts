@@ -1516,4 +1516,276 @@ export const messages: Record<string, { en: string; zh: string }> = {
     en: 'Could not process your sign-in request. Please try again shortly.',
     zh: '无法处理登录请求，请稍后重试。',
   },
+  // 주변 편의시설 안내
+  '캠퍼스 주변의 병원·마트·약국을 지도와 목록으로 확인하세요.': {
+    en: 'Find hospitals, marts, and pharmacies near campus on the map and list.',
+    zh: '通过地图和列表查看校园周边的医院、超市和药店。',
+  },
+  '시설 유형 선택': {
+    en: 'Choose a facility type',
+    zh: '选择设施类型',
+  },
+  병원: {
+    en: 'Hospital',
+    zh: '医院',
+  },
+  마트: {
+    en: 'Mart',
+    zh: '超市',
+  },
+  약국: {
+    en: 'Pharmacy',
+    zh: '药店',
+  },
+  '{type} {count}곳': {
+    en: '{type}: {count}',
+    zh: '{type} {count} 处',
+  },
+  '표시할 시설이 없습니다.': {
+    en: 'No facilities to show.',
+    zh: '没有可显示的设施。',
+  },
+  '캠퍼스에서 직선 {distance}': {
+    en: '{distance} from campus (straight line)',
+    zh: '距校园直线 {distance}',
+  },
+  '상세 닫기': {
+    en: 'Close details',
+    zh: '关闭详情',
+  },
+  주소: {
+    en: 'Address',
+    zh: '地址',
+  },
+  운영시간: {
+    en: 'Opening hours',
+    zh: '营业时间',
+  },
+  연락처: {
+    en: 'Phone',
+    zh: '联系电话',
+  },
+  '정보 없음': {
+    en: 'Not available',
+    zh: '暂无信息',
+  },
+  휴무: {
+    en: 'Closed',
+    zh: '休息',
+  },
+  월: {
+    en: 'Mon',
+    zh: '周一',
+  },
+  화: {
+    en: 'Tue',
+    zh: '周二',
+  },
+  수: {
+    en: 'Wed',
+    zh: '周三',
+  },
+  목: {
+    en: 'Thu',
+    zh: '周四',
+  },
+  금: {
+    en: 'Fri',
+    zh: '周五',
+  },
+  토: {
+    en: 'Sat',
+    zh: '周六',
+  },
+  일: {
+    en: 'Sun',
+    zh: '周日',
+  },
+  '{start}~{end}': {
+    en: '{start}–{end}',
+    zh: '{start}至{end}',
+  },
+  '응급실은 24시간 운영합니다.': {
+    en: 'The emergency room is open 24 hours.',
+    zh: '急诊室24小时开放。',
+  },
+  '월 2회 의무휴업일이 있습니다. 방문 전 확인해 주세요.': {
+    en: 'Closed on two mandatory days each month. Please check before visiting.',
+    zh: '每月有两天法定休息日，请在前往前确认。',
+  },
+  내과: {
+    en: 'Internal medicine',
+    zh: '内科',
+  },
+  가정의학과: {
+    en: 'Family medicine',
+    zh: '家庭医学科',
+  },
+  종합병원: {
+    en: 'General hospital',
+    zh: '综合医院',
+  },
+  대학병원: {
+    en: 'University hospital',
+    zh: '大学医院',
+  },
+  슈퍼마켓: {
+    en: 'Supermarket',
+    zh: '超市',
+  },
+  점심시간: {
+    en: 'Lunch break',
+    zh: '午休时间',
+  },
+  카카오맵: {
+    en: 'Kakao Map',
+    zh: 'Kakao 地图',
+  },
+  '카카오맵에서 보기': {
+    en: 'View on Kakao Map',
+    zh: '在 Kakao 地图中查看',
+  },
+  '{provider} 정보를 {date}에 확인했습니다. 운영시간과 연락처는 바뀔 수 있으니 방문 전 확인해 주세요.':
+    {
+      en: 'Checked against {provider} on {date}. Hours and phone numbers may change, so please confirm before visiting.',
+      zh: '已于 {date} 根据{provider}核对。营业时间和电话可能变动，请在前往前确认。',
+    },
+  '보기 방식 선택': {
+    en: 'Choose a view',
+    zh: '选择查看方式',
+  },
+  '주요 시설': {
+    en: 'Key places',
+    zh: '主要设施',
+  },
+  '주변 전체': {
+    en: 'Everything nearby',
+    zh: '周边全部',
+  },
+  '지도에 보이는 {type} {count}곳': {
+    en: 'On the map ({type}): {count}',
+    zh: '地图范围内的{type} {count} 处',
+  },
+  '더 보기 ({count}곳 남음)': {
+    en: 'Show more ({count} left)',
+    zh: '显示更多（还有 {count} 处）',
+  },
+  '주변 시설을 찾고 있습니다…': {
+    en: 'Searching nearby places…',
+    zh: '正在搜索周边设施…',
+  },
+  '주변 시설을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.': {
+    en: 'Could not load nearby places. Please try again shortly.',
+    zh: '无法加载周边设施，请稍后再试。',
+  },
+  '지도 범위가 넓어 지도 중심에서 가까운 곳만 표시했습니다. 지도를 확대하면 더 볼 수 있습니다.':
+    {
+      en: 'The map covers a wide area, so only places near its center are shown. Zoom in to see more.',
+      zh: '地图范围较大，仅显示靠近地图中心的地点。放大地图可查看更多。',
+    },
+  '카카오맵에서 확인해 주세요.': {
+    en: 'Please check on Kakao Map.',
+    zh: '请在 Kakao 地图中确认。',
+  },
+  '주변 전체는 카카오맵 실시간 검색 결과입니다. 운영시간은 주요 시설에만 표시하며, 나머지는 카카오맵에서 확인해 주세요.':
+    {
+      en: 'Everything nearby shows live search results from Kakao Map. Opening hours are shown for key places only; check Kakao Map for the rest.',
+      zh: '“周边全部”为 Kakao 地图的实时搜索结果。仅主要设施显示营业时间，其他地点请在 Kakao 地图中确认。',
+    },
+  대형마트: {
+    en: 'Hypermarket',
+    zh: '大型超市',
+  },
+  일반의원: {
+    en: 'Clinic',
+    zh: '诊所',
+  },
+  소아청소년과: {
+    en: 'Pediatrics',
+    zh: '儿科',
+  },
+  정형외과: {
+    en: 'Orthopedics',
+    zh: '骨科',
+  },
+  치과: {
+    en: 'Dentistry',
+    zh: '牙科',
+  },
+  '노인,요양병원': {
+    en: 'Nursing hospital',
+    zh: '老年疗养医院',
+  },
+  이비인후과: {
+    en: 'ENT (ear, nose and throat)',
+    zh: '耳鼻喉科',
+  },
+  한방병원: {
+    en: 'Korean medicine hospital',
+    zh: '韩医医院',
+  },
+  한의원: {
+    en: 'Korean medicine clinic',
+    zh: '韩医诊所',
+  },
+  재활의학과: {
+    en: 'Rehabilitation medicine',
+    zh: '康复医学科',
+  },
+  피부과: {
+    en: 'Dermatology',
+    zh: '皮肤科',
+  },
+  산부인과: {
+    en: 'Obstetrics and gynecology',
+    zh: '妇产科',
+  },
+  신경과: {
+    en: 'Neurology',
+    zh: '神经内科',
+  },
+  비뇨기과: {
+    en: 'Urology',
+    zh: '泌尿科',
+  },
+  비뇨의학과: {
+    en: 'Urology',
+    zh: '泌尿科',
+  },
+  외과: {
+    en: 'General surgery',
+    zh: '外科',
+  },
+  신경외과: {
+    en: 'Neurosurgery',
+    zh: '神经外科',
+  },
+  영상의학과: {
+    en: 'Radiology',
+    zh: '放射科',
+  },
+  정신건강의학과: {
+    en: 'Psychiatry',
+    zh: '精神科',
+  },
+  안과: {
+    en: 'Ophthalmology',
+    zh: '眼科',
+  },
+  성형외과: {
+    en: 'Plastic surgery',
+    zh: '整形外科',
+  },
+  마취통증의학과: {
+    en: 'Pain medicine',
+    zh: '疼痛科',
+  },
+  흉부외과: {
+    en: 'Thoracic surgery',
+    zh: '胸外科',
+  },
+  '지도를 불러오면 주변 시설을 찾을 수 있습니다.': {
+    en: 'Nearby places can be searched once the map loads.',
+    zh: '地图加载后即可搜索周边设施。',
+  },
 }
