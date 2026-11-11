@@ -185,7 +185,7 @@ public class SchoolNoticeCollector {
         var postedAt = detail != null && detail.postedAt() != null ? detail.postedAt() : entry.postedAt();
         return new SchoolNotice(board.key(), board.kind(), board.name(), board.collegeId(), entry.id(), entry.label(),
                 entry.title(), postedAt, entry.url(), detail == null ? null : detail.content(),
-                detail == null ? List.of() : detail.attachments());
+                detail == null ? List.of() : detail.attachments(), detail != null && detail.failed());
     }
 
     // 게시판마다 사이트가 달라 동시에 읽는다. 한 게시판 안에서는 요청 사이를 띄우므로 사이트마다 부담은 그대로다.
@@ -214,7 +214,7 @@ public class SchoolNoticeCollector {
             return list.board().parseDetail(list.board().fetchDetail(list.page(), entry, fetcher));
         } catch (IOException | RuntimeException exception) {
             log.warn("School notice {} could not be read", entry.url(), exception);
-            return new Detail("", null, List.of());
+            return Detail.unreadable();
         }
     }
 

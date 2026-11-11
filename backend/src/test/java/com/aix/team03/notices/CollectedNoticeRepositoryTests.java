@@ -197,6 +197,11 @@ class CollectedNoticeRepositoryTests {
         assertThat(notice.originalContent()).isEqualTo(CollectedNotices.MISSING_CONTENT);
         assertThat(CollectedNotices.toNotice(listed(school("6", "", "목록만 읽은 공지", null, "본문"))).originalContent())
                 .isEqualTo(CollectedNotices.LOADING_CONTENT);
+        // 상세를 읽지 못한 공지는 이미지 공지와 다르게 안내한다.
+        var unread = school("7", "", "읽지 못한 공지", null, "");
+        assertThat(CollectedNotices.toNotice(new SchoolNotice(unread.boardKey(), unread.kind(), unread.boardName(),
+                unread.collegeId(), unread.id(), unread.label(), unread.title(), null, unread.url(), "", List.of(),
+                true)).originalContent()).isEqualTo(CollectedNotices.FAILED_CONTENT);
     }
 
     @Test
