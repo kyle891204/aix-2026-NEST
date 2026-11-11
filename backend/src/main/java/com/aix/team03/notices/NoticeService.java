@@ -54,15 +54,23 @@ public class NoticeService {
         this.analyses = analyses;
     }
 
-    // 목록은 Gemini를 기다리지 않도록 이미 분석한 공지만 분석 결과로 판별한다.
     public List<NoticeSummary> search(Source source, MatchFilter match, StudentProfile profile, String collegeId) {
-        return notices.findAll().stream()
-                .filter(notice -> visibleTo(notice, collegeId))
-                .map(analyses::cached)
+        return visibleNotices(collegeId).stream()
                 .filter(notice -> source == null || notice.source() == source)
                 .map(notice -> summary(notice, profile))
                 .filter(summary -> match == null || summary.matchStatus().name().equals(match.name()))
                 .sorted(LIST_ORDER)
+                .toList();
+    }
+
+    /**
+     * 이 학생이 볼 수 있는 공지를 이미 분석한 결과와 함께 돌려준다. 대시보드(#6)도 같은 공지로 판별한다.
+     * 목록은 Gemini를 기다리지 않도록 이미 분석한 공지만 분석 결과로 판별한다.
+     */
+    public List<Notice> visibleNotices(String collegeId) {
+        return notices.findAll().stream()
+                .filter(notice -> visibleTo(notice, collegeId))
+                .map(analyses::cached)
                 .toList();
     }
 

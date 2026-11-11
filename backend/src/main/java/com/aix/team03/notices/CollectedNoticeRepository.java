@@ -158,7 +158,4 @@ public class CollectedNoticeRepository implements NoticeRepository {
     private static String key(SchoolNotice notice) {
         return notice.boardKey() + "-" + notice.id();
     }
-
-    /** 학교 게시판을 하나도 읽지 못해 보여줄 공지가 없다. */
-    static class NoticeSourceUnavailableException extends RuntimeException {}
 }

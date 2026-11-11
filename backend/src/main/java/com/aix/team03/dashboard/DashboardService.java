@@ -39,7 +39,7 @@ public class DashboardService {
         this.clock = clock;
     }
 
-    public DashboardResponse dashboard(StudentProfile profile, int limit) {
+    public DashboardResponse dashboard(StudentProfile profile, String collegeId, int limit) {
         var recognized = matcher.recognizedValues(profile);
         List<String> missing = Arrays.stream(NoticeMatcher.Field.values())
                 .filter(field -> !recognized.containsKey(field))
@@ -49,13 +49,13 @@ public class DashboardService {
         Instant now = clock.instant();
         // 순서: 해당(APPLICABLE)을 확인 필요(NEEDS_REVIEW)보다 먼저 → 각각 마감 임박순 → 마감 없는 공지는 게시일 최신순.
         // limit으로 자르기 전에 정렬해서 확인 필요 공지가 해당 공지 자리를 차지하지 않게 한다. 마감이 지난 공지는 뺀다.
-        var matched = notices.notices().stream()
+        var matched = notices.notices(collegeId).stream()
                 .filter(notice -> !isPast(notice.deadline(), now))
                 .map(notice -> {
                     var result = matcher.match(notice.targetConditions(), notice.analysisStatus(), profile);
                     return new DashboardNotice(notice.noticeId(), notice.title(), notice.category(),
                             notice.postedAt(), notice.deadline(), notice.sourceUrl(), result.reasons(),
-                            result.status(), notice.analysisStatus(), null);
+                            result.status(), notice.analysisStatus(), null, notice.sample());
                 })
                 .filter(notice -> notice.matchStatus() != MatchStatus.NOT_APPLICABLE)
                 .sorted(Comparator.comparing((DashboardNotice notice) -> notice.matchStatus() != MatchStatus.APPLICABLE)

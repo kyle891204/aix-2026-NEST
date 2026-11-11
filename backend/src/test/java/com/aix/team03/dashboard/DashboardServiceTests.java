@@ -21,11 +21,11 @@ class DashboardServiceTests {
 
     private static TargetedNotice notice(String id, String postedAt, String deadline, TargetConditions conditions,
             AnalysisStatus analysis) {
-        return new TargetedNotice(id, "공지 " + id, "ETC", postedAt, deadline, null, conditions, analysis);
+        return new TargetedNotice(id, "공지 " + id, "ETC", postedAt, deadline, null, conditions, analysis, false);
     }
 
     private static DashboardService service(TargetedNotice... notices) {
-        return new DashboardService(() -> List.of(notices), new NoticeMatcher(), NOW);
+        return new DashboardService(collegeId -> List.of(notices), new NoticeMatcher(), NOW);
     }
 
     @Test
@@ -37,7 +37,7 @@ class DashboardServiceTests {
                 notice("expired", "2026-10-20", "2026-10-31T18:00:00+09:00", EVERYONE, AnalysisStatus.CONFIRMED),
                 notice("needs-visa", "2026-10-20", null,
                         new TargetConditions(null, List.of("D-2"), null, null), AnalysisStatus.CONFIRMED))
-                .dashboard(BACHELOR_2, 20);
+                .dashboard(BACHELOR_2, null, 20);
 
         assertThat(result.matchedNotices()).extracting(DashboardNotice::noticeId)
                 .containsExactlyInAnyOrder("applies", "needs-visa");
@@ -56,7 +56,7 @@ class DashboardServiceTests {
                 notice("later", "2026-10-02", "2026-11-20T18:00:00+09:00", EVERYONE, AnalysisStatus.CONFIRMED),
                 notice("new-no-deadline", "2026-10-30", null, EVERYONE, AnalysisStatus.CONFIRMED),
                 notice("soon", "2026-10-03", "2026-11-05T09:00:00+09:00", EVERYONE, AnalysisStatus.CONFIRMED))
-                .dashboard(BACHELOR_2, 20);
+                .dashboard(BACHELOR_2, null, 20);
 
         assertThat(result.matchedNotices()).extracting(DashboardNotice::noticeId)
                 .containsExactly("soon", "later", "new-no-deadline", "old-no-deadline");
@@ -70,7 +70,7 @@ class DashboardServiceTests {
                 notice("applies-later", "2026-10-20", "2026-11-25T09:00:00+09:00",
                         new TargetConditions(null, null, List.of("BACHELOR"), null), AnalysisStatus.CONFIRMED),
                 notice("applies-no-deadline", "2026-10-25", null, EVERYONE, AnalysisStatus.CONFIRMED))
-                .dashboard(BACHELOR_2, 2);
+                .dashboard(BACHELOR_2, null, 2);
 
         assertThat(result.matchedNotices()).extracting(DashboardNotice::noticeId)
                 .containsExactly("applies-later", "applies-no-deadline");
@@ -82,17 +82,17 @@ class DashboardServiceTests {
                 notice("a", "2026-10-01", null, EVERYONE, AnalysisStatus.CONFIRMED),
                 notice("b", "2026-10-02", null, EVERYONE, AnalysisStatus.CONFIRMED),
                 notice("c", "2026-10-03", null, EVERYONE, AnalysisStatus.CONFIRMED))
-                .dashboard(BACHELOR_2, 2);
+                .dashboard(BACHELOR_2, null, 2);
         assertThat(result.matchedNotices()).extracting(DashboardNotice::noticeId).containsExactly("c", "b");
     }
 
     @Test
     void missingProfileFieldsListUnrecognizedValuesByRequestName() {
-        var partial = service().dashboard(new StudentProfile("VN", null, "학부생", "2"), 20);
+        var partial = service().dashboard(new StudentProfile("VN", null, "학부생", "2"), null, 20);
         assertThat(partial.profileCompleted()).isFalse();
         assertThat(partial.missingProfileFields()).containsExactly("visaType", "degree");
 
-        var complete = service().dashboard(new StudentProfile("VN", "D-2", "BACHELOR", "2"), 20);
+        var complete = service().dashboard(new StudentProfile("VN", "D-2", "BACHELOR", "2"), null, 20);
         assertThat(complete.profileCompleted()).isTrue();
         assertThat(complete.missingProfileFields()).isEmpty();
     }

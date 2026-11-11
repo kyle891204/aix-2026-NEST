@@ -73,12 +73,6 @@ public class NoticeController {
                 .body(new ApiError("NOTICE_NOT_FOUND", "공지를 찾을 수 없습니다.", Map.of()));
     }
 
-    @ExceptionHandler(CollectedNoticeRepository.NoticeSourceUnavailableException.class)
-    public ResponseEntity<ApiError> sourceUnavailable() {
-        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(new ApiError("NOTICE_SOURCE_UNAVAILABLE",
-                "학교 공지를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.", Map.of()));
-    }
-
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ApiError> invalidQuery(MethodArgumentTypeMismatchException exception) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError("INVALID_REQUEST",
