@@ -1,23 +1,8 @@
 import { useLanguage } from '../../../shared/i18n/language-context'
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { EmergencyContacts } from '../components/EmergencyContacts'
+import { NearbyFacilities } from '../components/NearbyFacilities'
 import '../life.css'
-
-// 카카오 지도 API의 타입을 TypeScript에 알려줘.
-declare global {
-  interface Window {
-    kakao?: {
-      maps: {
-        load: (callback: () => void) => void
-        LatLng: new (latitude: number, longitude: number) => object
-        Map: new (
-          container: HTMLElement,
-          options: { center: object; level: number },
-        ) => object
-      }
-    }
-  }
-}
 
 export function LifeGuidePage() {
   const { t } = useLanguage()
@@ -55,7 +40,7 @@ export function LifeGuidePage() {
       {selectedTab === 'facilities' && (
         <section aria-labelledby="facilities-title">
           <h2 id="facilities-title">{t('주변 편의시설 안내')}</h2>
-          <NearbyFacilitiesMap />
+          <NearbyFacilities />
         </section>
       )}
 
@@ -66,76 +51,5 @@ export function LifeGuidePage() {
         </section>
       )}
     </section>
-  )
-}
-
-function NearbyFacilitiesMap() {
-  const { t } = useLanguage()
-
-  const mapRef = useRef<HTMLDivElement>(null)
-  const [status, setStatus] = useState<'loading' | 'ready' | 'error'>(() =>
-    window.kakao?.maps ? 'loading' : 'error',
-  )
-
-  useEffect(() => {
-    const container = mapRef.current
-    const maps = window.kakao?.maps
-
-    if (!container || !maps) return
-
-    let cancelled = false
-    const timeout = window.setTimeout(() => {
-      if (!cancelled) setStatus('error')
-    }, 15000)
-
-    const createMap = async () => {
-      await new Promise<void>((resolve) => maps.load(resolve))
-      if (cancelled) return
-
-      new maps.Map(container, {
-        // 한양대학교 ERICA캠퍼스 주변
-        center: new maps.LatLng(37.29667, 126.83559),
-        level: 4,
-      })
-      window.clearTimeout(timeout)
-      setStatus('ready')
-    }
-
-    void createMap().catch(() => {
-      window.clearTimeout(timeout)
-      if (!cancelled) setStatus('error')
-    })
-
-    return () => {
-      cancelled = true
-      window.clearTimeout(timeout)
-      container.replaceChildren()
-    }
-  }, [])
-
-  return (
-    <div className="life-guide-map-wrap" aria-busy={status === 'loading'}>
-      <div
-        ref={mapRef}
-        className="life-guide-map"
-        role="region"
-        aria-label={t('한양대학교 ERICA 주변 지도')}
-      />
-      {status === 'loading' && (
-        <div className="life-guide-map-message" role="status">
-          {t('지도를 불러오고 있습니다…')}
-        </div>
-      )}
-      {status === 'error' && (
-        <div className="life-guide-map-message" role="alert">
-          <p>
-            {t('지도를 불러오지 못했습니다. 새로고침 후 다시 시도해 주세요.')}
-          </p>
-          <button type="button" onClick={() => window.location.reload()}>
-            {t('새로고침')}
-          </button>
-        </div>
-      )}
-    </div>
   )
 }

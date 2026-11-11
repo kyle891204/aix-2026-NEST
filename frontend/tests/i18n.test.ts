@@ -33,6 +33,7 @@ const screens = [
   'features/life/pages/LifeHomePage.tsx',
   'features/life/pages/LifeGuidePage.tsx',
   'features/life/components/EmergencyContacts.tsx',
+  'features/life/components/NearbyFacilities.tsx',
   'features/free-board/FreeBoardLayout.tsx',
   'features/free-board/FreeBoardPages.tsx',
   'features/free-board/FreeBoardReplyCard.tsx',
