@@ -1,3 +1,6 @@
+import type { Language } from '../../shared/types/language'
+import { LANGUAGE_LOCALES } from '../../shared/i18n/language.ts'
+
 interface DateRange {
   startDate: string
   endDate: string
@@ -53,21 +56,42 @@ export function weekDays(today: string) {
   })
 }
 
-function dateLabel(value: string) {
+function dateLabel(value: string, language: Language = 'ko') {
   const [year, month, day] = value.split('-').map(Number)
+  if (language !== 'ko')
+    return new Intl.DateTimeFormat(LANGUAGE_LOCALES[language], {
+      timeZone: 'UTC',
+      month: 'short',
+      day: 'numeric',
+      weekday: 'short',
+    }).format(new Date(Date.UTC(year, month - 1, day)))
   const weekday = WEEKDAYS[new Date(Date.UTC(year, month - 1, day)).getUTCDay()]
   return `${month}/${day}(${weekday})`
 }
 
-export function dateRangeLabel(event: DateRange) {
-  const start = dateLabel(event.startDate)
+export function dateRangeLabel(event: DateRange, language: Language = 'ko') {
+  const start = dateLabel(event.startDate, language)
   return event.startDate === event.endDate
     ? start
-    : `${start} ~ ${dateLabel(event.endDate)}`
+    : `${start} ~ ${dateLabel(event.endDate, language)}`
 }
 
 // 개인 저장 카드용. 연도를 함께 보여주고, 시간 없는 일정도 한국 날짜 기준임을 표시한다.
-export function fullDateRangeLabel(event: DateRange) {
+export function fullDateRangeLabel(
+  event: DateRange,
+  language: Language = 'ko',
+) {
+  if (language !== 'ko') {
+    const format = (value: string) =>
+      new Intl.DateTimeFormat(LANGUAGE_LOCALES[language], {
+        timeZone: 'UTC',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      }).format(new Date(`${value}T00:00:00Z`))
+    const start = format(event.startDate)
+    return `${event.startDate === event.endDate ? start : `${start} ~ ${format(event.endDate)}`} · KST`
+  }
   const start = event.startDate.replaceAll('-', '.')
   const end = event.endDate.replaceAll('-', '.')
   return `${start === end ? start : `${start} ~ ${end}`} · KST`
@@ -95,7 +119,13 @@ export function groupByStartMonth<T extends DateRange>(
   return groups
 }
 
-export function monthLabel(month: string) {
+export function monthLabel(month: string, language: Language = 'ko') {
   const [year, value] = month.split('-').map(Number)
+  if (language !== 'ko')
+    return new Intl.DateTimeFormat(LANGUAGE_LOCALES[language], {
+      timeZone: 'UTC',
+      year: 'numeric',
+      month: 'long',
+    }).format(new Date(Date.UTC(year, value - 1, 1)))
   return `${year}년 ${value}월`
 }

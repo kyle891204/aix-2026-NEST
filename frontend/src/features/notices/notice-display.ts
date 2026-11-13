@@ -1,3 +1,6 @@
+import type { Language } from '../../shared/types/language'
+import { LANGUAGE_LOCALES, translate } from '../../shared/i18n/language.ts'
+
 const SOURCE_LABELS: Record<string, string> = {
   UNIVERSITY: '학교',
   INTERNATIONAL: '국제처',
@@ -18,10 +21,24 @@ export function matchLabel(status: string) {
 }
 
 // 원본 시간대와 무관하게 한국 시간으로 표시한다. 형식을 읽을 수 없으면 원본을 보여준다.
-export function formatDeadline(deadline: string | null) {
+export function formatDeadline(
+  deadline: string | null,
+  language: Language = 'ko',
+) {
   if (!deadline) return null
   const date = new Date(deadline)
   if (Number.isNaN(date.getTime())) return deadline
+  if (language !== 'ko') {
+    return `${new Intl.DateTimeFormat(LANGUAGE_LOCALES[language], {
+      timeZone: 'Asia/Seoul',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23',
+    }).format(date)} · KST`
+  }
   const parts = Object.fromEntries(
     new Intl.DateTimeFormat('en-US', {
       timeZone: 'Asia/Seoul',
@@ -41,15 +58,35 @@ export function formatDeadline(deadline: string | null) {
 const UNKNOWN_DATE = '날짜 알 수 없음 · 본문에서 확인'
 
 // 게시판에서 게시일을 읽지 못한 공지는 날짜를 비우지 않고 본문 확인을 안내한다.
-export function postedLabel(postedAt: string | null) {
-  return postedAt ? postedAt.replaceAll('-', '.') : UNKNOWN_DATE
+export function postedLabel(
+  postedAt: string | null,
+  language: Language = 'ko',
+) {
+  if (!postedAt) return translate(language, UNKNOWN_DATE)
+  const date = new Date(`${postedAt}T00:00:00+09:00`)
+  if (language === 'ko' || Number.isNaN(date.getTime()))
+    return postedAt.replaceAll('-', '.')
+  return new Intl.DateTimeFormat(LANGUAGE_LOCALES[language], {
+    timeZone: 'Asia/Seoul',
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  }).format(date)
 }
 
 // 목록에는 마감일을 먼저 보여주고, 없으면 게시일을 보여준다.
-export function dateLine(deadline: string | null, postedAt: string | null) {
+export function dateLine(
+  deadline: string | null,
+  postedAt: string | null,
+  language: Language = 'ko',
+) {
   return (
-    formatDeadline(deadline) ??
-    (postedAt ? `게시 ${postedLabel(postedAt)}` : UNKNOWN_DATE)
+    formatDeadline(deadline, language) ??
+    (postedAt
+      ? translate(language, '게시 {date}', {
+          date: postedLabel(postedAt, language),
+        })
+      : translate(language, UNKNOWN_DATE))
   )
 }
 
