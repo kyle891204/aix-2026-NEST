@@ -1,9 +1,22 @@
-import { eventTiming, fullDateRangeLabel } from './academic-format'
+import { Link } from 'react-router-dom'
+import {
+  deadlineLabel,
+  eventTiming,
+  fullDateRangeLabel,
+} from './academic-format'
 import {
   removeSchedule,
   type PersonalChange,
   type PersonalSchedule,
+  type PersonalSource,
 } from './personal-schedule-store'
+
+const SOURCE_LABELS: Record<PersonalSource, string> = {
+  ACADEMIC: '학사일정',
+  NOTICE: '공지',
+  COURSE_ANNOUNCEMENT: '공지',
+  COURSE_ASSIGNMENT: '과제',
+}
 
 export function PersonalSchedules({
   schedules,
@@ -45,8 +58,8 @@ export function PersonalSchedules({
       )}
       {schedules.length === 0 && (
         <p className="schedule-status">
-          아직 저장한 일정이 없어요. 학교 학사일정에서 필요한 일정을 저장해
-          보세요.
+          아직 저장한 일정이 없어요. 학교 학사일정·전체공지·과목알림에서 필요한
+          일정을 저장해 보세요.
         </p>
       )}
       <p className="schedule-note">
@@ -69,7 +82,7 @@ function SavedCard({
   return (
     <li className={`saved-card saved-card--${eventTiming(item, today)}`}>
       <div className="saved-card-head">
-        <span>학사일정</span>
+        <span>{SOURCE_LABELS[item.sourceType]}</span>
         <small>저장됨</small>
         <button
           type="button"
@@ -82,17 +95,29 @@ function SavedCard({
       <div className="saved-card-body">
         <div>
           <strong>{item.title}</strong>
-          <p>{fullDateRangeLabel(item)}</p>
+          <p>
+            {item.dueAt ? deadlineLabel(item.dueAt) : fullDateRangeLabel(item)}
+          </p>
         </div>
-        {item.sourceUrl && (
-          <a
-            href={item.sourceUrl}
-            target="_blank"
-            rel="noreferrer"
-            aria-label={`${item.title} 공식 일정 확인`}
+        {/* 전체공지는 앱의 공지 상세로, 학사일정·과제는 학교·LMS 원문으로 연다. */}
+        {item.sourceType === 'NOTICE' ? (
+          <Link
+            to={`/notices/${encodeURIComponent(item.sourceId)}`}
+            aria-label={`${item.title} 공지 상세 보기`}
           >
             ›
-          </a>
+          </Link>
+        ) : (
+          item.sourceUrl && (
+            <a
+              href={item.sourceUrl}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={`${item.title} 원문 확인`}
+            >
+              ›
+            </a>
+          )
         )}
       </div>
     </li>

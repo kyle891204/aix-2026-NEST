@@ -114,6 +114,19 @@ class CourseServiceTests {
     }
 
     @Test
+    void announcementDeadlineComesFromItsBody() {
+        fixture("/api/v1/announcements", 200, """
+                [{"id":1,"title":"발표 자료 제출","message":"<p>11/6(금) 18:00까지 올려 주세요.</p>",
+                  "posted_at":"2026-10-30T01:00:00Z","html_url":"https://lms.test/a/1"},
+                 {"id":2,"title":"휴강 안내","message":"<p>11/4 수업은 휴강입니다.</p>",
+                  "posted_at":"2026-10-29T01:00:00Z","html_url":"https://lms.test/a/2"}]""");
+        var result = service.notifications(12, EnumSet.of(NotificationType.ANNOUNCEMENT), START, END);
+
+        assertThat(result.notifications()).extracting(Notification::dueAt)
+                .containsExactly("2026-11-06T18:00:00+09:00", null);
+    }
+
+    @Test
     void upcomingAssignmentsComeFirstThenRecentlyPastThenUndated() {
         fixture("/api/v1/courses/12/assignments", 200, """
                 [{"id":1,"name":"두 달 전 마감","course_id":12,"due_at":"2026-09-01T14:59:00Z"},

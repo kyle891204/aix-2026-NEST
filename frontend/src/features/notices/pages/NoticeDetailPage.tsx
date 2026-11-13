@@ -1,7 +1,12 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../auth/auth-context'
 import { useDemoProfile } from '../../profile/demo-profile-context'
+import {
+  addDeadlineSchedules,
+  isSaved,
+} from '../../schedule/personal-schedule-store'
+import { usePersonalSchedules } from '../../schedule/usePersonalSchedules'
 import { loadActionChecks, saveActionChecks } from '../action-checks'
 import {
   isSignedOut,
@@ -325,12 +330,86 @@ export function NoticeDetailPage() {
             </section>
           )}
 
-          {/* #10 일정 API가 연결되면 활성화한다. */}
-          <button type="button" className="notice-primary" disabled>
-            개인 일정에 저장 (준비 중)
-          </button>
+          {/* 계정이 바뀌면 저장 목록을 다시 읽도록 계정별로 만든다. */}
+          <SaveDeadline
+            key={accountId ?? 'signed-out'}
+            accountId={accountId}
+            notice={notice}
+          />
         </>
       )}
     </div>
+  )
+}
+
+// 분석으로 마감이 나온 공지만 개인 일정(학사일정 → 개인 저장 탭)에 저장할 수 있다.
+function SaveDeadline({
+  accountId,
+  notice,
+}: {
+  accountId: string | null
+  notice: NoticeDetail
+}) {
+  const navigate = useNavigate()
+  const personal = usePersonalSchedules(accountId)
+  // 마감이 지났는지는 상세를 연 시각 기준으로 본다.
+  const [openedAt] = useState(() => Date.now())
+  const saved = isSaved(personal.schedules, 'NOTICE', notice.noticeId)
+  const deadline = notice.deadline
+
+  if (saved) {
+    return (
+      <Link
+        className="notice-primary notice-link-button"
+        to="/schedule?tab=mine"
+      >
+        개인 일정에 저장됨 · 확인하기 ›
+      </Link>
+    )
+  }
+  const reason = !accountId
+    ? '로그인하면 저장할 수 있어요'
+    : !deadline
+      ? '마감일이 없어 저장할 수 없어요'
+      : Date.parse(deadline) < openedAt
+        ? '마감이 지난 공지예요'
+        : null
+
+  function save() {
+    if (!deadline) return
+    const ok = personal.update((current) =>
+      addDeadlineSchedules(current, [
+        {
+          sourceType: 'NOTICE',
+          sourceId: notice.noticeId,
+          title: notice.title,
+          dueAt: deadline,
+          sourceUrl: notice.sourceUrl,
+        },
+      ]),
+    )
+    if (ok)
+      navigate('/schedule?tab=mine', {
+        state: { savedIds: [`notice:${notice.noticeId}`] },
+      })
+  }
+
+  return (
+    <>
+      {personal.saveFailed && (
+        <p className="notice-message" role="alert">
+          브라우저에 저장하지 못했어요. 저장 공간이나 브라우저 설정을 확인해
+          주세요.
+        </p>
+      )}
+      <button
+        type="button"
+        className="notice-primary"
+        disabled={reason !== null}
+        onClick={save}
+      >
+        {reason ? `개인 일정에 저장 (${reason})` : '개인 일정에 저장'}
+      </button>
+    </>
   )
 }

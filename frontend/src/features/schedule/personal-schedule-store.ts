@@ -1,7 +1,17 @@
+import { kstToday } from './academic-format.ts'
 import type { AcademicEvent } from './api.ts'
 
-// 공지·과제 저장을 붙일 때 종류를 추가한다.
-export type PersonalSource = 'ACADEMIC'
+// 학사일정, 전체공지(S07), 과목 공지·과제(S09)를 저장한다.
+export type PersonalSource =
+  'ACADEMIC' | 'NOTICE' | 'COURSE_ANNOUNCEMENT' | 'COURSE_ASSIGNMENT'
+export type DeadlineSource = Exclude<PersonalSource, 'ACADEMIC'>
+
+const SOURCES: readonly string[] = [
+  'ACADEMIC',
+  'NOTICE',
+  'COURSE_ANNOUNCEMENT',
+  'COURSE_ASSIGNMENT',
+]
 
 export interface PersonalSchedule {
   id: string
@@ -9,9 +19,20 @@ export interface PersonalSchedule {
   startDate: string
   endDate: string
   sourceType: PersonalSource
-  // 학사일정의 scheduleId. 같은 일정을 두 번 저장하지 않는 기준이다.
+  // 학사일정의 scheduleId, 공지의 noticeId, 과제의 알림 ID. 같은 항목을 두 번 저장하지 않는 기준이다.
   sourceId: string
   sourceUrl: string
+  // 공지·과제의 마감 일시(시간대가 붙은 ISO 8601). 날짜는 마감일의 한국 날짜다. 학사일정에는 없다.
+  dueAt?: string
+}
+
+// 공지·과제처럼 마감 일시가 있는 항목. 마감이 없는 항목은 저장하지 않는다.
+export interface DeadlineItem {
+  sourceType: DeadlineSource
+  sourceId: string
+  title: string
+  dueAt: string
+  sourceUrl: string | null
 }
 
 type ScheduleStorage = Pick<Storage, 'getItem' | 'setItem'>
@@ -32,16 +53,27 @@ function isDate(value: unknown): value is string {
   )
 }
 
+function isDateTime(value: unknown): value is string {
+  return typeof value === 'string' && !Number.isNaN(Date.parse(value))
+}
+
 function isPersonalSchedule(value: unknown): value is PersonalSchedule {
   if (typeof value !== 'object' || value === null) return false
   const item = value as Record<string, unknown>
+  // 공지·과제는 마감 일시가 있어야 하고, 학사일정은 날짜만 있다.
+  const due =
+    item.sourceType === 'ACADEMIC'
+      ? item.dueAt === undefined
+      : isDateTime(item.dueAt)
   return (
     typeof item.id === 'string' &&
     typeof item.title === 'string' &&
     isDate(item.startDate) &&
     isDate(item.endDate) &&
     item.startDate <= item.endDate &&
-    item.sourceType === 'ACADEMIC' &&
+    typeof item.sourceType === 'string' &&
+    SOURCES.includes(item.sourceType) &&
+    due &&
     typeof item.sourceId === 'string' &&
     typeof item.sourceUrl === 'string'
   )
@@ -91,13 +123,46 @@ export function changePersonalSchedules(
   return { current, next }
 }
 
+export function isSaved(
+  schedules: PersonalSchedule[],
+  sourceType: PersonalSource,
+  sourceId: string,
+) {
+  return schedules.some(
+    (item) => item.sourceType === sourceType && item.sourceId === sourceId,
+  )
+}
+
 export function isAcademicSaved(
   schedules: PersonalSchedule[],
   scheduleId: string,
 ) {
-  return schedules.some(
-    (item) => item.sourceType === 'ACADEMIC' && item.sourceId === scheduleId,
-  )
+  return isSaved(schedules, 'ACADEMIC', scheduleId)
+}
+
+// 공지·과제 여러 개를 한 번에 저장한다. 이미 저장한 항목과 마감 일시를 읽을 수 없는 항목은 건너뛴다.
+export function addDeadlineSchedules(
+  schedules: PersonalSchedule[],
+  items: DeadlineItem[],
+) {
+  const added: PersonalSchedule[] = []
+  for (const item of items) {
+    if (!isDateTime(item.dueAt)) continue
+    if (isSaved([...schedules, ...added], item.sourceType, item.sourceId))
+      continue
+    const date = kstToday(new Date(item.dueAt))
+    added.push({
+      id: `${item.sourceType.toLowerCase()}:${item.sourceId}`,
+      title: item.title,
+      startDate: date,
+      endDate: date,
+      sourceType: item.sourceType,
+      sourceId: item.sourceId,
+      sourceUrl: item.sourceUrl ?? '',
+      dueAt: item.dueAt,
+    })
+  }
+  return added.length === 0 ? schedules : sorted([...schedules, ...added])
 }
 
 // 저장할 때 제목과 날짜를 복사해 둔다. 학교가 일정을 바꿔도 자동으로 바뀌지 않으므로 출처 링크를 함께 남긴다.
