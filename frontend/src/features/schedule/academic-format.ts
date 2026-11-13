@@ -73,6 +73,19 @@ export function fullDateRangeLabel(event: DateRange) {
   return `${start === end ? start : `${start} ~ ${end}`} · KST`
 }
 
+const KST_TIME = new Intl.DateTimeFormat('en-GB', {
+  timeZone: 'Asia/Seoul',
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23',
+})
+
+// 공지·과제 마감 카드용. "2026.10.27 23:59 · KST"처럼 마감 시각까지 보여준다.
+export function deadlineLabel(dueAt: string) {
+  const time = new Date(dueAt)
+  return `${kstToday(time).replaceAll('-', '.')} ${KST_TIME.format(time)} · KST`
+}
+
 export function eventTiming(event: DateRange, today: string) {
   if (event.endDate < today) return 'past'
   return event.startDate <= today ? 'ongoing' : 'upcoming'

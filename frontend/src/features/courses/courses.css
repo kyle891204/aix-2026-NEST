@@ -68,6 +68,114 @@
   list-style: none;
 }
 
+/* 개인 일정 저장용 선택 (S09-A·B·AB) */
+.course-selection {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+
+.course-selection strong {
+  color: #3f5fff;
+  font-weight: 600;
+}
+
+.course-selection button {
+  min-height: 36px;
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+  color: #3f5fff;
+  font-size: 12px;
+}
+
+/* 체크는 카드 안 왼쪽, 원문 보기는 오른쪽 화살표. 고른 카드는 파란 테두리로 표시한다. */
+.course-card.course-card--selectable {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid transparent;
+}
+
+.course-card--selectable.is-selected {
+  border-color: #3f5fff;
+  background: #f4f6ff;
+}
+
+.course-card--selectable.is-disabled label {
+  cursor: default;
+}
+
+.course-card--selectable label {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.course-card--selectable input {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  accent-color: #3f5fff;
+}
+
+.course-card-content {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.course-card-content strong {
+  font-size: 15px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.course-meta--hint {
+  color: #986515;
+}
+
+.course-due-tag {
+  align-self: center;
+  color: #657795;
+  font-size: 12px;
+}
+
+.course-card-open {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  color: #657795;
+  font-size: 22px;
+  text-decoration: none;
+}
+
+/* 하단 메뉴(약 61px) 바로 위에 떠 있는 저장 버튼 */
+.course-save {
+  position: sticky;
+  z-index: 5;
+  bottom: calc(72px + env(safe-area-inset-bottom));
+  width: 100%;
+  min-height: 48px;
+  margin-top: 16px;
+  border: 0;
+  border-radius: 14px;
+  background: #3f5fff;
+  color: white;
+  font-size: 15px;
+  font-weight: 700;
+  box-shadow: 0 6px 16px rgb(63 95 255 / 25%);
+}
+
 .course-card {
   display: block;
   color: inherit;
