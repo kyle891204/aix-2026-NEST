@@ -156,7 +156,11 @@ function NoticeCard({ notice }: { notice: DashboardNotice }) {
         >
           {t(STATUS_LABELS[notice.matchStatus])}
         </span>
-        <span>{t(CATEGORY_LABELS[notice.category] ?? notice.category)}</span>
+        <span>
+          {notice.category === 'ACADEMIC' && language === 'ko'
+            ? '학사'
+            : t(CATEGORY_LABELS[notice.category] ?? notice.category)}
+        </span>
         {notice.sample && <span>{t('예시 데이터')}</span>}
       </div>
       <h3>{notice.title}</h3>

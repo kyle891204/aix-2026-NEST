@@ -26,14 +26,13 @@ const TRANSLATION_FAILED =
   '원문을 계속 확인할 수 있습니다. 번역을 다시 요청할 수 있어요.'
 
 export function NoticeDetailPage() {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
 
   const { noticeId = '' } = useParams()
   const { savedProfile } = useDemoProfile()
   // 세션과 CSRF 토큰을 받기 전에 요청하면 게스트 세션이 둘 생길 수 있어 세션 확인을 기다린다.
   const { session, loading: authLoading } = useAuth()
   const accountId = session?.user?.id ?? null
-  const language = savedProfile?.profile.language ?? 'ko'
   const profile = JSON.stringify(noticeProfile(savedProfile?.profile ?? null))
   const [checks, setChecks] = useState<string[]>(() => {
     if (!accountId) return []
