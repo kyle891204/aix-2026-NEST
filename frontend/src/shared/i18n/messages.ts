@@ -1788,4 +1788,470 @@ export const messages: Record<string, { en: string; zh: string }> = {
     en: 'Nearby places can be searched once the map loads.',
     zh: '地图加载后即可搜索周边设施。',
   },
+  // SCHOOL: 고정 화면 문구 및 서버의 고정 안내. 콘텐츠 번역과 별개.
+  '과목 목록을 불러오지 못했어요.': {
+    en: 'Could not load your courses.',
+    zh: '无法加载课程列表。',
+  },
+  '과목알림을 불러오지 못했어요.': {
+    en: 'Could not load course notifications.',
+    zh: '无法加载课程通知。',
+  },
+  '수강 과목의 공지·과제·학습자료를 한곳에서 확인해요.': {
+    en: 'View announcements, assignments, and learning materials for your courses in one place.',
+    zh: '在此查看所选课程的公告、作业和学习资料。',
+  },
+  '과목 목록을 불러오고 있어요…': {
+    en: 'Loading courses…',
+    zh: '正在加载课程列表…',
+  },
+  '조회할 수 있는 수강 과목이 없어요.': {
+    en: 'No courses are available.',
+    zh: '暂无可查看的课程。',
+  },
+  과목: { en: 'Course', zh: '课程' },
+  '알림 종류': { en: 'Notification type', zh: '通知类型' },
+  '알림을 불러오고 있어요…': {
+    en: 'Loading notifications…',
+    zh: '正在加载通知…',
+  },
+  '현재는 데모용 공통 LMS 계정의 과목을 보여줘요. 공지는 최근 90일 것만 보여주고, 시간은 한국 시간(KST)이에요.':
+    {
+      en: 'Courses are currently shown from a shared demo LMS account. Announcements cover the last 90 days. All times are in Korean time (KST).',
+      zh: '当前显示共用演示 LMS 账号的课程。公告仅显示最近90天的内容，时间均为韩国时间（KST）。',
+    },
+  '과목이 많아 일부만 표시했어요.': {
+    en: 'Only some courses are shown because there are too many.',
+    zh: '课程较多，仅显示部分课程。',
+  },
+  '과목알림은 데모용 공통 LMS 계정의 데이터라 데모 접근 암호가 필요해요. Canvas API 토큰을 넣지 마세요.':
+    {
+      en: 'Course notifications use a shared demo LMS account and require a demo password. Do not enter a Canvas API token.',
+      zh: '课程通知使用共用演示 LMS 账号的数据，需要演示访问密码。请勿输入 Canvas API 令牌。',
+    },
+  '데모 접근 암호': { en: 'Demo password', zh: '演示访问密码' },
+  '발표자에게 받은 데모 암호': {
+    en: 'Demo password from the presenter',
+    zh: '演示者提供的密码',
+  },
+  '암호가 맞지 않아요. 다시 입력해 주세요.': {
+    en: 'Incorrect password. Please try again.',
+    zh: '密码不正确，请重新输入。',
+  },
+  확인: { en: 'Confirm', zh: '确认' },
+  'LMS 조회 상한 때문에 일부 항목만 표시했어요.': {
+    en: 'Only some items are shown due to the LMS retrieval limit.',
+    zh: '受 LMS 查询上限限制，仅显示部分内容。',
+  },
+  '{type}을(를) 불러오지 못했어요. 잠시 후 다시 시도해 주세요. ({code})': {
+    en: 'Could not load {type}. Please try again shortly. ({code})',
+    zh: '无法加载{type}，请稍后重试。（{code}）',
+  },
+  '표시할 {type}이(가) 없어요.': {
+    en: 'No {type} to show.',
+    zh: '暂无可显示的{type}。',
+  },
+  알림: { en: 'Notifications', zh: '通知' },
+  '마감 지남': { en: 'Past due', zh: '已截止' },
+  '마감 {date}': { en: 'Due {date}', zh: '截止 {date}' },
+  '마감일 없음': { en: 'No deadline', zh: '无截止日期' },
+  '제출 차단 {date}': { en: 'Submissions close {date}', zh: '停止提交 {date}' },
+  '게시 {date}': { en: 'Posted {date}', zh: '发布 {date}' },
+  해당: { en: 'Applicable', zh: '适用' },
+  '확인 필요': { en: 'Needs review', zh: '需确认' },
+  비자: { en: 'Visa', zh: '签证' },
+  장학: { en: 'Scholarship', zh: '奖学金' },
+  행사: { en: 'Event', zh: '活动' },
+  기타: { en: 'Other', zh: '其他' },
+  '나에게 해당하는 공지': { en: 'Notices for me', zh: '与我相关的通知' },
+  '모두 보기 ›': { en: 'View all ›', zh: '查看全部 ›' },
+  '맞춤 공지를 고르고 있어요…': {
+    en: 'Finding notices for you…',
+    zh: '正在筛选相关通知…',
+  },
+  '로그인하면 나에게 해당하는 공지를 볼 수 있어요.': {
+    en: 'Sign in to see notices relevant to you.',
+    zh: '登录后可查看与您相关的通知。',
+  },
+  '로그인하기 ›': { en: 'Sign in ›', zh: '登录 ›' },
+  '프로필에 국적·학위과정·학년을 입력하면 더 정확하게 골라드려요.': {
+    en: 'Add your nationality, program, and year to your profile for more accurate matches.',
+    zh: '在个人资料中填写国籍、学位课程和年级，可获得更准确的匹配。',
+  },
+  '입력하기 ›': { en: 'Add details ›', zh: '填写资料 ›' },
+  '지금 나에게 해당하는 공지가 없어요.': {
+    en: 'There are no notices for you right now.',
+    zh: '目前暂无与您相关的通知。',
+  },
+  '예시 데이터': { en: 'Sample data', zh: '示例数据' },
+  '마감 {date} · KST': { en: 'Due {date} · KST', zh: '截止 {date} · KST' },
+  '입국 준비': { en: 'Arrival preparations', zh: '入境准备' },
+  '예정 입국일': { en: 'Planned arrival date', zh: '计划入境日期' },
+  '출국 준비': { en: 'Departure preparations', zh: '离境准备' },
+  '예정 출국일': { en: 'Planned departure date', zh: '计划离境日期' },
+  '‹ 뒤로': { en: '‹ Back', zh: '‹ 返回' },
+  '관련 학교 공지 ›': {
+    en: 'Related university notices ›',
+    zh: '相关学校通知 ›',
+  },
+  '개인별 조건과 공지 원문을 함께 확인': {
+    en: 'Check your circumstances alongside the original notice',
+    zh: '结合个人情况查看通知原文',
+  },
+  '준비 진행상태 저장': { en: 'Save preparation progress', zh: '保存准备进度' },
+  '저장하지 않은 변경이 있어요. 준비 진행상태 저장을 눌러 주세요.': {
+    en: 'You have unsaved changes. Select Save preparation progress.',
+    zh: '有尚未保存的更改，请点击“保存准备进度”。',
+  },
+  '로그인하면 준비 상태를 저장할 수 있어요.': {
+    en: 'Sign in to save your preparation progress.',
+    zh: '登录后可保存准备进度。',
+  },
+  '이 브라우저에 저장했어요.': {
+    en: 'Saved in this browser.',
+    zh: '已保存在此浏览器中。',
+  },
+  '저장하지 못했어요. 브라우저 저장 공간을 확인하고 다시 시도해 주세요.': {
+    en: 'Could not save. Check your browser storage and try again.',
+    zh: '保存失败，请检查浏览器存储空间后重试。',
+  },
+  '입국·출국 준비': {
+    en: 'Arrival and departure preparations',
+    zh: '入境与离境准备',
+  },
+  '한국 입국을 준비하나요?': {
+    en: 'Preparing to arrive in Korea?',
+    zh: '正在准备入境韩国吗？',
+  },
+  '준비 서류 · 입국일 · 숙소 · 학교 안내': {
+    en: 'Documents · Arrival date · Housing · University guidance',
+    zh: '所需材料 · 入境日期 · 住宿 · 学校指南',
+  },
+  '입국 준비 보기': { en: 'View arrival preparations', zh: '查看入境准备' },
+  '한국 출국을 준비하나요?': {
+    en: 'Preparing to leave Korea?',
+    zh: '正在准备离开韩国吗？',
+  },
+  '출국일 · 학적·숙소 정리 · 학교 확인사항': {
+    en: 'Departure date · Academic and housing arrangements · University requirements',
+    zh: '离境日期 · 学籍与住宿处理 · 学校确认事项',
+  },
+  '출국 준비 보기': { en: 'View departure preparations', zh: '查看离境准备' },
+  '공지를 가져오는 중입니다': { en: 'Loading notices', zh: '正在加载通知' },
+  '학교 홈페이지에서 읽어 오느라 처음에는 몇 초 걸릴 수 있어요.': {
+    en: 'The first load may take a few seconds while we retrieve notices from the university website.',
+    zh: '正在从学校网站获取通知，首次加载可能需要几秒钟。',
+  },
+  국제처: { en: 'Office of International Affairs', zh: '国际处' },
+  단과대: { en: 'College', zh: '学院' },
+  '날짜 알 수 없음 · 본문에서 확인': {
+    en: 'Date unavailable · Check the notice',
+    zh: '日期未知 · 请查看正文',
+  },
+  '원문을 계속 확인할 수 있습니다. 번역을 다시 요청할 수 있어요.': {
+    en: 'You can still read the original and request the translation again.',
+    zh: '您仍可查看原文并重新请求翻译。',
+  },
+  '공지를 불러오지 못했어요.': {
+    en: 'Could not load notices.',
+    zh: '无法加载通知。',
+  },
+  '로그인하면 공지를 볼 수 있어요.': {
+    en: 'Sign in to view notices.',
+    zh: '登录后可查看通知。',
+  },
+  '번역 실패': { en: 'Translation failed', zh: '翻译失败' },
+  '선호 언어로 번역하고 있어요. 그동안 원문을 볼 수 있어요.': {
+    en: 'Translating into your preferred language. You can read the original while you wait.',
+    zh: '正在翻译为偏好语言，期间可查看原文。',
+  },
+  '번역을 완료하지 못했어요': {
+    en: 'Could not complete the translation',
+    zh: '未能完成翻译',
+  },
+  '번역 다시 시도': { en: 'Retry translation', zh: '重试翻译' },
+  '공지 보기 방식': { en: 'Notice view', zh: '通知查看方式' },
+  '쉬운 설명': { en: 'Simplified explanation', zh: '简明说明' },
+  '게시일 {date}': { en: 'Posted on {date}', zh: '发布日期 {date}' },
+  '학교 홈페이지에서 원문 보기 ↗': {
+    en: 'View original on the university website ↗',
+    zh: '在学校网站查看原文 ↗',
+  },
+  '해당 이유': { en: 'Why this applies', zh: '适用原因' },
+  '확인된 해당 이유가 없어요. 원문을 확인해 주세요.': {
+    en: 'No confirmed match reason is available. Please check the original.',
+    zh: '暂无已确认的适用原因，请查看原文。',
+  },
+  대상: { en: 'Eligibility', zh: '适用对象' },
+  '해야 할 일': { en: 'What to do', zh: '待办事项' },
+  '정리된 할 일이 없어요. 원문을 확인해 주세요.': {
+    en: 'No action items are available. Please check the original.',
+    zh: '暂无整理好的待办事项，请查看原文。',
+  },
+  '체크 상태를 저장하지 못했어요. 다시 시도해 주세요.': {
+    en: 'Could not save the checklist status. Please try again.',
+    zh: '无法保存勾选状态，请重试。',
+  },
+  '마감 · 한국 시간': {
+    en: 'Deadline · Korean time',
+    zh: '截止时间 · 韩国时间',
+  },
+  '마감일이 제공되지 않았어요. 원문을 확인해 주세요.': {
+    en: 'No deadline was provided. Please check the original.',
+    zh: '未提供截止时间，请查看原文。',
+  },
+  '준비 서류': { en: 'Required documents', zh: '所需材料' },
+  '정리된 서류가 없어요. 원문을 확인해 주세요.': {
+    en: 'No document list is available. Please check the original.',
+    zh: '暂无整理好的材料清单，请查看原文。',
+  },
+  '공지 내용': { en: 'Notice content', zh: '通知内容' },
+  '개인 일정에 저장 (준비 중)': {
+    en: 'Save to my calendar (coming soon)',
+    zh: '保存到个人日程（即将推出）',
+  },
+  '나에게 해당': { en: 'Applies to me', zh: '适用于我' },
+  '전체 대상': { en: 'All eligibility statuses', zh: '全部适用状态' },
+  '총 {count}건의 공지': { en: '{count} notices', zh: '共 {count} 条通知' },
+  '공지 출처': { en: 'Notice source', zh: '通知来源' },
+  '해당 여부': { en: 'Eligibility status', zh: '适用状态' },
+  '조건에 맞는 공지가 없어요.': {
+    en: 'No notices match these filters.',
+    zh: '没有符合条件的通知。',
+  },
+  '학교 전체공지는 과목알림과 구분합니다.': {
+    en: 'University notices are separate from course notifications.',
+    zh: '学校通知与课程通知分开显示。',
+  },
+  '학사일정을 불러오지 못했어요.': {
+    en: 'Could not load the academic calendar.',
+    zh: '无法加载校历。',
+  },
+  '필요한 일정만 골라 개인 일정으로 관리해요.': {
+    en: 'Save the events you need to manage them in your personal calendar.',
+    zh: '选择所需日程并保存到个人日程中。',
+  },
+  '저장 일정 총 {count}건': {
+    en: '{count} saved events',
+    zh: '共保存 {count} 项日程',
+  },
+  '학교 일정 총 {count}건': {
+    en: '{count} university events',
+    zh: '共 {count} 项学校日程',
+  },
+  '학교 일정': { en: 'University events', zh: '学校日程' },
+  '{date} 기준': { en: 'As of {date}', zh: '截至 {date}' },
+  '일정 종류': { en: 'Calendar type', zh: '日程类型' },
+  '학교 학사일정': { en: 'University academic calendar', zh: '学校校历' },
+  '개인 저장': { en: 'Saved events', zh: '已保存日程' },
+  '브라우저에 저장하지 못했어요. 저장 공간이나 브라우저 설정을 확인해 주세요.':
+    {
+      en: 'Could not save in this browser. Check your storage or browser settings.',
+      zh: '无法保存在浏览器中，请检查存储空间或浏览器设置。',
+    },
+  '로그인하면 일정을 볼 수 있어요.': {
+    en: 'Sign in to view your calendar.',
+    zh: '登录后可查看日程。',
+  },
+  '학사일정을 불러오고 있어요…': {
+    en: 'Loading the academic calendar…',
+    zh: '正在加载校历…',
+  },
+  '로그인하면 학사일정을 볼 수 있어요.': {
+    en: 'Sign in to view the academic calendar.',
+    zh: '登录后可查看校历。',
+  },
+  '학교 일정은 자동으로 갱신되지 않아요.': {
+    en: 'University events are not updated automatically.',
+    zh: '学校日程不会自动更新。',
+  },
+  '공식 학사일정 보기 ›': {
+    en: 'View official academic calendar ›',
+    zh: '查看官方校历 ›',
+  },
+  'ERICA 학부 일정 · 이번 달부터 보여드려요': {
+    en: 'ERICA undergraduate events · Starting this month',
+    zh: 'ERICA 本科日程 · 从本月开始显示',
+  },
+  '아직 올라온 일정이 없어요.': {
+    en: 'No events have been posted yet.',
+    zh: '暂无已发布日程。',
+  },
+  '진행 중': { en: 'Ongoing', zh: '进行中' },
+  '{title} 저장됨': { en: '{title} saved', zh: '{title}已保存' },
+  '{title} 내 일정에 저장': {
+    en: 'Save {title} to my calendar',
+    zh: '将{title}保存到个人日程',
+  },
+  저장됨: { en: 'Saved', zh: '已保存' },
+  '내 일정에 저장': { en: 'Save to my calendar', zh: '保存到个人日程' },
+  '"{title}" 일정을 삭제할까요?': {
+    en: 'Delete the event "{title}"?',
+    zh: '要删除“{title}”日程吗？',
+  },
+  '선택한 {count}개 일정을 저장했어요.': {
+    en: 'Saved {count} selected events.',
+    zh: '已保存所选的 {count} 项日程。',
+  },
+  '저장한 일정': { en: 'Saved events', zh: '已保存日程' },
+  '아직 저장한 일정이 없어요. 학교 학사일정에서 필요한 일정을 저장해 보세요.': {
+    en: 'No saved events yet. Save the events you need from the university academic calendar.',
+    zh: '暂无已保存日程，请从学校校历中保存所需日程。',
+  },
+  '동일한 항목은 중복 저장하지 않습니다. 개인 일정은 이 브라우저에만 저장되고 다른 기기에서는 보이지 않아요.':
+    {
+      en: 'Duplicate events are not saved. Personal events are stored only in this browser and are not available on other devices.',
+      zh: '同一项目不会重复保存。个人日程仅保存在此浏览器中，其他设备无法查看。',
+    },
+  '{title} 삭제': { en: 'Delete {title}', zh: '删除{title}' },
+  '{title} 공식 일정 확인': {
+    en: 'View official event: {title}',
+    zh: '查看官方日程：{title}',
+  },
+  '{name}님, 안녕하세요!': { en: 'Hello, {name}!', zh: '{name}，您好！' },
+  '안녕하세요!': { en: 'Hello!', zh: '您好！' },
+  '학교·학과 등 내 정보': {
+    en: 'My university and department details',
+    zh: '学校、学系等个人信息',
+  },
+  접기: { en: 'Collapse', zh: '收起' },
+  펼치기: { en: 'Expand', zh: '展开' },
+  '개인정보 수정 →': {
+    en: 'Edit personal information →',
+    zh: '修改个人信息 →',
+  },
+  '개인정보는 펼치면 확인할 수 있어요.': {
+    en: 'Expand to view your personal information.',
+    zh: '展开后可查看个人信息。',
+  },
+  '여권·비자 정보 확인': {
+    en: 'Check passport and visa information',
+    zh: '确认护照与签证信息',
+  },
+  '입국일·숙소 정보 확인': {
+    en: 'Check arrival date and housing information',
+    zh: '确认入境日期与住宿信息',
+  },
+  '학교에서 요청한 서류 확인': {
+    en: 'Check documents requested by the university',
+    zh: '确认学校要求的材料',
+  },
+  '학교·공식기관 안내 원문 확인': {
+    en: 'Read original guidance from the university and official agencies',
+    zh: '查看学校与官方机构的指南原文',
+  },
+  '출국일·교통편 확인': {
+    en: 'Check departure date and transportation',
+    zh: '确认离境日期与交通安排',
+  },
+  '학교의 학적·서류 처리사항 확인': {
+    en: 'Check academic status and document procedures with the university',
+    zh: '确认学校的学籍与材料办理事项',
+  },
+  '기숙사·숙소 정리사항 확인': {
+    en: 'Check dormitory and housing move-out arrangements',
+    zh: '确认宿舍与住宿退房事项',
+  },
+  '개인 조건에 맞는 공식 안내 확인': {
+    en: 'Check official guidance for your circumstances',
+    zh: '确认符合个人情况的官方指南',
+  },
+  공지: { en: 'Announcement', zh: '公告' },
+  과제: { en: 'Assignment', zh: '作业' },
+  자료: { en: 'Materials', zh: '资料' },
+  파일: { en: 'File', zh: '文件' },
+  페이지: { en: 'Page', zh: '页面' },
+  링크: { en: 'Link', zh: '链接' },
+  '외부 도구': { en: 'External tool', zh: '外部工具' },
+  '맞춤 공지를 불러오지 못했어요.': {
+    en: 'Could not load personalized notices.',
+    zh: '无法加载个性化通知。',
+  },
+  '국적({country}) 대상': {
+    en: 'For nationals of {country}',
+    zh: '面向{country}国籍的学生',
+  },
+  '{visa} 비자 대상': {
+    en: 'For {visa} visa holders',
+    zh: '面向持{visa}签证的学生',
+  },
+  '{year}학년 대상': {
+    en: 'For year {year} students',
+    zh: '面向{year}年级学生',
+  },
+  '학교 공지를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.': {
+    en: 'Could not load university notices. Please try again shortly.',
+    zh: '无法加载学校通知，请稍后重试。',
+  },
+  '번역하지 못했습니다. 원문을 확인하거나 다시 시도해 주세요.': {
+    en: 'Could not translate. Please read the original or try again.',
+    zh: '翻译失败，请查看原文或重试。',
+  },
+  '본문이 이미지나 첨부파일로 되어 있어요. 원문에서 확인해 주세요.': {
+    en: 'The content is in an image or attachment. Please check the original.',
+    zh: '正文为图片或附件，请查看原文。',
+  },
+  '본문을 학교 홈페이지에서 불러오는 중이에요. 잠시 후 다시 열어 주세요.': {
+    en: 'Loading the content from the university website. Please open it again shortly.',
+    zh: '正在从学校网站加载正文，请稍后重新打开。',
+  },
+  '본문을 학교 홈페이지에서 읽지 못했어요. 원문에서 확인해 주세요.': {
+    en: 'Could not retrieve the content from the university website. Please check the original.',
+    zh: '无法从学校网站读取正文，请查看原文。',
+  },
+  '공지 대상 분석이 확실하지 않아 확인이 필요해요': {
+    en: 'Eligibility analysis is uncertain. Please review the notice.',
+    zh: '适用对象分析尚不确定，请确认通知内容。',
+  },
+  '아직 대상 조건을 분석하지 않은 공지예요': {
+    en: 'Eligibility has not been analyzed for this notice yet.',
+    zh: '此通知尚未分析适用条件。',
+  },
+  '전체 학생 대상': { en: 'For all students', zh: '面向全体学生' },
+  '학사과정 대상': { en: "For bachelor's students", zh: '面向本科生' },
+  '석사과정 대상': { en: "For master's students", zh: '面向硕士生' },
+  '박사과정 대상': { en: 'For doctoral students', zh: '面向博士生' },
+  '교환학생 대상': { en: 'For exchange students', zh: '面向交换生' },
+  '어학연수생 대상': {
+    en: 'For language program students',
+    zh: '面向语言研修生',
+  },
+  'ERICA 학사': { en: 'ERICA Academic Affairs', zh: 'ERICA 教务' },
+  'ERICA 국제처': {
+    en: 'ERICA Office of International Affairs',
+    zh: 'ERICA 国际处',
+  },
+  '국적 정보가 없어 확인이 필요해요': {
+    en: 'Nationality information is missing. Please review.',
+    zh: '缺少国籍信息，请确认。',
+  },
+  '국적 조건이 맞지 않아요': {
+    en: 'The nationality requirement does not match.',
+    zh: '不符合国籍条件。',
+  },
+  '비자 정보가 없어 확인이 필요해요': {
+    en: 'Visa information is missing. Please review.',
+    zh: '缺少签证信息，请确认。',
+  },
+  '비자 조건이 맞지 않아요': {
+    en: 'The visa requirement does not match.',
+    zh: '不符合签证条件。',
+  },
+  '학위과정 정보가 없어 확인이 필요해요': {
+    en: 'Degree program information is missing. Please review.',
+    zh: '缺少学位课程信息，请确认。',
+  },
+  '학위과정 조건이 맞지 않아요': {
+    en: 'The degree program requirement does not match.',
+    zh: '不符合学位课程条件。',
+  },
+  '학년 정보가 없어 확인이 필요해요': {
+    en: 'Year of study information is missing. Please review.',
+    zh: '缺少年级信息，请确认。',
+  },
+  '학년 조건이 맞지 않아요': {
+    en: 'The year of study requirement does not match.',
+    zh: '不符合年级条件。',
+  },
+  '학사 안내': { en: 'Academic affairs', zh: '教务' },
 }

@@ -1,5 +1,7 @@
+import { useLanguage } from '../../shared/i18n/language-context'
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { schoolMessage } from '../../shared/i18n/school-message'
 import { ApiError } from '../../shared/api/client'
 import {
   getCourseNotifications,
@@ -39,6 +41,8 @@ function failure(cause: unknown, fallback: string) {
 }
 
 export function CourseNoticesPage() {
+  const { t } = useLanguage()
+
   const [searchParams, setSearchParams] = useSearchParams()
   const [filter, setFilter] = useState<Filter>('ALL')
   const [courses, setCourses] = useState<Load<CourseList>>({
@@ -124,7 +128,7 @@ export function CourseNoticesPage() {
   if (needsPassword) {
     return (
       <div className="course-notices">
-        <h1>과목알림</h1>
+        <h1>{t('과목알림')}</h1>
         <DemoPasswordForm wrong={passwordTried} onSubmit={submitPassword} />
       </div>
     )
@@ -132,13 +136,13 @@ export function CourseNoticesPage() {
 
   return (
     <div className="course-notices">
-      <h1>과목알림</h1>
+      <h1>{t('과목알림')}</h1>
       <p className="home-description">
-        수강 과목의 공지·과제·학습자료를 한곳에서 확인해요.
+        {t('수강 과목의 공지·과제·학습자료를 한곳에서 확인해요.')}
       </p>
 
       {courses.status === 'loading' && (
-        <p className="course-status">과목 목록을 불러오고 있어요…</p>
+        <p className="course-status">{t('과목 목록을 불러오고 있어요…')}</p>
       )}
       {courses.status === 'error' && (
         <Retry
@@ -150,13 +154,15 @@ export function CourseNoticesPage() {
         />
       )}
       {courses.status === 'ready' && courses.data.courses.length === 0 && (
-        <p className="course-status">조회할 수 있는 수강 과목이 없어요.</p>
+        <p className="course-status">
+          {t('조회할 수 있는 수강 과목이 없어요.')}
+        </p>
       )}
 
       {courses.status === 'ready' && courses.data.courses.length > 0 && (
         <>
           <label className="course-select">
-            <span>과목</span>
+            <span>{t('과목')}</span>
             <select
               value={selectedId ?? ''}
               onChange={(event) =>
@@ -173,7 +179,7 @@ export function CourseNoticesPage() {
             </select>
           </label>
 
-          <div className="course-tabs" role="group" aria-label="알림 종류">
+          <div className="course-tabs" role="group" aria-label={t('알림 종류')}>
             {FILTERS.map((value) => (
               <button
                 type="button"
@@ -181,13 +187,13 @@ export function CourseNoticesPage() {
                 aria-pressed={filter === value}
                 onClick={() => setFilter(value)}
               >
-                {value === 'ALL' ? '전체' : TYPE_LABELS[value]}
+                {t(value === 'ALL' ? '전체' : TYPE_LABELS[value])}
               </button>
             ))}
           </div>
 
           {notices?.status === 'loading' && (
-            <p className="course-status">알림을 불러오고 있어요…</p>
+            <p className="course-status">{t('알림을 불러오고 있어요…')}</p>
           )}
           {notices?.status === 'error' && (
             <Retry
@@ -202,10 +208,11 @@ export function CourseNoticesPage() {
       )}
 
       <p className="home-description course-footnote">
-        현재는 데모용 공통 LMS 계정의 과목을 보여줘요. 공지는 최근 90일 것만
-        보여주고, 시간은 한국 시간(KST)이에요.
+        {t(
+          '현재는 데모용 공통 LMS 계정의 과목을 보여줘요. 공지는 최근 90일 것만 보여주고, 시간은 한국 시간(KST)이에요.',
+        )}
         {courses.status === 'ready' && courses.data.truncated && (
-          <> 과목이 많아 일부만 표시했어요.</>
+          <> {t('과목이 많아 일부만 표시했어요.')}</>
         )}
       </p>
     </div>
@@ -219,6 +226,8 @@ function DemoPasswordForm({
   wrong: boolean
   onSubmit: (password: string) => void
 }) {
+  const { t } = useLanguage()
+
   const [password, setPassword] = useState('')
   return (
     <form
@@ -229,37 +238,40 @@ function DemoPasswordForm({
       }}
     >
       <p className="home-description">
-        과목알림은 데모용 공통 LMS 계정의 데이터라 데모 접근 암호가 필요해요.
-        Canvas API 토큰을 넣지 마세요.
+        {t(
+          '과목알림은 데모용 공통 LMS 계정의 데이터라 데모 접근 암호가 필요해요. Canvas API 토큰을 넣지 마세요.',
+        )}
       </p>
       <label>
-        <span>데모 접근 암호</span>
+        <span>{t('데모 접근 암호')}</span>
         <input
           type="password"
           autoComplete="off"
           value={password}
-          placeholder="발표자에게 받은 데모 암호"
+          placeholder={t('발표자에게 받은 데모 암호')}
           onChange={(event) => setPassword(event.target.value)}
         />
       </label>
       {wrong && (
         <p className="course-error" role="alert">
-          암호가 맞지 않아요. 다시 입력해 주세요.
+          {t('암호가 맞지 않아요. 다시 입력해 주세요.')}
         </p>
       )}
       <button type="submit" disabled={!password}>
-        확인
+        {t('확인')}
       </button>
     </form>
   )
 }
 
 function Retry({ message, onRetry }: { message: string; onRetry: () => void }) {
+  const { t, language } = useLanguage()
+
   return (
     <div className="course-error" role="alert">
-      <p>{message}</p>
+      <p>{schoolMessage(language, message)}</p>
       <button type="button" onClick={onRetry}>
-        다시 시도
+        {t('다시 시도')}
       </button>
     </div>
   )
@@ -272,6 +284,8 @@ function NoticeList({
   data: CourseNotifications
   filter: Filter
 }) {
+  const { t } = useLanguage()
+
   const errors = data.errors.filter(
     (error) => filter === 'ALL' || error.type === filter,
   )
@@ -283,18 +297,22 @@ function NoticeList({
     <>
       {data.truncated && (
         <p className="course-status">
-          LMS 조회 상한 때문에 일부 항목만 표시했어요.
+          {t('LMS 조회 상한 때문에 일부 항목만 표시했어요.')}
         </p>
       )}
       {errors.map((error) => (
         <p className="course-error" role="alert" key={error.type}>
-          {TYPE_LABELS[error.type]}을(를) 불러오지 못했어요. 잠시 후 다시 시도해
-          주세요. ({error.code})
+          {t(
+            '{type}을(를) 불러오지 못했어요. 잠시 후 다시 시도해 주세요. ({code})',
+            { type: t(TYPE_LABELS[error.type]), code: error.code },
+          )}
         </p>
       ))}
       {items.length === 0 && errors.length === 0 && (
         <p className="course-status">
-          표시할 {filter === 'ALL' ? '알림' : TYPE_LABELS[filter]}이(가) 없어요.
+          {t('표시할 {type}이(가) 없어요.', {
+            type: t(filter === 'ALL' ? '알림' : TYPE_LABELS[filter]),
+          })}
         </p>
       )}
       <ul className="course-list">
@@ -309,15 +327,19 @@ function NoticeList({
 }
 
 function NoticeCard({ item }: { item: CourseNotification }) {
+  const { t } = useLanguage()
+
   const pastDue = item.type === 'ASSIGNMENT' && isPastDue(item.dueAt)
   const content = (
     <>
       <div className="course-badges">
         <span className={`course-badge course-badge--${item.type}`}>
-          {TYPE_LABELS[item.type]}
+          {t(TYPE_LABELS[item.type])}
         </span>
         {pastDue && (
-          <span className="course-badge course-badge--past">마감 지남</span>
+          <span className="course-badge course-badge--past">
+            {t('마감 지남')}
+          </span>
         )}
       </div>
       <h2>{item.title}</h2>
@@ -346,23 +368,32 @@ function NoticeCard({ item }: { item: CourseNotification }) {
 }
 
 function CardMeta({ item }: { item: CourseNotification }) {
+  const { t, language } = useLanguage()
+
   if (item.type === 'ASSIGNMENT') {
-    const due = kstLabel(item.dueAt)
-    const lock = kstLabel(item.lockAt)
+    const due = kstLabel(item.dueAt, language)
+    const lock = kstLabel(item.lockAt, language)
     return (
       <>
-        <p className="course-meta">{due ? `마감 ${due}` : '마감일 없음'}</p>
-        {lock && <p className="course-meta">제출 차단 {lock}</p>}
+        <p className="course-meta">
+          {due ? t('마감 {date}', { date: due }) : t('마감일 없음')}
+        </p>
+        {lock && (
+          <p className="course-meta">{t('제출 차단 {date}', { date: lock })}</p>
+        )}
       </>
     )
   }
   if (item.type === 'ANNOUNCEMENT') {
-    const posted = kstLabel(item.publishedAt)
-    return posted ? <p className="course-meta">게시 {posted}</p> : null
+    const posted = kstLabel(item.publishedAt, language)
+    return posted ? (
+      <p className="course-meta">{t('게시 {date}', { date: posted })}</p>
+    ) : null
   }
-  const details = [item.moduleName, materialLabel(item.materialType)].filter(
-    Boolean,
-  )
+  const details = [
+    item.moduleName,
+    t(materialLabel(item.materialType) ?? ''),
+  ].filter(Boolean)
   return details.length > 0 ? (
     <p className="course-meta">{details.join(' · ')}</p>
   ) : null

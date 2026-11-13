@@ -1,3 +1,4 @@
+import { useLanguage } from '../../../shared/i18n/language-context'
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../../auth/auth-context'
@@ -17,6 +18,7 @@ import {
   needsTranslation,
   postedLabel,
 } from '../notice-display'
+import { schoolMessage } from '../../../shared/i18n/school-message'
 import { NoticeLoading } from '../NoticeLoading'
 import '../notices.css'
 
@@ -24,12 +26,13 @@ const TRANSLATION_FAILED =
   '원문을 계속 확인할 수 있습니다. 번역을 다시 요청할 수 있어요.'
 
 export function NoticeDetailPage() {
+  const { t, language } = useLanguage()
+
   const { noticeId = '' } = useParams()
   const { savedProfile } = useDemoProfile()
   // 세션과 CSRF 토큰을 받기 전에 요청하면 게스트 세션이 둘 생길 수 있어 세션 확인을 기다린다.
   const { session, loading: authLoading } = useAuth()
   const accountId = session?.user?.id ?? null
-  const language = savedProfile?.profile.language ?? 'ko'
   const profile = JSON.stringify(noticeProfile(savedProfile?.profile ?? null))
   const [checks, setChecks] = useState<string[]>(() => {
     if (!accountId) return []
@@ -130,10 +133,11 @@ export function NoticeDetailPage() {
     return (
       <div className="notice-page">
         <Link className="notice-back" to="/notices">
-          ‹ 뒤로
+          {t('‹ 뒤로')}
         </Link>
         <p className="notice-hint">
-          로그인하면 공지를 볼 수 있어요. <Link to="/login">로그인하기 ›</Link>
+          {t('로그인하면 공지를 볼 수 있어요.')}{' '}
+          <Link to="/login">{t('로그인하기 ›')}</Link>
         </p>
       </div>
     )
@@ -142,12 +146,12 @@ export function NoticeDetailPage() {
     return (
       <div className="notice-page">
         <Link className="notice-back" to="/notices">
-          ‹ 뒤로
+          {t('‹ 뒤로')}
         </Link>
         <div className="notice-message" role="alert">
-          <p>{loadError}</p>
+          <p>{schoolMessage(language, loadError)}</p>
           <button type="button" onClick={() => setAttempt((n) => n + 1)}>
-            다시 시도
+            {t('다시 시도')}
           </button>
         </div>
       </div>
@@ -172,66 +176,79 @@ export function NoticeDetailPage() {
   return (
     <div className="notice-page">
       <Link className="notice-back" to="/notices">
-        ‹ 뒤로
+        {t('‹ 뒤로')}
       </Link>
       <h1>{translated?.title ?? notice.title}</h1>
 
       <div className="notice-badges">
         {badge && (
           <span className={`notice-badge is-${notice.matchStatus}`}>
-            {badge}
+            {t(badge)}
           </span>
         )}
         {notice.sourceName && (
-          <span className="notice-badge">{notice.sourceName}</span>
+          <span className="notice-badge">{t(notice.sourceName)}</span>
         )}
-        {notice.sample && <span className="notice-badge">예시 데이터</span>}
+        {notice.sample && (
+          <span className="notice-badge">{t('예시 데이터')}</span>
+        )}
         {failed && (
-          <span className="notice-badge is-NEEDS_REVIEW">번역 실패</span>
+          <span className="notice-badge is-NEEDS_REVIEW">{t('번역 실패')}</span>
         )}
       </div>
 
       {translating && (
         <p className="notice-hint" aria-live="polite">
-          선호 언어로 번역하고 있어요. 그동안 원문을 볼 수 있어요.
+          {t('선호 언어로 번역하고 있어요. 그동안 원문을 볼 수 있어요.')}
         </p>
       )}
       {failed && !translating && (
         <div className="notice-message" role="alert">
-          <strong>번역을 완료하지 못했어요</strong>
-          <p>{translation?.message ?? TRANSLATION_FAILED}</p>
+          <strong>{t('번역을 완료하지 못했어요')}</strong>
+          <p>
+            {schoolMessage(
+              language,
+              translation?.message ?? TRANSLATION_FAILED,
+            )}
+          </p>
           {translation?.retryable && (
             <button
               type="button"
               onClick={() => setTranslationAttempt((n) => n + 1)}
             >
-              번역 다시 시도
+              {t('번역 다시 시도')}
             </button>
           )}
         </div>
       )}
 
-      <div className="notice-segment" role="group" aria-label="공지 보기 방식">
+      <div
+        className="notice-segment"
+        role="group"
+        aria-label={t('공지 보기 방식')}
+      >
         <button
           type="button"
           aria-pressed={tab === 'easy'}
           onClick={() => setTab('easy')}
         >
-          쉬운 설명
+          {t('쉬운 설명')}
         </button>
         <button
           type="button"
           aria-pressed={tab === 'original'}
           onClick={() => setTab('original')}
         >
-          원문
+          {t('원문')}
         </button>
       </div>
 
       {tab === 'original' ? (
         <section className="notice-card">
           <span className="notice-hint">
-            게시일 {postedLabel(notice.postedAt)}
+            {t('게시일 {date}', {
+              date: postedLabel(notice.postedAt, language),
+            })}
           </span>
           <p className="notice-body">{notice.originalContent}</p>
           {notice.attachments.length > 0 && (
@@ -247,30 +264,32 @@ export function NoticeDetailPage() {
           )}
           {notice.sourceUrl && (
             <a href={notice.sourceUrl} target="_blank" rel="noreferrer">
-              학교 홈페이지에서 원문 보기 ↗
+              {t('학교 홈페이지에서 원문 보기 ↗')}
             </a>
           )}
         </section>
       ) : (
         <>
           <section className="notice-reason">
-            <h2>해당 이유</h2>
+            <h2>{t('해당 이유')}</h2>
             {notice.matchReasons.length > 0 ? (
-              notice.matchReasons.map((reason) => <p key={reason}>{reason}</p>)
+              notice.matchReasons.map((reason) => (
+                <p key={reason}>{schoolMessage(language, reason)}</p>
+              ))
             ) : (
-              <p>확인된 해당 이유가 없어요. 원문을 확인해 주세요.</p>
+              <p>{t('확인된 해당 이유가 없어요. 원문을 확인해 주세요.')}</p>
             )}
           </section>
 
           {target && (
             <section>
-              <h2>대상</h2>
+              <h2>{t('대상')}</h2>
               <p className="notice-card notice-body">{target}</p>
             </section>
           )}
 
           <section>
-            <h2>해야 할 일</h2>
+            <h2>{t('해야 할 일')}</h2>
             {actions.length > 0 ? (
               <ul className="notice-card notice-actions">
                 {actions.map((action) => (
@@ -290,44 +309,44 @@ export function NoticeDetailPage() {
               </ul>
             ) : (
               <p className="notice-hint">
-                정리된 할 일이 없어요. 원문을 확인해 주세요.
+                {t('정리된 할 일이 없어요. 원문을 확인해 주세요.')}
               </p>
             )}
           </section>
 
           {checkError && (
             <p className="notice-message" role="alert">
-              체크 상태를 저장하지 못했어요. 다시 시도해 주세요.
+              {t('체크 상태를 저장하지 못했어요. 다시 시도해 주세요.')}
             </p>
           )}
 
           <section>
-            <h2>마감 · 한국 시간</h2>
+            <h2>{t('마감 · 한국 시간')}</h2>
             <p className="notice-card notice-body">
-              {formatDeadline(notice.deadline) ??
-                '마감일이 제공되지 않았어요. 원문을 확인해 주세요.'}
+              {formatDeadline(notice.deadline, language) ??
+                t('마감일이 제공되지 않았어요. 원문을 확인해 주세요.')}
             </p>
           </section>
 
           <section>
-            <h2>준비 서류</h2>
+            <h2>{t('준비 서류')}</h2>
             <p className="notice-card notice-body">
               {documents.length > 0
                 ? documents.join(' · ')
-                : '정리된 서류가 없어요. 원문을 확인해 주세요.'}
+                : t('정리된 서류가 없어요. 원문을 확인해 주세요.')}
             </p>
           </section>
 
           {translated && (
             <section>
-              <h2>공지 내용</h2>
+              <h2>{t('공지 내용')}</h2>
               <p className="notice-card notice-body">{translated.content}</p>
             </section>
           )}
 
           {/* #10 일정 API가 연결되면 활성화한다. */}
           <button type="button" className="notice-primary" disabled>
-            개인 일정에 저장 (준비 중)
+            {t('개인 일정에 저장 (준비 중)')}
           </button>
         </>
       )}

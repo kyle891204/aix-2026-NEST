@@ -1,6 +1,8 @@
+import { useLanguage } from '../../shared/i18n/language-context'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ApiError } from '../../shared/api/client'
+import { schoolMessage } from '../../shared/i18n/school-message'
 import { kstLabel } from '../../shared/format/kst'
 import { useAuth } from '../auth/auth-context'
 import { noticeProfile } from '../notices/api'
@@ -24,7 +26,7 @@ const STATUS_LABELS: Record<DashboardNotice['matchStatus'], string> = {
 const CATEGORY_LABELS: Record<string, string> = {
   VISA: '비자',
   SCHOLARSHIP: '장학',
-  ACADEMIC: '학사',
+  ACADEMIC: '학사 안내',
   EVENT: '행사',
   ETC: '기타',
 }
@@ -43,6 +45,8 @@ export function DashboardNotices({
 }: {
   profile: SignupProfile | null
 }) {
+  const { t, language } = useLanguage()
+
   // 로그인 세션(게스트 포함)과 CSRF 토큰을 먼저 받은 뒤 요청한다. 동시에 보내면 게스트 세션이 둘 생길 수 있다.
   const { loading: authLoading } = useAuth()
   // 전체공지와 같은 값을 보내 같은 공지 중에서 고른다.
@@ -79,27 +83,27 @@ export function DashboardNotices({
   return (
     <section className="school-notices">
       <div className="home-section-heading">
-        <h2>나에게 해당하는 공지</h2>
-        <Link to="/notices">모두 보기 ›</Link>
+        <h2>{t('나에게 해당하는 공지')}</h2>
+        <Link to="/notices">{t('모두 보기 ›')}</Link>
       </div>
 
       {load.status === 'loading' && (
-        <p className="home-description">맞춤 공지를 고르고 있어요…</p>
+        <p className="home-description">{t('맞춤 공지를 고르고 있어요…')}</p>
       )}
       {load.status === 'signed-out' && (
         <p className="dashboard-profile-hint">
-          로그인하면 나에게 해당하는 공지를 볼 수 있어요.{' '}
-          <Link to="/login">로그인하기 ›</Link>
+          {t('로그인하면 나에게 해당하는 공지를 볼 수 있어요.')}{' '}
+          <Link to="/login">{t('로그인하기 ›')}</Link>
         </p>
       )}
       {load.status === 'error' && (
         <div className="dashboard-error" role="alert">
-          <p>{load.message}</p>
+          <p>{schoolMessage(language, load.message)}</p>
           <button
             type="button"
             onClick={() => setAttempt((value) => value + 1)}
           >
-            다시 시도
+            {t('다시 시도')}
           </button>
         </div>
       )}
@@ -109,6 +113,8 @@ export function DashboardNotices({
 }
 
 function NoticeCards({ data }: { data: DashboardResult }) {
+  const { t } = useLanguage()
+
   const askProfile = data.missingProfileFields.some((field) =>
     ASKABLE_FIELDS.includes(field),
   )
@@ -116,12 +122,14 @@ function NoticeCards({ data }: { data: DashboardResult }) {
     <>
       {askProfile && (
         <p className="dashboard-profile-hint">
-          프로필에 국적·학위과정·학년을 입력하면 더 정확하게 골라드려요.{' '}
-          <Link to="/profile">입력하기 ›</Link>
+          {t('프로필에 국적·학위과정·학년을 입력하면 더 정확하게 골라드려요.')}{' '}
+          <Link to="/profile">{t('입력하기 ›')}</Link>
         </p>
       )}
       {data.matchedNotices.length === 0 && (
-        <p className="home-description">지금 나에게 해당하는 공지가 없어요.</p>
+        <p className="home-description">
+          {t('지금 나에게 해당하는 공지가 없어요.')}
+        </p>
       )}
       <div className="dashboard-notice-list">
         {data.matchedNotices.map((notice) => (
@@ -133,7 +141,9 @@ function NoticeCards({ data }: { data: DashboardResult }) {
 }
 
 function NoticeCard({ notice }: { notice: DashboardNotice }) {
-  const deadline = kstLabel(notice.deadline)
+  const { t, language } = useLanguage()
+
+  const deadline = kstLabel(notice.deadline, language)
   // 앱의 공지 상세로 연다. 쉬운 설명·번역을 볼 수 있고, 처음 열면 공지 대상도 분석한다.
   return (
     <Link
@@ -144,18 +154,26 @@ function NoticeCard({ notice }: { notice: DashboardNotice }) {
         <span
           className={`dashboard-status dashboard-status--${notice.matchStatus}`}
         >
-          {STATUS_LABELS[notice.matchStatus]}
+          {t(STATUS_LABELS[notice.matchStatus])}
         </span>
-        <span>{CATEGORY_LABELS[notice.category] ?? notice.category}</span>
-        {notice.sample && <span>예시 데이터</span>}
+        <span>
+          {notice.category === 'ACADEMIC' && language === 'ko'
+            ? '학사'
+            : t(CATEGORY_LABELS[notice.category] ?? notice.category)}
+        </span>
+        {notice.sample && <span>{t('예시 데이터')}</span>}
       </div>
       <h3>{notice.title}</h3>
       <ul className="dashboard-reasons">
         {notice.matchReasons.map((reason) => (
-          <li key={reason}>{reason}</li>
+          <li key={reason}>{schoolMessage(language, reason)}</li>
         ))}
       </ul>
-      <p>{deadline ? `마감 ${deadline} · KST` : '마감일 없음'}</p>
+      <p>
+        {deadline
+          ? t('마감 {date} · KST', { date: deadline })
+          : t('마감일 없음')}
+      </p>
     </Link>
   )
 }
