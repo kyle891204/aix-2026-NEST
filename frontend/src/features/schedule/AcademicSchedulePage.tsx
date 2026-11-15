@@ -1,6 +1,6 @@
 import { useLanguage } from '../../shared/i18n/language-context'
 import { useEffect, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { schoolMessage } from '../../shared/i18n/school-message'
 import { ApiError } from '../../shared/api/client'
 import { useAuth } from '../auth/auth-context'
@@ -77,6 +77,17 @@ function ScheduleTabs({ accountId }: { accountId: string | null }) {
   )
   const load = !authLoading && result?.attempt === attempt ? result.load : null
   const personal = usePersonalSchedules(accountId)
+  // 과목알림·전체공지에서 저장하고 넘어오면 그때 저장한 일정도 "이번에 저장" 안내에 넣는다.
+  const location = useLocation()
+  const arrivedIds = (location.state as { savedIds?: unknown } | null)?.savedIds
+  const recentIds = [
+    ...(Array.isArray(arrivedIds) ? arrivedIds : []).filter(
+      (id): id is string =>
+        typeof id === 'string' &&
+        personal.schedules.some((item) => item.id === id),
+    ),
+    ...personal.recentIds,
+  ].filter((id, index, ids) => ids.indexOf(id) === index)
 
   function showAcademic() {
     setSearchParams({}, { replace: true })
@@ -166,7 +177,7 @@ function ScheduleTabs({ accountId }: { accountId: string | null }) {
       ) : tab === 'mine' ? (
         <PersonalSchedules
           schedules={personal.schedules}
-          recentIds={personal.recentIds}
+          recentIds={recentIds}
           today={today}
           onChange={personal.update}
         />

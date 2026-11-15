@@ -93,8 +93,10 @@ public class CourseService {
         result.items(lms.announcements(courseId, start, end)).stream()
                 .sorted(Comparator.comparing((LmsModels.Announcement item) -> parseInstant(item.postedAt()),
                         Comparator.nullsLast(Comparator.reverseOrder())))
+                // LMS 공지에는 마감일 칸이 없어 본문에서 "~까지" 같은 날짜를 찾아 마감으로 쓴다(개인 일정 저장용).
                 .map(item -> new Notification("announcement-" + item.id(), NotificationType.ANNOUNCEMENT,
-                        item.title(), item.postedAt(), null, null, null, null, item.htmlUrl(), null))
+                        item.title(), item.postedAt(), AnnouncementDeadlines.find(item.message(), item.postedAt()),
+                        null, null, null, item.htmlUrl(), null))
                 .forEach(result.notifications::add);
     }
 

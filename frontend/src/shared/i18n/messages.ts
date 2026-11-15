@@ -2006,9 +2006,10 @@ export const messages: Record<string, { en: string; zh: string }> = {
     zh: '暂无整理好的材料清单，请查看原文。',
   },
   '공지 내용': { en: 'Notice content', zh: '通知内容' },
-  '개인 일정에 저장 (준비 중)': {
-    en: 'Save to my calendar (coming soon)',
-    zh: '保存到个人日程（即将推出）',
+  '개인 일정에 저장': { en: 'Save to my calendar', zh: '保存到个人日程' },
+  '개인 일정에 저장 ({reason})': {
+    en: 'Save to my calendar ({reason})',
+    zh: '保存到个人日程（{reason}）',
   },
   '나에게 해당': { en: 'Applies to me', zh: '适用于我' },
   '전체 대상': { en: 'All eligibility statuses', zh: '全部适用状态' },
@@ -2094,19 +2095,24 @@ export const messages: Record<string, { en: string; zh: string }> = {
     zh: '已保存所选的 {count} 项日程。',
   },
   '저장한 일정': { en: 'Saved events', zh: '已保存日程' },
-  '아직 저장한 일정이 없어요. 학교 학사일정에서 필요한 일정을 저장해 보세요.': {
-    en: 'No saved events yet. Save the events you need from the university academic calendar.',
-    zh: '暂无已保存日程，请从学校校历中保存所需日程。',
-  },
+  '아직 저장한 일정이 없어요. 학교 학사일정·전체공지·과목알림에서 필요한 일정을 저장해 보세요.':
+    {
+      en: 'No saved events yet. Save the events you need from the academic calendar, university notices, or course notifications.',
+      zh: '暂无已保存日程，请从学校校历、学校通知或课程通知中保存所需日程。',
+    },
   '동일한 항목은 중복 저장하지 않습니다. 개인 일정은 이 브라우저에만 저장되고 다른 기기에서는 보이지 않아요.':
     {
       en: 'Duplicate events are not saved. Personal events are stored only in this browser and are not available on other devices.',
       zh: '同一项目不会重复保存。个人日程仅保存在此浏览器中，其他设备无法查看。',
     },
   '{title} 삭제': { en: 'Delete {title}', zh: '删除{title}' },
-  '{title} 공식 일정 확인': {
-    en: 'View official event: {title}',
-    zh: '查看官方日程：{title}',
+  '{title} 원문 확인': {
+    en: 'View original: {title}',
+    zh: '查看原文：{title}',
+  },
+  '{title} 공지 상세 보기': {
+    en: 'View notice details: {title}',
+    zh: '查看通知详情：{title}',
   },
   '{name}님, 안녕하세요!': { en: 'Hello, {name}!', zh: '{name}，您好！' },
   '안녕하세요!': { en: 'Hello!', zh: '您好！' },
@@ -2254,4 +2260,50 @@ export const messages: Record<string, { en: string; zh: string }> = {
     zh: '不符合年级条件。',
   },
   '학사 안내': { en: 'Academic affairs', zh: '教务' },
+  // SCHOOL: 공지·과제 마감을 개인 일정에 저장(#10). 과목알림 선택·공지 상세 저장 버튼.
+  '{count}개 선택': { en: '{count} selected', zh: '已选 {count} 项' },
+  '마감 있는 공지·과제를 골라 개인 일정에 저장하세요.': {
+    en: 'Select announcements or assignments with deadlines to save them to your calendar.',
+    zh: '请选择有截止时间的公告或作业，保存到个人日程。',
+  },
+  '전체 해제': { en: 'Clear all', zh: '全部取消' },
+  '선택한 {count}개 일정 저장': {
+    en: 'Save {count} selected events',
+    zh: '保存所选的 {count} 项日程',
+  },
+  '마감 있음': { en: 'Has deadline', zh: '有截止时间' },
+  '마감 확인 필요': { en: 'Check deadline', zh: '需确认截止时间' },
+  '마감 없음': { en: 'No deadline', zh: '无截止时间' },
+  '마감 {date} · KST · 공지 본문 기준': {
+    en: 'Due {date} · KST · from the announcement text',
+    zh: '截止 {date} · KST · 依据公告正文',
+  },
+  '본문에서 마감을 찾지 못했어요. 혹시 모르니 원문을 확인해 주세요.': {
+    en: 'No deadline was found in the text. Please check the original just in case.',
+    zh: '未在正文中找到截止时间，请查看原文确认。',
+  },
+  '{title} 원문 보기': {
+    en: 'View original: {title}',
+    zh: '查看原文：{title}',
+  },
+  '개인 일정에 저장됨 · 확인하기 ›': {
+    en: 'Saved to my calendar · View ›',
+    zh: '已保存到个人日程 · 查看 ›',
+  },
+  '로그인하면 저장할 수 있어요': {
+    en: 'sign in to save',
+    zh: '登录后可保存',
+  },
+  '예시 공지라 저장할 수 없어요': {
+    en: 'sample notices cannot be saved',
+    zh: '示例通知无法保存',
+  },
+  '마감일이 없어 저장할 수 없어요': {
+    en: 'no deadline to save',
+    zh: '无截止日期，无法保存',
+  },
+  '마감이 지난 공지예요': {
+    en: 'deadline has passed',
+    zh: '截止时间已过',
+  },
 }

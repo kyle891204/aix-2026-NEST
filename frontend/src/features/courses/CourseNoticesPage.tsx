@@ -1,8 +1,15 @@
 import { useLanguage } from '../../shared/i18n/language-context'
 import { useEffect, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { schoolMessage } from '../../shared/i18n/school-message'
 import { ApiError } from '../../shared/api/client'
+import { useAuth } from '../auth/auth-context'
+import {
+  addDeadlineSchedules,
+  isSaved,
+  type PersonalSchedule,
+} from '../schedule/personal-schedule-store'
+import { usePersonalSchedules } from '../schedule/usePersonalSchedules'
 import {
   getCourseNotifications,
   getCourses,
@@ -42,7 +49,8 @@ function failure(cause: unknown, fallback: string) {
 
 export function CourseNoticesPage() {
   const { t } = useLanguage()
-
+  const { session } = useAuth()
+  const accountId = session?.user?.id ?? null
   const [searchParams, setSearchParams] = useSearchParams()
   const [filter, setFilter] = useState<Filter>('ALL')
   const [courses, setCourses] = useState<Load<CourseList>>({
@@ -201,8 +209,14 @@ export function CourseNoticesPage() {
               onRetry={() => setNoticesAttempt((value) => value + 1)}
             />
           )}
+          {/* 과목이나 계정이 바뀌면 선택과 저장 목록을 다시 만든다. */}
           {notices?.status === 'ready' && (
-            <NoticeList data={notices.data} filter={filter} />
+            <NoticeList
+              key={`${accountId ?? 'signed-out'}#${notices.data.courseId}`}
+              accountId={accountId}
+              data={notices.data}
+              filter={filter}
+            />
           )}
         </>
       )}
@@ -277,21 +291,86 @@ function Retry({ message, onRetry }: { message: string; onRetry: () => void }) {
   )
 }
 
+// 마감이 지나지 않은 과제·공지를 개인 일정에 저장할 수 있다. 공지는 본문에서 찾은 마감을 쓰고, 학습자료는 마감이 없다.
+function canSave(item: CourseNotification) {
+  return hasDeadlineField(item) && !!item.dueAt && !isPastDue(item.dueAt)
+}
+
+// 과제는 LMS 마감일, 공지는 서버가 본문의 "까지·마감" 문구에서 찾은 마감일을 쓴다. 학습자료는 마감이 없다.
+function hasDeadlineField(item: CourseNotification) {
+  return item.type === 'ANNOUNCEMENT' || item.type === 'ASSIGNMENT'
+}
+
+function sourceType(item: CourseNotification) {
+  return item.type === 'ANNOUNCEMENT'
+    ? 'COURSE_ANNOUNCEMENT'
+    : 'COURSE_ASSIGNMENT'
+}
+
 function NoticeList({
+  accountId,
   data,
   filter,
 }: {
+  accountId: string | null
   data: CourseNotifications
   filter: Filter
 }) {
   const { t } = useLanguage()
-
+  const navigate = useNavigate()
+  const personal = usePersonalSchedules(accountId)
+  // 탭을 바꾸면 선택을 비운다. 다른 탭에서 고른 항목이 안 보이는 채로 저장 개수에 남지 않게 한다.
+  const [selection, setSelection] = useState<{
+    filter: Filter
+    ids: string[]
+  }>({ filter, ids: [] })
+  const selected = selection.filter === filter ? selection.ids : []
+  const setSelected = (update: (ids: string[]) => string[]) =>
+    setSelection({ filter, ids: update(selected) })
   const errors = data.errors.filter(
     (error) => filter === 'ALL' || error.type === filter,
   )
   const items = data.notifications.filter(
     (item) => filter === 'ALL' || item.type === filter,
   )
+  const saved = (item: CourseNotification) =>
+    isSaved(personal.schedules, sourceType(item), item.id)
+  const selectable = data.notifications.some(
+    (item) => canSave(item) && !saved(item),
+  )
+
+  function toggle(id: string, checked: boolean) {
+    setSelected((ids) =>
+      checked ? [...ids, id] : ids.filter((value) => value !== id),
+    )
+  }
+
+  // 저장에 성공하면 개인 저장 탭으로 이동해 이번에 저장한 일정을 보여준다(S10-A·B·AB).
+  function save() {
+    const picked = data.notifications.filter(
+      (item) => selected.includes(item.id) && item.dueAt,
+    )
+    let added: PersonalSchedule[] = []
+    const ok = personal.update((current) => {
+      const next = addDeadlineSchedules(
+        current,
+        picked.map((item) => ({
+          sourceType: sourceType(item),
+          sourceId: item.id,
+          title: item.title,
+          dueAt: item.dueAt as string,
+          sourceUrl: safeLinkUrl(item.sourceUrl),
+        })),
+      )
+      added = next.filter((item) => !current.includes(item))
+      return next
+    })
+    if (!ok) return
+    setSelected(() => [])
+    navigate('/schedule?tab=mine', {
+      state: { savedIds: added.map((item) => item.id) },
+    })
+  }
 
   return (
     <>
@@ -315,21 +394,144 @@ function NoticeList({
           })}
         </p>
       )}
+      {selectable && (
+        <div className="course-selection">
+          <strong>
+            {selected.length > 0
+              ? t('{count}개 선택', { count: selected.length })
+              : t('마감 있는 공지·과제를 골라 개인 일정에 저장하세요.')}
+          </strong>
+          {selected.length > 0 && (
+            <button type="button" onClick={() => setSelected(() => [])}>
+              {t('전체 해제')}
+            </button>
+          )}
+        </div>
+      )}
       <ul className="course-list">
         {items.map((item) => (
           <li key={item.id}>
-            <NoticeCard item={item} />
+            {canSave(item) && !saved(item) ? (
+              <SelectableCard
+                item={item}
+                checked={selected.includes(item.id)}
+                onToggle={(checked) => toggle(item.id, checked)}
+              />
+            ) : hasDeadlineField(item) && !item.dueAt ? (
+              // 마감을 찾지 못한 공지·과제는 체크를 끄고 "마감 없음"으로 보여준다.
+              <SelectableCard item={item} checked={false} />
+            ) : (
+              <NoticeCard item={item} saved={saved(item)} />
+            )}
           </li>
         ))}
       </ul>
+      {personal.saveFailed && (
+        <p className="course-error" role="alert">
+          {t(
+            '브라우저에 저장하지 못했어요. 저장 공간이나 브라우저 설정을 확인해 주세요.',
+          )}
+        </p>
+      )}
+      {/* 목록이 길어도 바로 누를 수 있게 하단 메뉴 위에 띄운다. */}
+      {selected.length > 0 && (
+        <button type="button" className="course-save" onClick={save}>
+          {t('선택한 {count}개 일정 저장', { count: selected.length })}
+        </button>
+      )}
     </>
   )
 }
 
-function NoticeCard({ item }: { item: CourseNotification }) {
-  const { t } = useLanguage()
+// 왼쪽(체크·내용)을 누르면 선택하고, 오른쪽 화살표는 LMS 원문을 연다(S09 검토 안내).
+function SelectableCard({
+  item,
+  checked,
+  onToggle,
+}: {
+  item: CourseNotification
+  checked: boolean
+  // 없으면 마감이 없어 고를 수 없는 카드다.
+  onToggle?: (checked: boolean) => void
+}) {
+  const { t, language } = useLanguage()
+  const href = safeLinkUrl(item.sourceUrl)
+  const due = kstLabel(item.dueAt, language)
+  const posted = kstLabel(item.publishedAt, language)
+  const announcement = item.type === 'ANNOUNCEMENT'
+  return (
+    <div
+      className={`home-card course-card course-card--selectable${checked ? ' is-selected' : ''}${onToggle ? '' : ' is-disabled'}`}
+    >
+      <label>
+        <input
+          type="checkbox"
+          checked={checked}
+          disabled={!onToggle}
+          onChange={(event) => onToggle?.(event.target.checked)}
+        />
+        <span className="course-card-content">
+          <span className="course-badges">
+            <span className={`course-badge course-badge--${item.type}`}>
+              {t(TYPE_LABELS[item.type])}
+            </span>
+            <span className="course-due-tag">
+              {t(
+                due
+                  ? '마감 있음'
+                  : announcement
+                    ? '마감 확인 필요'
+                    : '마감 없음',
+              )}
+            </span>
+          </span>
+          <strong>{item.title}</strong>
+          <span className="course-meta">
+            {due
+              ? t(
+                  announcement
+                    ? '마감 {date} · KST · 공지 본문 기준'
+                    : '마감 {date} · KST',
+                  { date: due },
+                )
+              : announcement && posted
+                ? t('게시 {date}', { date: posted })
+                : t('마감일 없음')}
+          </span>
+          {/* 공지 마감은 본문을 읽어 찾으므로, 못 찾았다고 마감이 없다고 단정하지 않는다. */}
+          {!due && announcement && (
+            <span className="course-meta course-meta--hint">
+              {t(
+                '본문에서 마감을 찾지 못했어요. 혹시 모르니 원문을 확인해 주세요.',
+              )}
+            </span>
+          )}
+        </span>
+      </label>
+      {href && (
+        <a
+          className="course-card-open"
+          href={href}
+          target="_blank"
+          rel="noreferrer"
+          aria-label={t('{title} 원문 보기', { title: item.title })}
+        >
+          ›
+        </a>
+      )}
+    </div>
+  )
+}
 
-  const pastDue = item.type === 'ASSIGNMENT' && isPastDue(item.dueAt)
+function NoticeCard({
+  item,
+  saved,
+}: {
+  item: CourseNotification
+  saved: boolean
+}) {
+  const { t } = useLanguage()
+  const pastDue = hasDeadlineField(item) && isPastDue(item.dueAt)
   const content = (
     <>
       <div className="course-badges">
@@ -341,6 +543,7 @@ function NoticeCard({ item }: { item: CourseNotification }) {
             {t('마감 지남')}
           </span>
         )}
+        {saved && <span className="course-badge">{t('저장됨')}</span>}
       </div>
       <h2>{item.title}</h2>
       <CardMeta item={item} />
