@@ -1,3 +1,4 @@
+import { useLanguage } from '../../../shared/i18n/language-context'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useDemoProfile } from '../../profile/demo-profile-context'
@@ -6,6 +7,8 @@ import { DashboardNotices } from '../../dashboard/DashboardNotices'
 import '../school.css'
 
 export function SchoolHomePage() {
+  const { t, language } = useLanguage()
+
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const { savedProfile } = useDemoProfile()
   const profile = savedProfile?.profile ?? null
@@ -22,10 +25,13 @@ export function SchoolHomePage() {
         >
           <span className="profile-summary">
             <strong>
-              {profile ? `${profile.nickname}님, 안녕하세요!` : '안녕하세요!'}
+              {profile
+                ? t('{name}님, 안녕하세요!', { name: profile.nickname })
+                : t('안녕하세요!')}
             </strong>
             <span className="dashboard-description">
-              학교·학과 등 내 정보 {isProfileOpen ? '접기' : '펼치기'}
+              {t('학교·학과 등 내 정보')}{' '}
+              {isProfileOpen ? t('접기') : t('펼치기')}
             </span>
           </span>
 
@@ -35,19 +41,19 @@ export function SchoolHomePage() {
         {isProfileOpen ? (
           <div id="dashboard-profile-details">
             <dl className="profile-details">
-              {profileDetails(profile).map(({ label, value }) => (
+              {profileDetails(profile, language).map(({ label, value }) => (
                 <div key={label}>
-                  <dt>{label}</dt>
+                  <dt>{t(label)}</dt>
                   <dd>{value}</dd>
                 </div>
               ))}
             </dl>
 
-            <Link to="/profile">개인정보 수정 →</Link>
+            <Link to="/profile">{t('개인정보 수정 →')}</Link>
           </div>
         ) : (
           <p className="dashboard-description">
-            개인정보는 펼치면 확인할 수 있어요.
+            {t('개인정보는 펼치면 확인할 수 있어요.')}
           </p>
         )}
       </section>

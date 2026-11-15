@@ -1,3 +1,4 @@
+import { useLanguage } from '../../../shared/i18n/language-context'
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../auth/auth-context'
@@ -11,6 +12,7 @@ import {
   type NoticeSummary,
 } from '../api'
 import { dateLine, matchLabel, sourceLabel } from '../notice-display'
+import { schoolMessage } from '../../../shared/i18n/school-message'
 import { NoticeLoading } from '../NoticeLoading'
 import '../notices.css'
 
@@ -35,6 +37,8 @@ function selected<T extends string>(
 }
 
 export function NoticeListPage() {
+  const { t, language } = useLanguage()
+
   // 상세에서 뒤로 돌아와도 필터가 유지되도록 주소에 저장한다.
   const [params, setParams] = useSearchParams()
   const source = selected(params.get('source'), SOURCE_FILTERS)
@@ -87,56 +91,61 @@ export function NoticeListPage() {
 
   return (
     <div className="notice-page">
-      <h1>전체공지</h1>
+      <h1>{t('전체공지')}</h1>
 
       <div className="notice-total">
         {/* 불러오는 동안 0건으로 보이지 않도록 다 불러온 뒤에만 건수를 보여준다. */}
-        {notices && <strong>총 {notices.length}건</strong>}
-        {notices?.some((notice) => notice.sample) && <span>예시 데이터</span>}
+        {notices && (
+          <strong>{t('총 {count}건의 공지', { count: notices.length })}</strong>
+        )}
+        {notices?.some((notice) => notice.sample) && (
+          <span>{t('예시 데이터')}</span>
+        )}
       </div>
 
-      <div className="notice-segment" role="group" aria-label="공지 출처">
+      <div className="notice-segment" role="group" aria-label={t('공지 출처')}>
         {SOURCE_FILTERS.map((filter) => (
           <button
-            key={filter.label}
+            key={t(filter.label)}
             type="button"
             aria-pressed={source === filter.value}
             onClick={() => setFilter('source', filter.value)}
           >
-            {filter.label}
+            {t(filter.label)}
           </button>
         ))}
       </div>
 
-      <div className="notice-segment" role="group" aria-label="해당 여부">
+      <div className="notice-segment" role="group" aria-label={t('해당 여부')}>
         {MATCH_FILTERS.map((filter) => (
           <button
-            key={filter.label}
+            key={t(filter.label)}
             type="button"
             aria-pressed={match === filter.value}
             onClick={() => setFilter('match', filter.value)}
           >
-            {filter.label}
+            {t(filter.label)}
           </button>
         ))}
       </div>
 
       {error && (
         <div className="notice-message" role="alert">
-          <p>{error}</p>
+          <p>{schoolMessage(language, error)}</p>
           <button type="button" onClick={() => setAttempt((n) => n + 1)}>
-            다시 시도
+            {t('다시 시도')}
           </button>
         </div>
       )}
       {signedOut && (
         <p className="notice-hint">
-          로그인하면 공지를 볼 수 있어요. <Link to="/login">로그인하기 ›</Link>
+          {t('로그인하면 공지를 볼 수 있어요.')}{' '}
+          <Link to="/login">{t('로그인하기 ›')}</Link>
         </p>
       )}
       {!error && !signedOut && !notices && <NoticeLoading />}
       {notices?.length === 0 && (
-        <p className="notice-hint">조건에 맞는 공지가 없어요.</p>
+        <p className="notice-hint">{t('조건에 맞는 공지가 없어요.')}</p>
       )}
 
       {notices?.map((notice) => {
@@ -150,27 +159,31 @@ export function NoticeListPage() {
             <span className="notice-badges">
               {badge && (
                 <span className={`notice-badge is-${notice.matchStatus}`}>
-                  {badge}
+                  {t(badge)}
                 </span>
               )}
               <span className="notice-badge">
-                {notice.sourceName ?? sourceLabel(notice.source)}
+                {t(notice.sourceName ?? sourceLabel(notice.source))}
               </span>
             </span>
             <strong>{notice.title}</strong>
             {notice.matchReasons.length > 0 && (
               <span className="notice-hint">
-                {notice.matchReasons.join(' · ')}
+                {notice.matchReasons
+                  .map((reason) => schoolMessage(language, reason))
+                  .join(' · ')}
               </span>
             )}
             <span className="notice-hint">
-              {dateLine(notice.deadline, notice.postedAt)}
+              {dateLine(notice.deadline, notice.postedAt, language)}
             </span>
           </Link>
         )
       })}
 
-      <p className="notice-hint">학교 전체공지는 과목알림과 구분합니다.</p>
+      <p className="notice-hint">
+        {t('학교 전체공지는 과목알림과 구분합니다.')}
+      </p>
     </div>
   )
 }

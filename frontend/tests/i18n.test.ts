@@ -24,6 +24,16 @@ import {
 
 const screens = [
   'app/App.tsx',
+  'features/school/pages/SchoolHomePage.tsx',
+  'features/dashboard/DashboardNotices.tsx',
+  'features/notices/NoticeLoading.tsx',
+  'features/notices/pages/NoticeListPage.tsx',
+  'features/notices/pages/NoticeDetailPage.tsx',
+  'features/immigration/pages/EntryExitPage.tsx',
+  'features/immigration/pages/ChecklistPage.tsx',
+  'features/courses/CourseNoticesPage.tsx',
+  'features/schedule/AcademicSchedulePage.tsx',
+  'features/schedule/PersonalSchedules.tsx',
   'features/auth/LoginPage.tsx',
   'features/auth/ConsentPage.tsx',
   'features/auth/SignupPage.tsx',

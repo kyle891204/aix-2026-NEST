@@ -1,3 +1,4 @@
+import { useLanguage } from '../../shared/i18n/language-context'
 import { Link } from 'react-router-dom'
 import {
   deadlineLabel,
@@ -29,8 +30,12 @@ export function PersonalSchedules({
   today: string
   onChange: (change: PersonalChange) => boolean
 }) {
+  const { t } = useLanguage()
+
   function remove(item: PersonalSchedule) {
-    if (window.confirm(`"${item.title}" 일정을 삭제할까요?`))
+    if (
+      window.confirm(t('"{title}" 일정을 삭제할까요?', { title: item.title }))
+    )
       onChange((current) => removeSchedule(current, item.id))
   }
 
@@ -38,12 +43,16 @@ export function PersonalSchedules({
     <>
       {recentIds.length > 0 && (
         <div className="saved-banner" role="status">
-          <strong>선택한 {recentIds.length}개 일정을 저장했어요.</strong>
+          <strong>
+            {t('선택한 {count}개 일정을 저장했어요.', {
+              count: recentIds.length,
+            })}
+          </strong>
         </div>
       )}
       {schedules.length > 0 && (
         <section className="saved-section">
-          <h2>저장한 일정</h2>
+          <h2>{t('저장한 일정')}</h2>
           <ul>
             {schedules.map((item) => (
               <SavedCard
@@ -58,13 +67,15 @@ export function PersonalSchedules({
       )}
       {schedules.length === 0 && (
         <p className="schedule-status">
-          아직 저장한 일정이 없어요. 학교 학사일정·전체공지·과목알림에서 필요한
-          일정을 저장해 보세요.
+          {t(
+            '아직 저장한 일정이 없어요. 학교 학사일정·전체공지·과목알림에서 필요한 일정을 저장해 보세요.',
+          )}
         </p>
       )}
       <p className="schedule-note">
-        동일한 항목은 중복 저장하지 않습니다. 개인 일정은 이 브라우저에만
-        저장되고 다른 기기에서는 보이지 않아요.
+        {t(
+          '동일한 항목은 중복 저장하지 않습니다. 개인 일정은 이 브라우저에만 저장되고 다른 기기에서는 보이지 않아요.',
+        )}
       </p>
     </>
   )
@@ -79,31 +90,35 @@ function SavedCard({
   today: string
   onRemove: () => void
 }) {
+  const { t, language } = useLanguage()
+
   return (
     <li className={`saved-card saved-card--${eventTiming(item, today)}`}>
       <div className="saved-card-head">
-        <span>{SOURCE_LABELS[item.sourceType]}</span>
-        <small>저장됨</small>
+        <span>{t(SOURCE_LABELS[item.sourceType])}</span>
+        <small>{t('저장됨')}</small>
         <button
           type="button"
-          aria-label={`${item.title} 삭제`}
+          aria-label={t('{title} 삭제', { title: item.title })}
           onClick={onRemove}
         >
-          삭제
+          {t('삭제')}
         </button>
       </div>
       <div className="saved-card-body">
         <div>
           <strong>{item.title}</strong>
           <p>
-            {item.dueAt ? deadlineLabel(item.dueAt) : fullDateRangeLabel(item)}
+            {item.dueAt
+              ? deadlineLabel(item.dueAt, language)
+              : fullDateRangeLabel(item, language)}
           </p>
         </div>
         {/* 전체공지는 앱의 공지 상세로, 학사일정·과제는 학교·LMS 원문으로 연다. */}
         {item.sourceType === 'NOTICE' ? (
           <Link
             to={`/notices/${encodeURIComponent(item.sourceId)}`}
-            aria-label={`${item.title} 공지 상세 보기`}
+            aria-label={t('{title} 공지 상세 보기', { title: item.title })}
           >
             ›
           </Link>
@@ -113,7 +128,7 @@ function SavedCard({
               href={item.sourceUrl}
               target="_blank"
               rel="noreferrer"
-              aria-label={`${item.title} 원문 확인`}
+              aria-label={t('{title} 원문 확인', { title: item.title })}
             >
               ›
             </a>

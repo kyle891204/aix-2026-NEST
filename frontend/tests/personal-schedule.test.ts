@@ -1,6 +1,7 @@
 import { strict as assert } from 'node:assert'
 import { test } from 'node:test'
 import { deadlineLabel } from '../src/features/schedule/academic-format.ts'
+import { translate } from '../src/shared/i18n/language.ts'
 import {
   addAcademicSchedule,
   addDeadlineSchedules,
@@ -208,4 +209,41 @@ test('deadline cards show the Korean date and time', () => {
     deadlineLabel('2026-11-08T23:59:00+09:00'),
     '2026.11.08 23:59 · KST',
   )
+})
+
+test('deadline cards keep the Korean date in other display languages', () => {
+  // UTC로는 12/31이지만 한국 시간으로는 1/1 00:30이다.
+  assert.match(
+    deadlineLabel('2026-12-31T15:30:00Z', 'en'),
+    /Jan 1, 2027, 00:30 · KST/,
+  )
+  assert.match(
+    deadlineLabel('2026-12-31T15:30:00Z', 'zh'),
+    /2027年1月1日 00:30 · KST/,
+  )
+})
+
+test('save labels picked by condition have English and Chinese copy', () => {
+  // 조건에 따라 고르는 문구는 화면 검사(i18n.test)가 찾지 못해 여기서 사전에 있는지 확인한다.
+  const keys = [
+    '마감 있음',
+    '마감 확인 필요',
+    '마감 없음',
+    '마감 {date} · KST',
+    '마감 {date} · KST · 공지 본문 기준',
+    '로그인하면 저장할 수 있어요',
+    '예시 공지라 저장할 수 없어요',
+    '마감일이 없어 저장할 수 없어요',
+    '마감이 지난 공지예요',
+    '학사일정',
+    '공지',
+    '과제',
+  ]
+  for (const language of ['en', 'zh'] as const)
+    for (const key of keys)
+      assert.doesNotMatch(
+        translate(language, key),
+        /[가-힣]/,
+        `${language}: ${key}`,
+      )
 })

@@ -1,3 +1,6 @@
+import type { Language } from '../../shared/types/language'
+import { LANGUAGE_LOCALES } from '../../shared/i18n/language.ts'
+
 interface DateRange {
   startDate: string
   endDate: string
@@ -53,21 +56,42 @@ export function weekDays(today: string) {
   })
 }
 
-function dateLabel(value: string) {
+function dateLabel(value: string, language: Language = 'ko') {
   const [year, month, day] = value.split('-').map(Number)
+  if (language !== 'ko')
+    return new Intl.DateTimeFormat(LANGUAGE_LOCALES[language], {
+      timeZone: 'UTC',
+      month: 'short',
+      day: 'numeric',
+      weekday: 'short',
+    }).format(new Date(Date.UTC(year, month - 1, day)))
   const weekday = WEEKDAYS[new Date(Date.UTC(year, month - 1, day)).getUTCDay()]
   return `${month}/${day}(${weekday})`
 }
 
-export function dateRangeLabel(event: DateRange) {
-  const start = dateLabel(event.startDate)
+export function dateRangeLabel(event: DateRange, language: Language = 'ko') {
+  const start = dateLabel(event.startDate, language)
   return event.startDate === event.endDate
     ? start
-    : `${start} ~ ${dateLabel(event.endDate)}`
+    : `${start} ~ ${dateLabel(event.endDate, language)}`
 }
 
 // 개인 저장 카드용. 연도를 함께 보여주고, 시간 없는 일정도 한국 날짜 기준임을 표시한다.
-export function fullDateRangeLabel(event: DateRange) {
+export function fullDateRangeLabel(
+  event: DateRange,
+  language: Language = 'ko',
+) {
+  if (language !== 'ko') {
+    const format = (value: string) =>
+      new Intl.DateTimeFormat(LANGUAGE_LOCALES[language], {
+        timeZone: 'UTC',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      }).format(new Date(`${value}T00:00:00Z`))
+    const start = format(event.startDate)
+    return `${event.startDate === event.endDate ? start : `${start} ~ ${format(event.endDate)}`} · KST`
+  }
   const start = event.startDate.replaceAll('-', '.')
   const end = event.endDate.replaceAll('-', '.')
   return `${start === end ? start : `${start} ~ ${end}`} · KST`
@@ -80,9 +104,19 @@ const KST_TIME = new Intl.DateTimeFormat('en-GB', {
   hourCycle: 'h23',
 })
 
-// 공지·과제 마감 카드용. "2026.10.27 23:59 · KST"처럼 마감 시각까지 보여준다.
-export function deadlineLabel(dueAt: string) {
+// 공지·과제 마감 카드용. "2026.10.27 23:59 · KST"처럼 마감 시각까지 보여준다. 다른 언어도 한국 시간 기준이다.
+export function deadlineLabel(dueAt: string, language: Language = 'ko') {
   const time = new Date(dueAt)
+  if (language !== 'ko')
+    return `${new Intl.DateTimeFormat(LANGUAGE_LOCALES[language], {
+      timeZone: 'Asia/Seoul',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23',
+    }).format(time)} · KST`
   return `${kstToday(time).replaceAll('-', '.')} ${KST_TIME.format(time)} · KST`
 }
 
@@ -108,7 +142,13 @@ export function groupByStartMonth<T extends DateRange>(
   return groups
 }
 
-export function monthLabel(month: string) {
+export function monthLabel(month: string, language: Language = 'ko') {
   const [year, value] = month.split('-').map(Number)
+  if (language !== 'ko')
+    return new Intl.DateTimeFormat(LANGUAGE_LOCALES[language], {
+      timeZone: 'UTC',
+      year: 'numeric',
+      month: 'long',
+    }).format(new Date(Date.UTC(year, value - 1, 1)))
   return `${year}년 ${value}월`
 }
