@@ -367,13 +367,16 @@ function SaveDeadline({
       </Link>
     )
   }
+  // 학교 공지를 못 읽을 때 대신 보여주는 예시 공지는 실제 일정이 아니라 저장하지 않는다.
   const reason = !accountId
     ? '로그인하면 저장할 수 있어요'
-    : !deadline
-      ? '마감일이 없어 저장할 수 없어요'
-      : Date.parse(deadline) < openedAt
-        ? '마감이 지난 공지예요'
-        : null
+    : notice.sample
+      ? '예시 공지라 저장할 수 없어요'
+      : !deadline
+        ? '마감일이 없어 저장할 수 없어요'
+        : Date.parse(deadline) < openedAt
+          ? '마감이 지난 공지예요'
+          : null
 
   function save() {
     if (!deadline) return

@@ -280,7 +280,7 @@ function Retry({ message, onRetry }: { message: string; onRetry: () => void }) {
   )
 }
 
-// 마감이 지나지 않은 과제만 개인 일정에 저장할 수 있다. LMS 공지·학습자료에는 마감 일시가 없다.
+// 마감이 지나지 않은 과제·공지를 개인 일정에 저장할 수 있다. 공지는 본문에서 찾은 마감을 쓰고, 학습자료는 마감이 없다.
 function canSave(item: CourseNotification) {
   return hasDeadlineField(item) && !!item.dueAt && !isPastDue(item.dueAt)
 }
@@ -307,7 +307,14 @@ function NoticeList({
 }) {
   const navigate = useNavigate()
   const personal = usePersonalSchedules(accountId)
-  const [selected, setSelected] = useState<string[]>([])
+  // 탭을 바꾸면 선택을 비운다. 다른 탭에서 고른 항목이 안 보이는 채로 저장 개수에 남지 않게 한다.
+  const [selection, setSelection] = useState<{
+    filter: Filter
+    ids: string[]
+  }>({ filter, ids: [] })
+  const selected = selection.filter === filter ? selection.ids : []
+  const setSelected = (update: (ids: string[]) => string[]) =>
+    setSelection({ filter, ids: update(selected) })
   const errors = data.errors.filter(
     (error) => filter === 'ALL' || error.type === filter,
   )
@@ -347,7 +354,7 @@ function NoticeList({
       return next
     })
     if (!ok) return
-    setSelected([])
+    setSelected(() => [])
     navigate('/schedule?tab=mine', {
       state: { savedIds: added.map((item) => item.id) },
     })
@@ -379,7 +386,7 @@ function NoticeList({
               : '마감 있는 공지·과제를 골라 개인 일정에 저장하세요.'}
           </strong>
           {selected.length > 0 && (
-            <button type="button" onClick={() => setSelected([])}>
+            <button type="button" onClick={() => setSelected(() => [])}>
               전체 해제
             </button>
           )}

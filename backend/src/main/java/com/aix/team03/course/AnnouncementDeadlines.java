@@ -57,13 +57,22 @@ final class AnnouncementDeadlines {
         int month = Integer.parseInt(dotted ? date.group(2) : date.group(5));
         int day = Integer.parseInt(dotted ? date.group(3) : date.group(6));
         try {
-            var day0 = LocalDate.of(year != null ? Integer.parseInt(year) : posted.getYear(), month, day);
-            // 연도 없이 12월 공지에 "1/5까지"라고 쓰면 다음 해 1월이다.
-            if (year == null && day0.isBefore(posted.minusDays(7))) day0 = day0.plusYears(1);
-            return OffsetDateTime.of(day0, time(after), ZoneOffset.ofHours(9));
+            int fullYear = year != null ? Integer.parseInt(year) : yearNear(posted, month);
+            return OffsetDateTime.of(LocalDate.of(fullYear, month, day), time(after), ZoneOffset.ofHours(9));
         } catch (DateTimeException | NumberFormatException exception) {
             return null;
         }
+    }
+
+    /**
+     * 연도 없는 날짜는 게시한 해로 본다. 해를 넘기는 건 연말(11~12월) 공지에 연초(1~2월) 날짜가 적힌 경우와
+     * 그 반대(연초 공지에 지난 연말 날짜)뿐이다. 그 밖의 지난 날짜는 올해 그대로 두어 "마감 지남"으로 보이게 한다.
+     */
+    private static int yearNear(LocalDate posted, int month) {
+        int postedMonth = posted.getMonthValue();
+        if (postedMonth >= 11 && month <= 2) return posted.getYear() + 1;
+        if (postedMonth <= 2 && month >= 11) return posted.getYear() - 1;
+        return posted.getYear();
     }
 
     private static LocalTime time(Matcher after) {

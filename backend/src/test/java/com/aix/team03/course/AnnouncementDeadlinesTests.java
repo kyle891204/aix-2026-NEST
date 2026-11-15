@@ -31,9 +31,24 @@ class AnnouncementDeadlinesTests {
     }
 
     @Test
-    void dateWithoutYearEarlierThanPostingIsNextYear() {
+    void earlyYearDateInAYearEndNoticeIsNextYear() {
         assertThat(AnnouncementDeadlines.find("1/5까지 제출", "2026-12-20T01:00:00Z"))
                 .isEqualTo("2027-01-05T23:59:00+09:00");
+        assertThat(AnnouncementDeadlines.find("2월 10일까지 신청", "2026-11-30T01:00:00Z"))
+                .isEqualTo("2027-02-10T23:59:00+09:00");
+    }
+
+    @Test
+    void pastDateWithoutYearStaysInThePostingYear() {
+        // 리뷰에서 찾은 경우: 11월 공지의 지난 날짜가 다음 해 마감이 되면 안 된다. 올해로 두어 "마감 지남"으로 보인다.
+        assertThat(find("10/30까지 제출한 과제의 성적을 공개합니다.")).isEqualTo("2026-10-30T23:59:00+09:00");
+        assertThat(find("9월 1일까지 신청")).isEqualTo("2026-09-01T23:59:00+09:00");
+    }
+
+    @Test
+    void lastYearEndDateInAnEarlyYearNoticeIsLastYear() {
+        assertThat(AnnouncementDeadlines.find("12/20까지 제출한 과제를 채점했어요.", "2027-01-10T01:00:00Z"))
+                .isEqualTo("2026-12-20T23:59:00+09:00");
     }
 
     @Test
