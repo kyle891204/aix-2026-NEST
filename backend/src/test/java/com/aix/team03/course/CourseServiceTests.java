@@ -217,6 +217,76 @@ class CourseServiceTests {
     }
 
     @Test
+    void announcementBodyAndAssignmentDescriptionBecomePlainText() {
+        fixture("/api/v1/announcements", 200, """
+                [{"id":1,"title":"중간 발표","message":"<p>팀별 발표를&nbsp;준비하세요.</p><p>자료는<br>LMS에 올려 주세요.</p><script>alert(1)</script>",
+                  "posted_at":"2026-10-30T01:00:00Z"}]""");
+        fixture("/api/v1/courses/12/assignments", 200, """
+                [{"id":22,"name":"제안서","course_id":12,"description":"<ul><li>문제</li><li>사용자</li></ul>"},
+                 {"id":23,"name":"이미지만","course_id":12,"description":"<p><img src='x.png'></p>"}]""");
+        var result = service.notifications(12, EnumSet.of(NotificationType.ANNOUNCEMENT, NotificationType.ASSIGNMENT),
+                START, END);
+
+        assertThat(result.notifications()).extracting(Notification::content).containsExactly(
+                "팀별 발표를 준비하세요.\n자료는\nLMS에 올려 주세요.", "문제\n사용자", null);
+        assertThat(result.errors()).isEmpty();
+        assertThat(result.notifications()).extracting(Notification::courseId).containsOnly("12");
+    }
+
+    // 전체 과목 화면용: 공지는 context_codes로 과목을 구분해 응답한다.
+    private void overviewFixtures(int failingAssignmentsStatus) {
+        fixture("/api/v1/courses", 200, """
+                [{"id":12,"name":"자료구조","course_code":"CSE2010"},{"id":13,"name":"데이터베이스","course_code":"CSE3010"}]""");
+        server.createContext("/api/v1/announcements", exchange -> respond(exchange, 200,
+                exchange.getRequestURI().getQuery().contains("course_12") ? """
+                        [{"id":1,"title":"발표 자료 제출","message":"<p>11/6(금) 18:00까지 올려 주세요.</p>",
+                          "posted_at":"2026-10-28T01:00:00Z"},
+                         {"id":2,"title":"휴강 안내","posted_at":"2026-10-29T01:00:00Z"}]""" : """
+                        [{"id":3,"title":"교재 안내","posted_at":"2026-10-30T01:00:00Z"}]"""));
+        fixture("/api/v1/courses/12/assignments", 200, """
+                [{"id":20,"name":"기간 전 과제","course_id":12,"due_at":"2026-07-20T14:59:00Z"},
+                 {"id":21,"name":"지난 과제","course_id":12,"due_at":"2026-10-20T14:59:00Z"},
+                 {"id":22,"name":"9주차 과제","course_id":12,"due_at":"2026-11-03T14:59:00Z"}]""");
+        fixture("/api/v1/courses/13/assignments", failingAssignmentsStatus, """
+                [{"id":31,"name":"ERD 제출","course_id":13,"due_at":"2026-11-02T14:59:00Z"},
+                 {"id":32,"name":"마감 없는 과제","course_id":13,"due_at":null}]""");
+    }
+
+    @Test
+    void overviewKeepsOngoingItemsOfEveryCourseByDeadlineThenPostingDate() {
+        overviewFixtures(200);
+        var result = service.overview(START, END);
+
+        assertThat(result.courses()).extracting(CourseSummary::courseId).containsExactly("12", "13");
+        assertThat(result.errors()).isEmpty();
+        // 마감 전 항목이 마감 임박순으로 먼저, 마감 없는 공지는 최근 게시순, 마감 지난 과제는 맨 뒤.
+        // 마감 없는 과제와 조회 기간보다 먼저 마감된 과제, 학습자료는 빠진다.
+        assertThat(result.notifications()).extracting(item -> item.courseId() + ":" + item.id()).containsExactly(
+                "13:assignment-31", "12:assignment-22", "12:announcement-1", "13:announcement-3", "12:announcement-2",
+                "12:assignment-21");
+    }
+
+    @Test
+    void overviewShowsOtherCoursesWhenOneCourseFails() {
+        overviewFixtures(500);
+        var result = service.overview(START, END);
+
+        assertThat(result.errors()).containsExactly(new CourseError("13", NotificationType.ASSIGNMENT, "LMS_HTTP_ERROR"));
+        assertThat(result.notifications()).extracting(Notification::id)
+                .contains("assignment-22", "announcement-3").doesNotContain("assignment-31");
+    }
+
+    @Test
+    void overviewThrowsTheLmsErrorWhenEveryCourseFails() {
+        fixture("/api/v1/courses", 200, "[{\"id\":12,\"name\":\"자료구조\"}]");
+        fixture("/api/v1/announcements", 401, "{}");
+        fixture("/api/v1/courses/12/assignments", 401, "{}");
+        assertThatThrownBy(() -> service.overview(START, END))
+                .isInstanceOf(LmsIntegrationException.class)
+                .extracting("code").isEqualTo("LMS_TOKEN_REJECTED");
+    }
+
+    @Test
     void invalidInputIsRejectedBeforeContactingLms() {
         assertThatThrownBy(() -> service.notifications(0, ALL, START, END))
                 .extracting("code").isEqualTo("INVALID_LMS_QUERY");

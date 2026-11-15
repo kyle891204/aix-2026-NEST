@@ -29,7 +29,9 @@ import { ChecklistPage } from '../features/immigration/pages/ChecklistPage'
 import { EntryExitPage } from '../features/immigration/pages/EntryExitPage'
 import { NoticeListPage } from '../features/notices/pages/NoticeListPage'
 import { NoticeDetailPage } from '../features/notices/pages/NoticeDetailPage'
+import { CourseItemPage } from '../features/courses/CourseItemPage'
 import { CourseNoticesPage } from '../features/courses/CourseNoticesPage'
+import { CourseOverviewPage } from '../features/courses/CourseOverviewPage'
 import { AcademicSchedulePage } from '../features/schedule/AcademicSchedulePage'
 import { ProfilePage } from '../features/profile/pages/ProfilePage'
 import { DemoProfileProvider } from '../features/profile/DemoProfileProvider'
@@ -106,7 +108,15 @@ export default function App() {
               />
               <Route path="/notices" element={<NoticeListPage />} />
               <Route path="/notices/:noticeId" element={<NoticeDetailPage />} />
-              <Route path="/course-notices" element={<CourseNoticesPage />} />
+              <Route path="/course-notices" element={<CourseOverviewPage />} />
+              <Route
+                path="/course-notices/:courseId"
+                element={<CourseNoticesPage />}
+              />
+              <Route
+                path="/course-notices/:courseId/:itemId"
+                element={<CourseItemPage />}
+              />
               <Route path="/schedule" element={<AcademicSchedulePage />} />
               <Route path="/community" element={<CommunityPage />} />
               <Route path="/profile" element={<ProfilePage />} />

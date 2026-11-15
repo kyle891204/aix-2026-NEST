@@ -11,24 +11,114 @@
   font-size: 22px;
 }
 
-/* 과목 선택 */
-.course-select {
+/* 뒤로 가기·요약 (S08·S09) */
+.course-back {
+  display: inline-block;
+  margin-bottom: 12px;
+  color: #657795;
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.course-notices h1 + .home-description {
+  margin-top: 8px;
+}
+
+.course-summary {
+  margin: 16px 0 12px;
+  font-size: 14px;
+}
+
+.course-summary strong {
+  color: #3f5fff;
+  font-weight: 600;
+}
+
+/* 과목 카드 (S08). 두 줄로 놓고, 머리 색 띠에 짧은 이름을 쓴다. */
+.course-grid {
   display: grid;
-  gap: 6px;
-  margin: 20px 0 16px;
-  font-size: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.course-tile {
+  display: grid;
+  overflow: hidden;
+  height: 100%;
+  border: 1px solid #e1e7f1;
+  border-radius: 16px;
+  background: white;
+}
+
+.course-tile-main {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.course-tile-head {
+  display: block;
+  overflow: hidden;
+  height: 76px;
+  margin-bottom: 8px;
+  padding: 18px 14px 0;
+  color: white;
+  font-size: 22px;
+  font-weight: 800;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.course-tile-main strong {
+  padding: 0 12px;
+  font-size: 14px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.course-tile-main .course-meta {
+  padding: 0 12px;
+}
+
+.course-tile-icons {
+  display: flex;
+  gap: 4px;
+  align-self: end;
+  padding: 6px 6px 8px;
+}
+
+.course-tile-icons a {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
   color: #657795;
 }
 
-.course-select select {
-  width: 100%;
-  min-height: 44px;
-  padding: 0 12px;
-  border: 1px solid #e1e7f1;
-  border-radius: 12px;
-  background: white;
-  color: #1c2940;
+/* 마감 지난 항목 (S09) */
+.course-past {
+  margin-top: 4px;
+}
+
+.course-past h2 {
+  margin: 0 0 12px;
+  color: #657795;
   font-size: 14px;
+}
+
+.course-past-toggle {
+  min-height: 36px;
+  margin: 8px 0 16px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #3f5fff;
+  font-size: 13px;
 }
 
 /* 공지·과제·자료 탭 */
@@ -148,6 +238,17 @@
   font-size: 12px;
 }
 
+/* 전체 과목 알림 카드 (S08): 내용과 오른쪽 화살표 */
+.course-card.course-card--row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.course-card--row .course-card-content {
+  flex: 1;
+}
+
 .course-card-open {
   display: grid;
   flex: none;
@@ -174,6 +275,84 @@
   font-size: 15px;
   font-weight: 700;
   box-shadow: 0 6px 16px rgb(63 95 255 / 25%);
+}
+
+/* 고르기 전에는 떠 있지 않게 해 아래 카드를 가리지 않는다. */
+.course-save:disabled {
+  position: static;
+  background: #e3e8f2;
+  color: #8a97ad;
+  box-shadow: none;
+}
+
+.course-save-hint {
+  margin-top: 10px;
+}
+
+/* 공지·과제 상세 (S09-N·S09-T) */
+.course-due-card {
+  display: grid;
+  gap: 6px;
+  margin: 16px 0 12px;
+  padding: 16px;
+  border: 1px solid #dbe3ff;
+  border-radius: 16px;
+  background: #eef2ff;
+}
+
+.course-due-card span,
+.course-due-card small {
+  color: #657795;
+  font-size: 12px;
+}
+
+.course-due-card strong {
+  color: #3f5fff;
+  font-size: 20px;
+}
+
+.course-due-card em {
+  color: #c0392b;
+  font-size: 12px;
+  font-style: normal;
+}
+
+.course-due-card.is-past strong {
+  color: #657795;
+}
+
+.course-body h2 {
+  margin: 0 0 10px;
+  font-size: 16px;
+}
+
+.course-body p {
+  margin: 0 0 8px;
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.course-body a {
+  color: #3f5fff;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.course-back-button {
+  display: grid;
+  place-items: center;
+  min-height: 48px;
+  margin-top: 16px;
+  border: 1px solid #e1e7f1;
+  border-radius: 14px;
+  background: white;
+  color: #3f5fff;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
 }
 
 .course-card {

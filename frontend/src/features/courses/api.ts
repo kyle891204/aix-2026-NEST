@@ -15,6 +15,7 @@ export interface CourseList {
 }
 
 export interface CourseNotification {
+  courseId: string
   id: string
   type: NotificationType
   title: string
@@ -25,11 +26,27 @@ export interface CourseNotification {
   moduleName: string | null
   sourceUrl: string | null
   savedScheduleId: string | null
+  // 공지 본문·과제 설명을 줄바꿈만 살린 글. 학습자료와 본문이 없는 항목은 null이다.
+  content: string | null
 }
 
 export interface NotificationError {
   type: NotificationType
   code: string
+}
+
+export interface CourseError {
+  courseId: string
+  type: NotificationType
+  code: string
+}
+
+// S08 전체 과목 화면. 모든 과목의 공지와 마감 전 과제를 마감 임박순 → 최근 게시순으로 받는다.
+export interface CourseOverview {
+  courses: CourseSummary[]
+  notifications: CourseNotification[]
+  errors: CourseError[]
+  truncated: boolean
 }
 
 export interface CourseNotifications {
@@ -70,6 +87,7 @@ function isCourse(value: unknown) {
 function isNotification(value: unknown) {
   return (
     isRecord(value) &&
+    typeof value.courseId === 'string' &&
     typeof value.id === 'string' &&
     typeof value.type === 'string' &&
     TYPES.includes(value.type) &&
@@ -115,4 +133,25 @@ export async function getCourseNotifications(
   )
     throw new Error('과목알림 응답 형식이 올바르지 않습니다.')
   return value as unknown as CourseNotifications
+}
+
+export async function getCourseOverview(): Promise<CourseOverview> {
+  const value = await requestCourses('/courses/notifications')
+  if (
+    !isRecord(value) ||
+    !Array.isArray(value.courses) ||
+    !value.courses.every(isCourse) ||
+    !Array.isArray(value.notifications) ||
+    !value.notifications.every(isNotification) ||
+    !Array.isArray(value.errors) ||
+    !value.errors.every(
+      (error) =>
+        isRecord(error) &&
+        typeof error.courseId === 'string' &&
+        isNotificationError(error),
+    ) ||
+    typeof value.truncated !== 'boolean'
+  )
+    throw new Error('과목알림 응답 형식이 올바르지 않습니다.')
+  return value as unknown as CourseOverview
 }
