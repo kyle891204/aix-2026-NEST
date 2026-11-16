@@ -139,12 +139,20 @@
   flex: 1;
   min-width: 0;
   min-height: 40px;
+  padding: 0 4px;
   border: 0;
   border-radius: 999px;
   background: transparent;
   color: #657795;
   font-size: 14px;
   font-weight: 600;
+  /* "학습자료"처럼 긴 탭 이름이 두 줄로 깨지지 않게 한다. */
+  white-space: nowrap;
+}
+
+/* 탭이 4개인 과목별 화면(S09)은 휴대폰 폭(360px)에서도 한 줄에 들어가도록 글자를 조금 줄인다. */
+.course-tabs--compact button {
+  font-size: 13px;
 }
 
 .course-tabs button[aria-pressed='true'] {

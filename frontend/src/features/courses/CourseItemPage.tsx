@@ -8,7 +8,11 @@ import {
   setCourseDemoPassword,
   type CourseNotification,
 } from './api'
-import { needsDemoPassword, useCourseLoad } from './course-load'
+import {
+  needsDemoPassword,
+  useCourseLoad,
+  useScrollTopOnOpen,
+} from './course-load'
 import { courseLabel } from './course-names'
 import {
   isPastDue,
@@ -37,6 +41,7 @@ export function CourseItemPage() {
   const location = useLocation()
   const arrived = arrivedState(location.state, itemId)
   const [passwordTried, setPasswordTried] = useState(false)
+  useScrollTopOnOpen()
   const notices = useCourseLoad(
     arrived ? null : courseId,
     () => getCourseNotifications(courseId),

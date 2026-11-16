@@ -21,6 +21,7 @@ import {
   needsDemoPassword,
   useCourseLoad,
   useHistoryState,
+  useScrollMemory,
 } from './course-load'
 import { courseLabel } from './course-names'
 import {
@@ -71,6 +72,8 @@ export function CourseNoticesPage() {
       ? courses.load.data.courses.find((item) => item.courseId === courseId)
       : undefined
   const label = course ? courseLabel(course) : null
+  // 상세를 보고 돌아오면 보던 위치로 되돌린다.
+  const rememberScroll = useScrollMemory(notices.load?.status === 'ready')
 
   if (needsDemoPassword(courses.load, notices.load))
     return (
@@ -90,7 +93,7 @@ export function CourseNoticesPage() {
     )
 
   return (
-    <div className="course-notices">
+    <div className="course-notices" onClickCapture={rememberScroll}>
       <BackLink to="/course-notices" />
       <h1>{label?.name ?? t('과목알림')}</h1>
       <p className="home-description">
@@ -106,7 +109,11 @@ export function CourseNoticesPage() {
         </p>
       )}
 
-      <div className="course-tabs" role="group" aria-label={t('알림 종류')}>
+      <div
+        className="course-tabs course-tabs--compact"
+        role="group"
+        aria-label={t('알림 종류')}
+      >
         {FILTERS.map((value) => (
           <button
             type="button"

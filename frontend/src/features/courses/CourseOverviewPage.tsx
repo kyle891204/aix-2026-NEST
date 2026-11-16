@@ -13,6 +13,7 @@ import {
   needsDemoPassword,
   useCourseLoad,
   useHistoryState,
+  useScrollMemory,
 } from './course-load'
 import { courseLabel, splitByTerm, type CourseLabel } from './course-names'
 import {
@@ -64,6 +65,8 @@ export function CourseOverviewPage() {
     getCourseOverview,
     '과목알림을 불러오지 못했어요.',
   )
+  // 상세를 보고 돌아오면 보던 위치로 되돌린다.
+  const rememberScroll = useScrollMemory(load?.status === 'ready')
 
   if (legacyId)
     return (
@@ -89,7 +92,7 @@ export function CourseOverviewPage() {
     )
 
   return (
-    <div className="course-notices">
+    <div className="course-notices" onClickCapture={rememberScroll}>
       <h1>{t('과목알림')}</h1>
       {load?.status === 'loading' && (
         <p className="course-status">{t('과목알림을 불러오고 있어요…')}</p>
