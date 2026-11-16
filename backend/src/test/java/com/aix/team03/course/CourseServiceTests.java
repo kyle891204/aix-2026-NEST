@@ -242,7 +242,9 @@ class CourseServiceTests {
                         [{"id":1,"title":"발표 자료 제출","message":"<p>11/6(금) 18:00까지 올려 주세요.</p>",
                           "posted_at":"2026-10-28T01:00:00Z"},
                          {"id":2,"title":"휴강 안내","posted_at":"2026-10-29T01:00:00Z"}]""" : """
-                        [{"id":3,"title":"교재 안내","posted_at":"2026-10-30T01:00:00Z"}]"""));
+                        [{"id":3,"title":"교재 안내","posted_at":"2026-10-30T01:00:00Z"},
+                         {"id":4,"title":"보고서 제출","message":"<p>보고서는 10/25까지 제출하세요.</p>",
+                          "posted_at":"2026-10-15T01:00:00Z"}]"""));
         fixture("/api/v1/courses/12/assignments", 200, """
                 [{"id":20,"name":"기간 전 과제","course_id":12,"due_at":"2026-07-20T14:59:00Z"},
                  {"id":21,"name":"지난 과제","course_id":12,"due_at":"2026-10-20T14:59:00Z"},
@@ -259,11 +261,11 @@ class CourseServiceTests {
 
         assertThat(result.courses()).extracting(CourseSummary::courseId).containsExactly("12", "13");
         assertThat(result.errors()).isEmpty();
-        // 마감 전 항목이 마감 임박순으로 먼저, 마감 없는 공지는 최근 게시순, 마감 지난 과제는 맨 뒤.
+        // 마감 전 항목이 마감 임박순으로 먼저, 마감 없는 공지는 최근 게시순, 마감 지난 공지·과제는 최근 마감순으로 맨 뒤.
         // 마감 없는 과제와 조회 기간보다 먼저 마감된 과제, 학습자료는 빠진다.
         assertThat(result.notifications()).extracting(item -> item.courseId() + ":" + item.id()).containsExactly(
                 "13:assignment-31", "12:assignment-22", "12:announcement-1", "13:announcement-3", "12:announcement-2",
-                "12:assignment-21");
+                "13:announcement-4", "12:assignment-21");
     }
 
     @Test

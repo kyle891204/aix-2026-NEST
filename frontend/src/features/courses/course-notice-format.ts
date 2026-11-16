@@ -69,7 +69,9 @@ export function detailPath(item: {
 }
 
 // 상세 화면이 목록을 다시 불러오지 않고 바로 보이도록 목록에서 항목과 과목 이름을 넘긴다.
+// from은 어느 목록에서 왔는지다. 상세의 "뒤로"는 그 목록으로 돌아간다.
 export interface CourseItemState {
   item: CourseNotification
   courseName: string | null
+  from: 'overview' | 'course'
 }

@@ -128,6 +128,18 @@ test('notifications keep partial errors and reject unknown types', async () => {
   await assert.rejects(getCourseNotifications('12'), /과목알림 응답/)
 })
 
+test('per-course notifications from the previous server get the course id of the response', async () => {
+  mockFetch({
+    courseId: '12',
+    notifications: [{ id: 'assignment-22', type: 'ASSIGNMENT', title: '과제' }],
+    errors: [],
+    truncated: false,
+  })
+  const result = await getCourseNotifications('12')
+  assert.equal(result.notifications[0].courseId, '12')
+  assert.equal(result.notifications[0].content, null)
+})
+
 test('only http and https source links become clickable', () => {
   assert.equal(
     safeLinkUrl('https://learning.hanyang.ac.kr/courses/12'),

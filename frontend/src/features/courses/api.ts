@@ -116,11 +116,38 @@ export async function getCourses(): Promise<CourseList> {
   return value as unknown as CourseList
 }
 
+// 과목별 응답은 한 과목 것이라, 알림에 과목 ID·본문이 없는 이전 서버 응답이어도 응답의 과목 ID로 채워 쓴다.
+// 화면과 서버가 따로 배포되는 동안 과목별 화면이 오류로 막히지 않게 한다.
+function withCourseIds(value: unknown) {
+  if (
+    !isRecord(value) ||
+    typeof value.courseId !== 'string' ||
+    !Array.isArray(value.notifications)
+  )
+    return value
+  const courseId = value.courseId
+  return {
+    ...value,
+    notifications: value.notifications.map((item: unknown) =>
+      isRecord(item)
+        ? {
+            content: null,
+            ...item,
+            courseId:
+              typeof item.courseId === 'string' ? item.courseId : courseId,
+          }
+        : item,
+    ),
+  }
+}
+
 export async function getCourseNotifications(
   courseId: string,
 ): Promise<CourseNotifications> {
-  const value = await requestCourses(
-    `/courses/${encodeURIComponent(courseId)}/notifications`,
+  const value = withCourseIds(
+    await requestCourses(
+      `/courses/${encodeURIComponent(courseId)}/notifications`,
+    ),
   )
   if (
     !isRecord(value) ||

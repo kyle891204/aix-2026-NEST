@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useLocation, useParams } from 'react-router-dom'
+import { useLocation, useParams } from 'react-router-dom'
 import { useLanguage } from '../../shared/i18n/language-context'
 import { deadlineLabel } from '../schedule/academic-format'
 import {
@@ -22,7 +22,11 @@ import './courses.css'
 function arrivedState(value: unknown, itemId: string): CourseItemState | null {
   const state = value as Partial<CourseItemState> | null
   return state?.item?.id === itemId
-    ? { item: state.item, courseName: state.courseName ?? null }
+    ? {
+        item: state.item,
+        courseName: state.courseName ?? null,
+        from: state.from === 'overview' ? 'overview' : 'course',
+      }
     : null
 }
 
@@ -44,11 +48,13 @@ export function CourseItemPage() {
     '과목 목록을 불러오지 못했어요.',
   )
   const listPath = `/course-notices/${encodeURIComponent(courseId)}`
+  // 앱의 목록에서 들어왔으면 그 목록으로 돌아가 고른 항목·펼침을 그대로 살린다. 주소로 바로 열었으면 과목별 화면으로 간다.
+  const back = arrived ? -1 : listPath
 
   if (needsDemoPassword(notices.load, courses.load))
     return (
       <div className="course-notices">
-        <BackLink to={listPath} />
+        <BackLink to={back} />
         <h1>{t('과목알림')}</h1>
         <DemoPasswordForm
           wrong={passwordTried}
@@ -79,7 +85,7 @@ export function CourseItemPage() {
 
   return (
     <div className="course-notices">
-      <BackLink to={listPath} />
+      <BackLink to={back} />
       {notices.load?.status === 'loading' && (
         <p className="course-status">{t('알림을 불러오고 있어요…')}</p>
       )}
@@ -94,7 +100,12 @@ export function CourseItemPage() {
         </p>
       )}
       {item && (
-        <ItemDetail item={item} courseName={courseName} listPath={listPath} />
+        <ItemDetail
+          item={item}
+          courseName={courseName}
+          // 과목별 화면에서 왔을 때만 뒤로 가기로 돌아간다. 전체 과목에서 왔으면 일정을 고를 과목별 화면으로 새로 간다.
+          listTarget={arrived?.from === 'course' ? -1 : listPath}
+        />
       )}
     </div>
   )
@@ -103,11 +114,11 @@ export function CourseItemPage() {
 function ItemDetail({
   item,
   courseName,
-  listPath,
+  listTarget,
 }: {
   item: CourseNotification
   courseName: string | null
-  listPath: string
+  listTarget: string | -1
 }) {
   const { t, language } = useLanguage()
   const announcement = item.type === 'ANNOUNCEMENT'
@@ -165,9 +176,9 @@ function ItemDetail({
         )}
       </section>
 
-      <Link className="course-back-button" to={listPath}>
+      <BackLink className="course-back-button" to={listTarget}>
         {t('목록으로 돌아가 일정 선택')}
-      </Link>
+      </BackLink>
     </>
   )
 }

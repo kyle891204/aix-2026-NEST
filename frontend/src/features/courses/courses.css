@@ -15,6 +15,9 @@
 .course-back {
   display: inline-block;
   margin-bottom: 12px;
+  padding: 0;
+  border: 0;
+  background: transparent;
   color: #657795;
   font-size: 13px;
   text-decoration: none;
@@ -343,6 +346,7 @@
 
 .course-back-button {
   display: grid;
+  width: 100%;
   place-items: center;
   min-height: 48px;
   margin-top: 16px;

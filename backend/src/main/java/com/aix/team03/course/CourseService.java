@@ -85,8 +85,9 @@ public class CourseService {
     }
 
     /**
-     * S08 전체 과목 화면. 모든 과목의 공지(기간 안)와 마감 있는 과제를 모아 마감 임박순 → 최근 게시순 → 마감 지난 과제(최근 마감순)로
-     * 정렬한다. 마감 지난 과제는 공지와 같은 기간 안에 마감된 것만 넣고, 화면은 "마감 지난 과제 보기"로 따로 펼친다.
+     * S08 전체 과목 화면. 모든 과목의 공지(기간 안)와 마감 있는 과제를 모아 마감 임박순 → 마감 없는 공지(최근 게시순)
+     * → 마감 지난 공지·과제(최근 마감순)로 정렬한다. 마감 지난 과제는 공지와 같은 기간 안에 마감된 것만 넣고,
+     * 화면은 마감 지난 항목을 "마감 지난 공지·과제 보기"로 따로 펼친다.
      * 과목 하나가 실패해도 나머지를 보여주고, 모든 과목이 실패하면 첫 LMS 오류를 그대로 돌려준다.
      */
     public CourseOverview overview(LocalDate start, LocalDate end) {
@@ -129,11 +130,10 @@ public class CourseService {
         Instant from = start.atStartOfDay(KOREA).toInstant();
         var sorted = notifications.stream()
                 .filter(item -> item.type() == NotificationType.ANNOUNCEMENT || isDueAfter(item.dueAt(), from))
-                .sorted(Comparator.comparing((Notification item) -> isPastAssignment(item, now))
+                .sorted(Comparator.comparing((Notification item) -> overviewGroup(item, now))
                         .thenComparing(item -> upcomingDue(item, now), Comparator.nullsLast(Comparator.naturalOrder()))
+                        .thenComparing(item -> pastDue(item, now), Comparator.nullsLast(Comparator.reverseOrder()))
                         .thenComparing(item -> parseInstant(item.publishedAt()),
-                                Comparator.nullsLast(Comparator.reverseOrder()))
-                        .thenComparing(item -> parseInstant(item.dueAt()),
                                 Comparator.nullsLast(Comparator.reverseOrder())))
                 .toList();
         return new CourseOverview(list.courses(), sorted, List.copyOf(errors), truncated);
@@ -144,8 +144,14 @@ public class CourseService {
         return due != null && !due.isBefore(from);
     }
 
-    private static boolean isPastAssignment(Notification item, Instant now) {
-        return item.type() == NotificationType.ASSIGNMENT && !isUpcoming(item.dueAt(), now);
+    // 0: 마감 전, 1: 마감 없는 공지, 2: 마감 지난 공지·과제
+    private static int overviewGroup(Notification item, Instant now) {
+        if (isUpcoming(item.dueAt(), now)) return 0;
+        return parseInstant(item.dueAt()) == null ? 1 : 2;
+    }
+
+    private static Instant pastDue(Notification item, Instant now) {
+        return overviewGroup(item, now) == 2 ? parseInstant(item.dueAt()) : null;
     }
 
     private static boolean isUpcoming(String dueAt, Instant now) {

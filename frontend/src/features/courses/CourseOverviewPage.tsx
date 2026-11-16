@@ -9,13 +9,19 @@ import {
   type CourseOverview,
   type NotificationType,
 } from './api'
-import { needsDemoPassword, useCourseLoad } from './course-load'
+import {
+  needsDemoPassword,
+  useCourseLoad,
+  useHistoryState,
+} from './course-load'
 import { courseLabel, splitByTerm, type CourseLabel } from './course-names'
 import {
   TYPE_LABELS,
   detailPath,
+  hasDeadlineField,
   isPastDue,
   kstLabel,
+  type CourseItemState,
 } from './course-notice-format'
 import { CourseFootnote, DemoPasswordForm, Retry, TypeIcon } from './course-ui'
 import './courses.css'
@@ -119,16 +125,31 @@ function Overview({
   onTab: (tab: Tab) => void
 }) {
   const { t } = useLanguage()
-  const [showPast, setShowPast] = useState(false)
+  // 펼침 상태는 상세를 보고 뒤로 돌아와도 남도록 방문 기록에 둔다.
+  const [showPast, setShowPast] = useHistoryState('showPastTerms', false)
   const { current, past } = splitByTerm(data.courses)
   const labels = new Map(
     data.courses.map((course) => [course.courseId, courseLabel(course)]),
   )
-  // 마감 지난 과제는 "과제·마감" 탭에서만 버튼으로 따로 펼친다. 나머지 탭과 요약 건수에는 넣지 않는다.
-  const [showPastDue, setShowPastDue] = useState(false)
+  // 마감 지난 공지·과제는 과목별 화면과 같이 진행 중 목록과 요약 건수에서 빼고,
+  // "공지"·"과제·마감" 탭에서 버튼으로 따로 펼친다.
+  const [showPastDue, setShowPastDue] = useHistoryState('showPastDue', false)
   const pastDue = data.notifications.filter(
-    (item) => item.type === 'ASSIGNMENT' && isPastDue(item.dueAt),
+    (item) => hasDeadlineField(item) && isPastDue(item.dueAt),
   )
+  const pastDueInTab = pastDue.filter((item) => item.type === tab)
+  const pastLabels =
+    tab === 'ANNOUNCEMENT'
+      ? {
+          show: '마감 지난 공지 {count}개 보기',
+          hide: '마감 지난 공지 숨기기',
+          title: '마감 지난 공지',
+        }
+      : {
+          show: '마감 지난 과제 {count}개 보기',
+          hide: '마감 지난 과제 숨기기',
+          title: '마감 지난 과제',
+        }
   const ongoing = data.notifications.filter((item) => !pastDue.includes(item))
   const items = ongoing.filter((item) => tab === 'COURSES' || item.type === tab)
   const errors = data.errors.filter(
@@ -182,7 +203,7 @@ function Overview({
             <button
               type="button"
               className="course-past-toggle"
-              onClick={() => setShowPast((value) => !value)}
+              onClick={() => setShowPast(!showPast)}
             >
               {showPast
                 ? t('지난 학기 과목 숨기기')
@@ -213,22 +234,22 @@ function Overview({
         </p>
       )}
       <OverviewList items={items} labels={labels} />
-      {tab === 'ASSIGNMENT' && pastDue.length > 0 && (
+      {pastDueInTab.length > 0 && (
         <>
           <button
             type="button"
             className="course-past-toggle"
             aria-expanded={showPastDue}
-            onClick={() => setShowPastDue((value) => !value)}
+            onClick={() => setShowPastDue(!showPastDue)}
           >
             {showPastDue
-              ? t('마감 지난 과제 숨기기')
-              : t('마감 지난 과제 {count}개 보기', { count: pastDue.length })}
+              ? t(pastLabels.hide)
+              : t(pastLabels.show, { count: pastDueInTab.length })}
           </button>
           {showPastDue && (
             <section className="course-past">
-              <h2>{t('마감 지난 과제')}</h2>
-              <OverviewList items={pastDue} labels={labels} />
+              <h2>{t(pastLabels.title)}</h2>
+              <OverviewList items={pastDueInTab} labels={labels} />
             </section>
           )}
         </>
@@ -303,7 +324,7 @@ function OverviewCard({
 }) {
   const { t, language } = useLanguage()
   const ongoing = !!item.dueAt && !isPastDue(item.dueAt)
-  const pastDue = item.type === 'ASSIGNMENT' && isPastDue(item.dueAt)
+  const pastDue = hasDeadlineField(item) && isPastDue(item.dueAt)
   const posted = kstLabel(item.publishedAt, language)
   const date = item.dueAt
     ? deadlineLabel(item.dueAt, language)
@@ -318,6 +339,14 @@ function OverviewCard({
     <Link
       className={`home-card course-card course-card--row${pastDue ? ' course-card--past' : ''}`}
       to={path}
+      // 상세가 목록을 다시 불러오지 않게 항목을 넘기고, "뒤로"가 이 화면으로 돌아오게 한다.
+      state={
+        {
+          item,
+          courseName: label?.name ?? null,
+          from: 'overview',
+        } satisfies CourseItemState
+      }
     >
       <span className="course-card-content">
         <span className="course-badges">

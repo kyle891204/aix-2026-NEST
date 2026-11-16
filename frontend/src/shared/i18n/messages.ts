@@ -2427,4 +2427,16 @@ export const messages: Record<string, { en: string; zh: string }> = {
     en: 'Past-deadline assignments',
     zh: '已截止作业',
   },
+  '마감 지난 공지 {count}개 보기': {
+    en: 'Show {count} past-deadline announcements',
+    zh: '查看 {count} 条已截止公告',
+  },
+  '마감 지난 공지 숨기기': {
+    en: 'Hide past-deadline announcements',
+    zh: '隐藏已截止公告',
+  },
+  '마감 지난 공지': {
+    en: 'Past-deadline announcements',
+    zh: '已截止公告',
+  },
 }

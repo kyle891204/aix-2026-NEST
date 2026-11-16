@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, type ReactNode } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { useLanguage } from '../../shared/i18n/language-context'
 import { schoolMessage } from '../../shared/i18n/school-message'
 import type { NotificationType } from './api'
@@ -68,11 +68,28 @@ export function Retry({
   )
 }
 
-export function BackLink({ to }: { to: string }) {
+// to가 -1이면 브라우저 뒤로 가기처럼 들어온 화면으로 돌아간다(그 화면의 고른 항목·펼침이 살아 있다).
+export function BackLink({
+  to,
+  className = 'course-back',
+  children,
+}: {
+  to: string | -1
+  className?: string
+  children?: ReactNode
+}) {
   const { t } = useLanguage()
+  const navigate = useNavigate()
+  const label = children ?? <>‹ {t('뒤로')}</>
+  if (to === -1)
+    return (
+      <button type="button" className={className} onClick={() => navigate(-1)}>
+        {label}
+      </button>
+    )
   return (
-    <Link className="course-back" to={to}>
-      ‹ {t('뒤로')}
+    <Link className={className} to={to}>
+      {label}
     </Link>
   )
 }

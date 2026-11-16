@@ -17,7 +17,11 @@ import {
   type CourseNotifications,
   type NotificationType,
 } from './api'
-import { needsDemoPassword, useCourseLoad } from './course-load'
+import {
+  needsDemoPassword,
+  useCourseLoad,
+  useHistoryState,
+} from './course-load'
 import { courseLabel } from './course-names'
 import {
   TYPE_LABELS,
@@ -162,10 +166,11 @@ function NoticeList({
   const navigate = useNavigate()
   const personal = usePersonalSchedules(accountId)
   // 탭을 바꾸면 선택을 비운다. 다른 탭에서 고른 항목이 안 보이는 채로 저장 개수에 남지 않게 한다.
-  const [selection, setSelection] = useState<{
+  // 상세를 보고 돌아와도 고른 항목이 남도록 방문 기록에 둔다.
+  const [selection, setSelection] = useHistoryState<{
     filter: Filter
     ids: string[]
-  }>({ filter, ids: [] })
+  }>('selection', { filter, ids: [] })
   const selected = selection.filter === filter ? selection.ids : []
   const setSelected = (update: (ids: string[]) => string[]) =>
     setSelection({ filter, ids: update(selected) })
@@ -176,7 +181,7 @@ function NoticeList({
     (item) => filter === 'ALL' || item.type === filter,
   )
   // 마감이 지난 공지·과제는 기본으로 접어 두고, 버튼을 누르면 목록 아래에 따로 보여준다.
-  const [showPast, setShowPast] = useState(false)
+  const [showPast, setShowPast] = useHistoryState('showPast', false)
   const pastItems = items.filter(
     (item) => hasDeadlineField(item) && isPastDue(item.dueAt),
   )
@@ -313,7 +318,7 @@ function NoticeList({
           type="button"
           className="course-past-toggle"
           aria-expanded={showPast}
-          onClick={() => setShowPast((value) => !value)}
+          onClick={() => setShowPast(!showPast)}
         >
           {showPast
             ? t('마감 지난 항목 숨기기')
@@ -398,7 +403,7 @@ function SelectableCard({
         <Link
           className="course-card-open"
           to={path}
-          state={{ item, courseName } satisfies CourseItemState}
+          state={{ item, courseName, from: 'course' } satisfies CourseItemState}
           aria-label={t('{title} 상세 보기', { title: item.title })}
         >
           ›
@@ -445,7 +450,7 @@ function NoticeCard({
       <Link
         className={className}
         to={path}
-        state={{ item, courseName } satisfies CourseItemState}
+        state={{ item, courseName, from: 'course' } satisfies CourseItemState}
       >
         {content}
       </Link>
