@@ -1683,6 +1683,10 @@ export const messages: Record<string, { en: string; zh: string }> = {
       en: 'The map covers a wide area, so only places near its center are shown. Zoom in to see more.',
       zh: '地图范围较大，仅显示靠近地图中心的地点。放大地图可查看更多。',
     },
+  '일부 이름·주소를 번역하지 못해 원문으로 표시했습니다.': {
+    en: 'Some names and addresses could not be translated, so the original is shown.',
+    zh: '部分名称和地址翻译失败，已显示原文。',
+  },
   '카카오맵에서 확인해 주세요.': {
     en: 'Please check on Kakao Map.',
     zh: '请在 Kakao 地图中确认。',

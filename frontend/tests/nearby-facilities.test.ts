@@ -19,6 +19,10 @@ import {
   type KakaoPlace,
 } from '../src/features/life/data/kakao-places.ts'
 import { messages } from '../src/shared/i18n/messages.ts'
+import {
+  facilityAddress,
+  facilityName,
+} from '../src/features/life/data/nearby-facility-text.ts'
 
 const TIME_RANGE = /^([01]\d|2[0-3]):[0-5]\d~([01]\d|2[0-4]):[0-5]\d$/
 
@@ -249,4 +253,30 @@ test('common Kakao categories in live search have translations', () => {
   ]) {
     assert.ok(messages[category], `missing ${category}`)
   }
+})
+
+test('every key facility has an English and Chinese name and address', () => {
+  for (const facility of NEARBY_FACILITIES) {
+    for (const language of ['en', 'zh'] as const) {
+      const name = facilityName(facility, language)
+      const address = facilityAddress(facility, language)
+      assert.notEqual(name, facility.name, `${facility.id}: ${language} name`)
+      assert.notEqual(
+        address,
+        facility.roadAddress,
+        `${facility.id}: ${language} address`,
+      )
+      assert.ok(!/[가-힣]/.test(name), `${facility.id}: ${language} name`)
+      assert.ok(!/[가-힣]/.test(address), `${facility.id}: ${language} address`)
+    }
+  }
+})
+
+test('Korean and untranslated places keep the original text', () => {
+  const [first] = NEARBY_FACILITIES
+  assert.equal(facilityName(first, 'ko'), first.name)
+  assert.equal(facilityAddress(first, 'ko'), first.roadAddress)
+  const live = { id: '999', name: '실시간약국', roadAddress: '경기 안산시 1' }
+  assert.equal(facilityName(live, 'en'), '실시간약국')
+  assert.equal(facilityAddress(live, 'zh'), '경기 안산시 1')
 })

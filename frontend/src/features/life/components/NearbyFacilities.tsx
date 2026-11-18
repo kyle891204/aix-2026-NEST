@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLanguage } from '../../../shared/i18n/language-context'
+import { useAuth } from '../../auth/auth-context'
+import { usePlaceTranslations } from '../use-place-translations'
 import { telephoneHref } from '../data/emergency-contacts'
+import { facilityAddress, facilityName } from '../data/nearby-facility-text'
 import {
   KAKAO_CATEGORY_CODES,
   MAX_PLACE_PAGES,
@@ -64,7 +67,7 @@ interface MapView {
 }
 
 export function NearbyFacilities() {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   const [mode, setMode] = useState<ViewMode>('curated')
   const [filter, setFilter] = useState<FacilityFilter>('all')
   const [selected, setSelected] = useState<FacilityItem | null>(null)
@@ -82,6 +85,19 @@ export function NearbyFacilities() {
       ),
     [mode, filter, live.facilities],
   )
+
+  const { session } = useAuth()
+  const placeText = usePlaceTranslations(
+    facilities.slice(0, visibleCount),
+    selected,
+    language,
+    session?.user?.id ?? 'preview',
+    session?.csrfToken,
+  )
+  const nameOf = (facility: FacilityItem) =>
+    placeText.name(facility) ?? facilityName(facility, language)
+  const addressOf = (facility: FacilityItem) =>
+    placeText.address(facility) ?? facilityAddress(facility, language)
 
   const resetSelection = () => {
     setSelected(null)
@@ -139,6 +155,15 @@ export function NearbyFacilities() {
         ))}
       </div>
 
+      {placeText.status === 'failed' && (
+        <p className="nearby-facility-empty" role="status">
+          {t('일부 이름·주소를 번역하지 못해 원문으로 표시했습니다.')}{' '}
+          <button type="button" onClick={placeText.retry}>
+            {t('다시 시도')}
+          </button>
+        </p>
+      )}
+
       <NearbyFacilitiesMap
         facilities={facilities}
         mode={mode}
@@ -150,7 +175,12 @@ export function NearbyFacilities() {
       />
 
       {selected && (
-        <FacilityDetail facility={selected} onClose={() => setSelected(null)} />
+        <FacilityDetail
+          facility={selected}
+          name={nameOf(selected)}
+          address={addressOf(selected)}
+          onClose={() => setSelected(null)}
+        />
       )}
 
       <section aria-labelledby="nearby-facility-list-title">
@@ -192,7 +222,7 @@ export function NearbyFacilities() {
                   onClick={() => setSelected(facility)}
                 >
                   <span className="nearby-facility-row-main">
-                    <strong>{facility.name}</strong>
+                    <strong>{nameOf(facility)}</strong>
                     <span className="nearby-facility-meta">
                       {t(facility.category)}
                     </span>
@@ -286,12 +316,16 @@ function LiveSearchStatus({
 
 function FacilityDetail({
   facility,
+  name,
+  address,
   onClose,
 }: {
   facility: FacilityItem
+  name: string
+  address: string
   onClose: () => void
 }) {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   const ref = useRef<HTMLElement>(null)
 
   // 목록 아래쪽에서 골라도 상세가 보이도록 스크롤한다.
@@ -307,7 +341,10 @@ function FacilityDetail({
     >
       <div className="nearby-facility-detail-header">
         <div>
-          <h3 id="nearby-facility-detail-title">{facility.name}</h3>
+          <h3 id="nearby-facility-detail-title">{name}</h3>
+          {language !== 'ko' && name !== facility.name ? (
+            <p className="nearby-facility-original">{facility.name}</p>
+          ) : null}
           <p className="nearby-facility-meta">
             {t(facility.category)} ·{' '}
             {t('캠퍼스에서 직선 {distance}', {
@@ -327,7 +364,14 @@ function FacilityDetail({
 
       <dl className="nearby-facility-fields">
         <dt>{t('주소')}</dt>
-        <dd>{facility.roadAddress}</dd>
+        <dd>
+          {address}
+          {language !== 'ko' && address !== facility.roadAddress ? (
+            <span className="nearby-facility-original">
+              {facility.roadAddress}
+            </span>
+          ) : null}
+        </dd>
 
         <dt>{t('운영시간')}</dt>
         <dd>
@@ -556,7 +600,7 @@ function NearbyFacilitiesMap({
   onSelect: (facility: FacilityItem) => void
   onViewChange: (view: MapView) => void
 }) {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
 
   const mapRef = useRef<HTMLDivElement>(null)
   const [map, setMap] = useState<KakaoMap | null>(null)
@@ -653,7 +697,7 @@ function NearbyFacilitiesMap({
       const marker = new maps.Marker({
         position,
         map: clusterer ? undefined : map,
-        title: facility.name,
+        title: facilityName(facility, language),
         clickable: true,
       })
       maps.event.addListener(marker, 'click', () =>
@@ -671,7 +715,7 @@ function NearbyFacilitiesMap({
       for (const marker of markers.values()) marker.setMap(null)
       markers.clear()
     }
-  }, [map, facilities, mode])
+  }, [map, facilities, mode, language])
 
   // 선택한 마커를 앞으로 올린다.
   useEffect(() => {
