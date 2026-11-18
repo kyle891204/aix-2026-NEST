@@ -229,3 +229,10 @@
   font-size: 13px;
   line-height: 1.6;
 }
+
+.nearby-facility-original {
+  display: block;
+  margin: 0.15rem 0 0;
+  color: #6b7280;
+  font-size: 0.8125rem;
+}
