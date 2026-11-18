@@ -1,0 +1,842 @@
+/* NEST visual refresh. Existing routes, data, and actions remain in their feature modules. */
+:root {
+  --ui-ink: #172435;
+  --ui-muted: #66788b;
+  --ui-faint: #8b98a7;
+  --ui-blue: #2459d3;
+  --ui-blue-soft: #eef4ff;
+  --ui-surface: #ffffff;
+  --ui-page: #f1f4f6;
+  --ui-line: #e5eaee;
+  --ui-danger: #b42318;
+  color: var(--ui-ink);
+  background: var(--ui-page);
+  font-family:
+    Inter,
+    Pretendard,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Apple SD Gothic Neo',
+    'Segoe UI',
+    sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  color: var(--ui-ink);
+}
+a {
+  color: var(--ui-blue);
+}
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+button {
+  border-radius: 11px;
+}
+button:enabled:hover {
+  filter: brightness(0.975);
+}
+button:disabled {
+  cursor: not-allowed;
+}
+input,
+select,
+textarea {
+  border: 1px solid #d9e1e7;
+  border-radius: 11px;
+  background: #fff;
+  color: var(--ui-ink);
+  padding: 10px 12px;
+}
+input::placeholder,
+textarea::placeholder {
+  color: #9aa7b3;
+}
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--ui-blue);
+  outline-offset: 3px;
+}
+
+.app-shell {
+  max-width: 480px;
+  min-height: 100dvh;
+  padding: env(safe-area-inset-top) 24px
+    calc(96px + env(safe-area-inset-bottom));
+  background: var(--ui-surface);
+  box-shadow: 0 8px 36px rgb(30 51 74 / 5%);
+}
+.site-header {
+  min-height: 84px;
+  padding: 15px 0 12px;
+  border-bottom: 1px solid var(--ui-line);
+}
+.brand {
+  min-height: 0;
+  color: var(--ui-ink);
+  font-size: 22px;
+  line-height: 1.12;
+  font-weight: 780;
+  letter-spacing: -0.045em;
+}
+.brand span {
+  margin-top: 4px;
+  color: var(--ui-muted);
+  font-size: 10px;
+  line-height: 1.3;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+}
+.account-link {
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--ui-line);
+  border-radius: 999px;
+  color: var(--ui-ink);
+  font-size: 12px;
+  font-weight: 620;
+}
+.account-link:hover {
+  background: #f6f8fa;
+}
+.mode-switch {
+  display: flex;
+  width: 100%;
+  gap: 0;
+  margin: 20px 0 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 11px;
+  background: #f1f4f6;
+}
+.mode-switch a {
+  position: relative;
+  flex: 1;
+  min-height: 44px;
+  border-radius: 11px;
+  color: var(--ui-muted);
+  font-size: 13px;
+  font-weight: 640;
+}
+.mode-switch a.active,
+.mode-switch a[href='/life'].active {
+  background: transparent;
+  color: var(--ui-ink);
+}
+.mode-switch a.active::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  border-radius: 3px;
+  background: var(--ui-blue);
+}
+main {
+  min-width: 0;
+}
+main h1 {
+  margin: 0 0 10px;
+  color: var(--ui-ink);
+  font-size: clamp(24px, 6vw, 28px);
+  font-weight: 730;
+  line-height: 1.24;
+  letter-spacing: -0.035em;
+}
+main h2 {
+  color: var(--ui-ink);
+  font-size: 18px;
+  letter-spacing: -0.02em;
+}
+main h3 {
+  color: var(--ui-ink);
+}
+.eyebrow,
+.home-description,
+.dashboard-description,
+.result-note,
+.development-note {
+  color: var(--ui-muted);
+}
+footer {
+  margin-top: 32px;
+  padding-top: 18px;
+  border-top: 1px solid var(--ui-line);
+  color: var(--ui-faint);
+  font-size: 11px;
+}
+
+.bottom-nav {
+  max-width: 480px;
+  min-height: 72px;
+  padding: 5px 7px calc(7px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--ui-line);
+  box-shadow: 0 -8px 24px rgb(31 47 63 / 3%);
+}
+.bottom-nav--school,
+.bottom-nav--life {
+  --nav-accent: var(--ui-blue);
+}
+.bottom-nav a {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 55px;
+  padding: 7px 1px 2px;
+  color: #8997a6;
+  font-size: 10px;
+  font-weight: 560;
+  line-height: 1.1;
+  overflow-wrap: normal;
+  word-break: keep-all;
+}
+.bottom-nav a.active {
+  color: var(--ui-blue);
+  font-weight: 690;
+}
+.bottom-nav a.active::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  width: 28px;
+  height: 3px;
+  border-radius: 4px;
+  background: var(--ui-blue);
+}
+.nav-icon {
+  display: grid;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+}
+.nav-icon svg {
+  display: block;
+  width: 19px;
+  height: 19px;
+}
+.nav-label {
+  display: block;
+  max-width: 100%;
+  text-align: center;
+}
+
+/* Home and personalized notices */
+.school-home,
+.life-home,
+.course-notices,
+.academic-schedule {
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--ui-ink);
+}
+.school-home .dashboard-card,
+.life-home .dashboard-card {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.school-home .profile-toggle {
+  align-items: flex-start;
+}
+.school-home .profile-toggle strong {
+  font-size: 25px;
+  line-height: 1.3;
+  letter-spacing: -0.035em;
+}
+.school-home .profile-toggle > span:last-child {
+  color: var(--ui-blue);
+}
+.school-home .dashboard-description,
+.life-home .dashboard-description {
+  color: var(--ui-muted);
+  font-size: 13px;
+}
+.school-home .profile-summary {
+  gap: 6px;
+}
+.school-home .profile-details {
+  border-color: var(--ui-line);
+}
+.school-home .profile-details dt {
+  color: var(--ui-muted);
+}
+.school-home #dashboard-profile-details > a {
+  color: var(--ui-blue);
+}
+.school-notices {
+  margin-top: 34px;
+}
+.home-section-heading {
+  margin-bottom: 16px;
+}
+.home-section-heading h2 {
+  font-size: 18px;
+  font-weight: 710;
+}
+.home-section-heading a {
+  color: var(--ui-blue);
+  font-weight: 620;
+}
+.dashboard-notice-list {
+  gap: 0;
+}
+.home-card.dashboard-notice {
+  padding: 19px 0;
+  border: 0;
+  border-bottom: 1px solid var(--ui-line);
+  border-radius: 0;
+  background: transparent;
+}
+.home-card.dashboard-notice:first-child {
+  margin-bottom: 6px;
+  padding: 18px;
+  border: 0;
+  border-radius: 15px;
+  background: #f1f6ff;
+}
+.school-home .dashboard-notice h3 {
+  margin: 10px 0 6px;
+  font-size: 16px;
+  line-height: 1.4;
+}
+.school-home .dashboard-notice > p:last-child {
+  color: var(--ui-muted);
+}
+.dashboard-reasons {
+  color: var(--ui-muted);
+}
+.school-home .notice-badges span,
+.notice-badge,
+.course-badge,
+.market-badge,
+.saved-card-head span {
+  border-radius: 7px;
+  background: #f0f3f6;
+  color: var(--ui-muted);
+  font-size: 11px;
+  font-weight: 640;
+}
+.school-home .notice-badges span:first-child,
+.notice-badge.is-APPLICABLE,
+.course-badge--ASSIGNMENT,
+.schedule-event em,
+.saved-card-head span {
+  background: #e4eeff;
+  color: var(--ui-blue);
+}
+.dashboard-profile-hint,
+.notice-reason,
+.saved-banner {
+  border: 0;
+  border-radius: 13px;
+  background: var(--ui-blue-soft);
+  color: var(--ui-ink);
+}
+.dashboard-profile-hint a,
+.notice-reason h2,
+.saved-banner strong {
+  color: var(--ui-blue);
+}
+
+/* LIFE landing and guide */
+.life-home > h1 {
+  font-size: 28px;
+}
+.life-home > .dashboard-description {
+  margin: 4px 0 24px;
+}
+.life-home > .dashboard-card {
+  margin-top: 0;
+}
+.life-home .translation-card {
+  margin: 0 0 30px;
+  padding: 17px 18px;
+  border-radius: 15px;
+  background: var(--ui-blue-soft);
+}
+.life-home .translation-card h2 {
+  margin-bottom: 5px;
+  color: var(--ui-blue);
+}
+.life-home .translation-card p {
+  color: #4d617a;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.life-home .life-links + .life-links {
+  margin-top: 24px;
+}
+.life-home .life-menu-row {
+  min-height: 74px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--ui-line);
+}
+.life-home .life-menu-row strong {
+  font-size: 15px;
+  font-weight: 650;
+}
+.life-home .life-menu-row > span:last-child[aria-hidden] {
+  color: #9aa8b6;
+}
+.life-home a.life-menu-row:hover {
+  color: var(--ui-blue);
+}
+.life-guide {
+  padding: 0;
+}
+.life-guide-options {
+  gap: 8px;
+  margin: 20px 0 24px;
+}
+.life-guide-options button,
+.life-guide-options .life-guide-emergency-button {
+  padding: 12px 8px;
+  border: 1px solid var(--ui-line);
+  border-radius: 11px;
+  background: #fff;
+  color: var(--ui-ink);
+  font-size: 13px;
+}
+.life-guide-options button[aria-pressed='true'],
+.life-guide-options .life-guide-emergency-button[aria-pressed='true'] {
+  border-color: var(--ui-blue);
+  background: var(--ui-blue);
+  color: #fff;
+}
+.life-guide-map-wrap {
+  border-color: var(--ui-line);
+  border-radius: 14px;
+}
+.life-guide-map {
+  height: min(60vh, 380px);
+}
+.nearby-facilities {
+  gap: 18px;
+}
+.nearby-facilities-intro,
+.emergency-contacts-intro {
+  color: var(--ui-muted);
+}
+.nearby-facility-modes {
+  border-radius: 11px;
+  background: #f1f4f6;
+}
+.nearby-facility-modes button {
+  min-height: 44px;
+  color: var(--ui-muted);
+}
+.nearby-facility-modes button[aria-pressed='true'] {
+  color: var(--ui-ink);
+  box-shadow: 0 1px 3px rgb(23 36 53 / 8%);
+}
+.nearby-facility-filters {
+  display: flex;
+  overflow-x: auto;
+  gap: 8px;
+}
+.nearby-facility-filters button {
+  flex: 1 0 auto;
+  min-height: 40px;
+  padding: 8px 12px;
+  border-color: var(--ui-line);
+  color: var(--ui-ink);
+  font-size: 12px;
+}
+.nearby-facility-filters button[aria-pressed='true'] {
+  border-color: var(--ui-blue);
+  background: var(--ui-blue);
+  color: #fff;
+}
+.nearby-facility-list {
+  gap: 0;
+}
+.nearby-facility-row {
+  padding: 15px 0;
+  border: 0;
+  border-bottom: 1px solid var(--ui-line);
+  border-radius: 0;
+}
+.nearby-facility-row[aria-pressed='true'] {
+  padding-inline: 12px;
+  border-radius: 11px;
+  background: var(--ui-blue-soft);
+}
+.nearby-facility-distance,
+.nearby-facility-source-link {
+  color: var(--ui-blue);
+}
+.nearby-facility-detail {
+  border-color: #dbe5f4;
+  border-radius: 14px;
+}
+.nearby-facility-meta,
+.nearby-facility-fields dt,
+.nearby-facility-source {
+  color: var(--ui-muted);
+}
+.nearby-facility-more {
+  border-color: var(--ui-line);
+  color: var(--ui-blue);
+}
+.emergency-phone-card {
+  border-radius: 13px;
+}
+.emergency-country-picker,
+.emergency-consular-card {
+  border-radius: 13px;
+}
+
+/* Notices, entry and exit, course updates */
+.notice-page {
+  gap: 15px;
+  color: var(--ui-ink);
+}
+.notice-page h1,
+.course-notices h1,
+.academic-schedule h1 {
+  font-size: 27px;
+}
+.notice-hint,
+.course-meta,
+.course-status,
+.schedule-status,
+.schedule-source,
+.schedule-note {
+  color: var(--ui-muted);
+}
+.notice-total strong,
+.course-selection strong,
+.schedule-summary strong {
+  color: var(--ui-blue);
+}
+.notice-segment,
+.course-tabs,
+.schedule-tabs,
+.market-segments {
+  border: 0;
+  border-radius: 11px;
+  background: #f1f4f6;
+}
+.notice-segment button,
+.course-tabs button,
+.schedule-tabs button,
+.market-segments button {
+  min-height: 40px;
+  border-radius: 9px;
+  color: var(--ui-muted);
+  font-size: 12px;
+}
+.notice-segment button[aria-pressed='true'],
+.course-tabs button[aria-pressed='true'],
+.schedule-tabs button[aria-pressed='true'],
+.market-segments button[aria-pressed='true'] {
+  background: var(--ui-surface);
+  color: var(--ui-blue);
+  box-shadow: 0 1px 3px rgb(23 36 53 / 9%);
+  font-weight: 700;
+}
+.notice-card {
+  gap: 8px;
+  padding: 17px 0;
+  border: 0;
+  border-bottom: 1px solid var(--ui-line);
+  border-radius: 0;
+  background: #fff;
+}
+.notice-card strong {
+  color: var(--ui-ink);
+  font-size: 16px;
+}
+.notice-badge.is-NEEDS_REVIEW {
+  background: #fff2dc;
+  color: #875411;
+}
+.notice-primary,
+.notice-message button,
+.course-save,
+.course-error button,
+.course-password button,
+.schedule-error button {
+  border-radius: 11px;
+  background: var(--ui-blue);
+  box-shadow: none;
+}
+.notice-back,
+.market-back {
+  color: var(--ui-blue);
+  font-weight: 600;
+}
+.notice-spinner {
+  border-top-color: var(--ui-blue);
+}
+.notice-actions input,
+.course-card--selectable input {
+  accent-color: var(--ui-blue);
+}
+.course-select {
+  color: var(--ui-muted);
+}
+.course-select select,
+.course-password input {
+  border-color: var(--ui-line);
+  color: var(--ui-ink);
+}
+.course-list {
+  gap: 0;
+}
+.course-list > li,
+.course-card,
+.schedule-event,
+.saved-card {
+  border-color: var(--ui-line);
+  border-radius: 12px;
+  background: #fff;
+}
+.course-card--selectable.is-selected {
+  border-color: var(--ui-blue);
+  background: var(--ui-blue-soft);
+}
+.course-selection button,
+.course-card-open {
+  color: var(--ui-blue);
+}
+.course-due-tag,
+.course-meta {
+  color: var(--ui-muted);
+}
+.course-save {
+  bottom: calc(79px + env(safe-area-inset-bottom));
+}
+.schedule-event--ongoing {
+  border-color: var(--ui-blue);
+}
+.schedule-event--past {
+  background: #f7f8f9;
+}
+.schedule-week {
+  border-color: var(--ui-line);
+  border-radius: 13px;
+}
+.schedule-week li[aria-current='date'],
+.schedule-status a,
+.schedule-source a {
+  color: var(--ui-blue);
+}
+.schedule-event-actions button {
+  border-color: var(--ui-blue);
+  color: var(--ui-blue);
+}
+.saved-banner,
+.saved-card {
+  border-radius: 13px;
+}
+
+/* Boards, questions, market, and composing */
+.market-page {
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  background: #fff;
+  color: var(--ui-ink);
+}
+.market-page h1 {
+  margin: 6px 0 12px;
+  font-size: 27px;
+}
+.market-eyebrow,
+.market-meta,
+.market-footnote,
+.market-intro,
+.market-count span {
+  color: var(--ui-muted);
+}
+.market-intro {
+  margin: 4px 0 24px;
+}
+.market-count {
+  margin: 20px 0 16px;
+}
+.market-count strong {
+  color: var(--ui-blue);
+}
+.market-list {
+  gap: 0;
+  margin-top: 12px;
+}
+.market-card {
+  padding: 18px 0;
+  border: 0;
+  border-bottom: 1px solid var(--ui-line);
+  border-radius: 0;
+  background: #fff;
+}
+.market-list a:hover {
+  border-color: #b9cceb;
+}
+.market-card h2 {
+  margin: 8px 0;
+  font-size: 17px;
+}
+.market-detail {
+  border: 0;
+}
+.market-primary {
+  min-height: 48px;
+  border-radius: 11px;
+  background: var(--ui-blue);
+}
+.market-secondary {
+  min-height: 46px;
+  border-radius: 11px;
+  background: var(--ui-blue-soft);
+  color: var(--ui-blue);
+}
+.market-badge {
+  margin-top: 8px;
+}
+.market-price {
+  color: var(--ui-ink);
+}
+.market-page textarea,
+.market-form input,
+.market-form select {
+  border-color: #d9e1e7;
+  border-radius: 11px;
+  color: var(--ui-ink);
+}
+.market-page textarea:focus-visible {
+  outline-color: var(--ui-blue);
+}
+.market-replies .market-card {
+  margin: 0;
+}
+.market-reply-actions button {
+  border-color: var(--ui-line);
+  color: var(--ui-blue);
+}
+.translation-toolbar {
+  border-color: #e1eaf6;
+  border-radius: 13px;
+  background: #f4f7fc;
+  color: var(--ui-ink);
+}
+.translation-actions button {
+  border-color: #cbd9ed;
+  border-radius: 10px;
+  color: var(--ui-blue);
+}
+
+/* Account and sign-in */
+.page-intro {
+  padding: 2px 0 20px;
+}
+.page-intro p {
+  color: var(--ui-muted);
+}
+.status-card {
+  border-color: var(--ui-line);
+  border-radius: 14px;
+  padding: 20px;
+}
+.status-card > a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+}
+.account-profile-details {
+  border-top: 1px solid var(--ui-line);
+  padding-top: 16px;
+}
+.account-profile-details dt {
+  color: var(--ui-muted);
+}
+.auth-shell {
+  background: #fff;
+  color: var(--ui-ink);
+}
+.auth-header {
+  height: 78px;
+  border-bottom: 1px solid var(--ui-line);
+}
+.auth-brand {
+  color: var(--ui-ink);
+  font-weight: 780;
+  letter-spacing: -0.04em;
+}
+.auth-content {
+  gap: 18px;
+  padding: 30px 24px;
+}
+.auth-content h1 {
+  text-align: left;
+  font-size: 27px;
+  line-height: 1.3;
+}
+.auth-notice,
+.consent-item,
+.signup-optional {
+  border-color: var(--ui-line);
+  border-radius: 13px;
+}
+.auth-signup-note {
+  background: var(--ui-blue-soft);
+  color: #4c6280;
+}
+.auth-privacy summary {
+  color: var(--ui-blue);
+}
+.signup-field input,
+.signup-field select {
+  border-color: var(--ui-line);
+  border-radius: 11px;
+}
+.language-switch {
+  border: 0;
+  background: #f1f4f6;
+}
+.language-switch button[aria-pressed='true'] {
+  color: var(--ui-blue);
+}
+
+@media (max-width: 360px) {
+  .app-shell {
+    padding-right: 18px;
+    padding-left: 18px;
+  }
+  .market-page {
+    padding: 0;
+  }
+  .bottom-nav a {
+    font-size: 9px;
+  }
+  .life-guide-options {
+    gap: 6px;
+  }
+}
+@media (min-width: 700px) {
+  .app-shell,
+  .auth-shell {
+    border-right: 1px solid #e4e9ed;
+    border-left: 1px solid #e4e9ed;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
+}
