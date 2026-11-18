@@ -26,9 +26,6 @@ export function LifeHomePage() {
   return (
     <div className="life-home">
       <h1>LIFE</h1>
-      <p className="dashboard-description">
-        {t('내 언어로 이야기하고, 함께 학교생활해요.')}
-      </p>
 
       <section className="dashboard-card translation-card">
         <h2>{t('글·답글 자동 번역')}</h2>

@@ -187,7 +187,7 @@ function ProtectedApp() {
     <div className="app-shell">
       <header className="site-header">
         <NavLink className="brand" to="/">
-          NEST <span>{t('캠퍼스 생활의 시작')}</span>
+          NEST
         </NavLink>
         <NavLink className="account-link" to="/profile">
           {t('내 계정')}
@@ -225,7 +225,6 @@ function ProtectedApp() {
           </NavLink>
         ))}
       </nav>
-      <footer>{t('외국인 유학생을 위한 학사·생활 지원 서비스')}</footer>
     </div>
   )
 }

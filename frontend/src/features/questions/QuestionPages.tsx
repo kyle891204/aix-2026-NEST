@@ -162,16 +162,11 @@ export function QuestionListPage() {
   )
   return (
     <>
-      <p className="market-eyebrow">L04</p>
       <h1>{t('질문게시판')}</h1>
-      <p className="market-intro">
-        {t('궁금한 점을 나누고 함께 답을 찾아요.')}
-      </p>
       <div className="market-count">
         <strong aria-live="polite">
           {t('총 {count}건', { count: visible.length })}
         </strong>
-        <span>{t('예시 데이터 · 탭 저장')}</span>
       </div>
       <Segments
         label={t('질문 카테고리')}

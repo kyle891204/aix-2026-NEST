@@ -160,14 +160,11 @@ export function MarketListPage() {
   )
   return (
     <>
-      <p className="market-eyebrow">L03</p>
       <h1>{t('장터게시판')}</h1>
-      <p className="market-intro">{t('유학생끼리 필요한 물건을 나눠요.')}</p>
       <div className="market-count">
         <strong aria-live="polite">
           {t('총 {count}건', { count: visible.length })}
         </strong>
-        <span>{t('예시 데이터 · 탭 저장')}</span>
       </div>
       <Segments
         label={t('거래 유형')}
