@@ -427,6 +427,14 @@ export const messages: Record<string, { en: string; zh: string }> = {
     en: 'Automatic post and reply translation',
     zh: '帖子与回复自动翻译',
   },
+  '현재 표시 언어: {language}': {
+    en: 'Display language: {language}',
+    zh: '当前显示语言：{language}',
+  },
+  '글·답글을 선호 언어로 번역합니다.': {
+    en: 'Posts and replies are translated into your preferred language.',
+    zh: '帖子和回复将翻译成您的偏好语言。',
+  },
   '작성자의 원문을 보존하고, 읽는 사람의 선호 언어로 자동 번역합니다.': {
     en: "Original posts are preserved and automatically translated into the reader's preferred language.",
     zh: '保留作者原文，并自动翻译为读者的偏好语言。',
@@ -1323,6 +1331,14 @@ export const messages: Record<string, { en: string; zh: string }> = {
       en: "Fire and ambulance services both use 119. Tap a number to open your device's phone app.",
       zh: '消防和急救均使用119，点击号码可打开设备的拨号功能。',
     },
+  '번호를 누르면 기기의 전화 앱이 열립니다.': {
+    en: "Tap a number to open your device's phone app.",
+    zh: '点击号码将打开设备的电话应用。',
+  },
+  '긴급 상황일 때만 사용하세요.': {
+    en: 'Use only in an emergency.',
+    zh: '请仅在紧急情况下使用。',
+  },
   '행정안전부 공식 안내 (새 창)': {
     en: 'Ministry of the Interior and Safety guide (new window)',
     zh: '行政安全部官方指南（新窗口）',
@@ -1696,6 +1712,14 @@ export const messages: Record<string, { en: string; zh: string }> = {
       en: 'Everything nearby shows live search results from Kakao Map. Opening hours are shown for key places only; check Kakao Map for the rest.',
       zh: '“周边全部”为 Kakao 地图的实时搜索结果。仅主要设施显示营业时间，其他地点请在 Kakao 地图中确认。',
     },
+  '카카오맵 · 실시간 검색': {
+    en: 'Kakao Map · Live search',
+    zh: 'Kakao 地图 · 实时搜索',
+  },
+  '카카오맵 마지막 확인일: {date}': {
+    en: 'Kakao Map last checked: {date}',
+    zh: 'Kakao 地图最后核查日期：{date}',
+  },
   대형마트: {
     en: 'Hypermarket',
     zh: '大型超市',
