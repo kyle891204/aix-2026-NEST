@@ -1,4 +1,3 @@
-import { LANGUAGE_NAMES } from '../../shared/i18n/language'
 import { LanguageSwitcher } from '../../shared/i18n/LanguageSwitcher'
 import { useLanguage } from '../../shared/i18n/language-context'
 import { useRef, useState } from 'react'
@@ -11,7 +10,7 @@ import { authReturnPath } from './return-path'
 import './auth.css'
 
 export function LoginPage() {
-  const { t, language } = useLanguage()
+  const { t } = useLanguage()
 
   const { session, loading, error, reload, login } = useAuth()
   const { savedProfile } = useDemoProfile()
@@ -47,7 +46,7 @@ export function LoginPage() {
   }
 
   return (
-    <div className="auth-shell">
+    <div className="auth-shell auth-shell--login">
       <header className="auth-header">
         <img
           src="/images/hanyang-symbol.png"
@@ -56,12 +55,12 @@ export function LoginPage() {
           alt={t('한양대학교')}
         />
         <span className="auth-brand">NEST</span>
-        <span className="auth-language">{LANGUAGE_NAMES[language]}</span>
       </header>
       <main className="auth-content" id="main-content">
-        <p className="auth-eyebrow">WELCOME TO NEST</p>
-        <h1>{t('학교와 생활을 한곳에서')}</h1>
-        <div aria-busy={loading || submitting}>
+        <div className="auth-hero">
+          <h1>{t('학교와 생활을 한곳에서')}</h1>
+        </div>
+        <div className="auth-signin" aria-busy={loading || submitting}>
           {loading ? (
             <div className="auth-notice" role="status">
               {t('로그인 정보를 확인하고 있습니다…')}
@@ -104,7 +103,9 @@ export function LoginPage() {
             </fieldset>
           )}
         </div>
-        <LanguageSwitcher />
+        <div className="auth-language-picker">
+          <LanguageSwitcher />
+        </div>
         {submitting && (
           <p role="status">{t('안전하게 로그인하고 있습니다…')}</p>
         )}
@@ -113,14 +114,6 @@ export function LoginPage() {
             {t(loginError)}
           </p>
         )}
-        <p className="auth-caption">
-          {t(
-            'Google 계정으로 로그인합니다. 학교 계정이나 Canvas는 별도로 연결해요.',
-          )}
-        </p>
-        <div className="auth-signup-note">
-          {t('처음 이용하면 Google 로그인 후 동의와 프로필 설정을 진행해요.')}
-        </div>
         <details className="auth-privacy">
           <summary>{t('개인정보 · 로그인 처리 안내')}</summary>
           <p>
@@ -148,7 +141,6 @@ export function LoginPage() {
           {t('만 18세 이상을 대상으로 하는 시범서비스입니다.')}
         </p>
       </main>
-      <footer className="auth-footer">{t('NEST · 캠퍼스 생활의 시작')}</footer>
     </div>
   )
 }
