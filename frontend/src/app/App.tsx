@@ -1,4 +1,5 @@
 import { LanguageProvider } from '../shared/i18n/LanguageProvider'
+import type { ReactNode } from 'react'
 import { useLanguage } from '../shared/i18n/language-context'
 import {
   QuestionLayout,
@@ -217,12 +218,92 @@ function ProtectedApp() {
             to={menu.to}
             end={menu.to === '/' || menu.to === '/life'}
           >
-            {t(menu.label)}
+            <span className="nav-icon" aria-hidden="true">
+              <NavIcon to={menu.to} />
+            </span>
+            <span className="nav-label">{t(menu.label)}</span>
           </NavLink>
         ))}
       </nav>
       <footer>{t('외국인 유학생을 위한 학사·생활 지원 서비스')}</footer>
     </div>
+  )
+}
+
+function NavIcon({ to }: { to: string }) {
+  const icons: Record<string, ReactNode> = {
+    '/': (
+      <>
+        <path d="m2 9 8-6 8 6v9H2V9Z" />
+        <path d="M7 18v-6h6v6" />
+      </>
+    ),
+    '/entry-exit': (
+      <>
+        <path d="M3 4h14v14H3z" />
+        <path d="M10 8v7m-3-3 3 3 3-3" />
+      </>
+    ),
+    '/notices': (
+      <>
+        <path d="M5 14V9a5 5 0 0 1 10 0v5l2 2H3l2-2Z" />
+        <path d="M8 18a2 2 0 0 0 4 0" />
+      </>
+    ),
+    '/course-notices': (
+      <>
+        <path d="M3 4h6a3 3 0 0 1 3 3v11H6a3 3 0 0 0-3 1V4Zm14 0h-2a3 3 0 0 0-3 3v11h3a3 3 0 0 1 3 1V4Z" />
+      </>
+    ),
+    '/schedule': (
+      <>
+        <rect x="2" y="4" width="16" height="14" rx="2" />
+        <path d="M2 8h16M6 2v4m8-4v4" />
+      </>
+    ),
+    '/life': (
+      <>
+        <path d="M3 9.5 10 3l7 6.5V18H3V9.5Z" />
+        <path d="M7 13h6m-3-3v6" />
+      </>
+    ),
+    '/life/free': (
+      <>
+        <path d="M3 4h14v10H9l-5 4v-4H3V4Z" />
+        <path d="M7 8h6m-6 3h4" />
+      </>
+    ),
+    '/life/market': (
+      <>
+        <path d="M3 7h14l-1 11H4L3 7Zm3 0V6a4 4 0 0 1 8 0v1" />
+      </>
+    ),
+    '/life/questions': (
+      <>
+        <circle cx="10" cy="10" r="8" />
+        <path d="M7.5 7.5a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 1-1 2.2M10 15.5h.01" />
+      </>
+    ),
+    '/life/guide': (
+      <>
+        <path d="M10 19s6-6.1 6-11A6 6 0 0 0 4 8c0 4.9 6 11 6 11Z" />
+        <circle cx="10" cy="8" r="2" />
+      </>
+    ),
+  }
+
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      focusable="false"
+    >
+      {icons[to]}
+    </svg>
   )
 }
 
