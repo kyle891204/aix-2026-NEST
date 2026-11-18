@@ -117,10 +117,6 @@ export function NearbyFacilities() {
 
   return (
     <div className="nearby-facilities">
-      <p className="nearby-facilities-intro">
-        {t('캠퍼스 주변의 병원·마트·약국을 지도와 목록으로 확인하세요.')}
-      </p>
-
       <div
         className="nearby-facility-modes"
         role="group"
@@ -249,16 +245,10 @@ export function NearbyFacilities() {
 
       <p className="nearby-facility-source">
         {mode === 'all'
-          ? t(
-              '주변 전체는 카카오맵 실시간 검색 결과입니다. 운영시간은 주요 시설에만 표시하며, 나머지는 카카오맵에서 확인해 주세요.',
-            )
-          : t(
-              '{provider} 정보를 {date}에 확인했습니다. 운영시간과 연락처는 바뀔 수 있으니 방문 전 확인해 주세요.',
-              {
-                provider: t(NEARBY_FACILITIES_SOURCE.provider),
-                date: NEARBY_FACILITIES_SOURCE.verifiedAt,
-              },
-            )}
+          ? t('카카오맵 · 실시간 검색')
+          : t('카카오맵 마지막 확인일: {date}', {
+              date: NEARBY_FACILITIES_SOURCE.verifiedAt,
+            })}
       </p>
     </div>
   )

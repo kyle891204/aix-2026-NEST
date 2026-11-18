@@ -1,4 +1,5 @@
 import { useLanguage } from '../../../shared/i18n/language-context'
+import { LANGUAGE_NAMES } from '../../../shared/i18n/language'
 import { Link } from 'react-router-dom'
 import '../life.css'
 
@@ -21,19 +22,19 @@ const boards = [
 ]
 
 export function LifeHomePage() {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
 
   return (
     <div className="life-home">
       <h1>LIFE</h1>
 
       <section className="dashboard-card translation-card">
-        <h2>{t('글·답글 자동 번역')}</h2>
-        <p>
-          {t(
-            '작성자의 원문을 보존하고, 읽는 사람의 선호 언어로 자동 번역합니다.',
-          )}
-        </p>
+        <h2>
+          {t('현재 표시 언어: {language}', {
+            language: LANGUAGE_NAMES[language],
+          })}
+        </h2>
+        <p>{t('글·답글을 선호 언어로 번역합니다.')}</p>
       </section>
 
       <section className="dashboard-card life-links">
