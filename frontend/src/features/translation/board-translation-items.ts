@@ -84,7 +84,11 @@ export function collectBoardItems(
     if (!list) {
       if (board === 'market' && post.location?.trim())
         result.push(
-          item('location', post.location, context(label, '거래 희망 장소', postTitle)),
+          item(
+            'location',
+            post.location,
+            context(label, '거래 희망 장소', postTitle),
+          ),
         )
       for (const reply of post.replies)
         result.push(
