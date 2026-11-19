@@ -23,7 +23,7 @@ export interface BatchRequest {
 }
 
 export const translationKey = (item: TranslationItem, target: Language) =>
-  JSON.stringify([item.text, item.sourceLanguage, target, item.context, 'v1'])
+  JSON.stringify([item.text, item.sourceLanguage, target, item.context, 'v2'])
 
 const failed = (id: string): TranslationResult => ({
   id,
