@@ -5,7 +5,13 @@ import { ApiError } from '../../shared/api/client'
 import { schoolMessage } from '../../shared/i18n/school-message'
 import { kstLabel } from '../../shared/format/kst'
 import { useAuth } from '../auth/auth-context'
+import { useDataText } from '../translation/data-text-context'
+import {
+  DataTranslations,
+  DataTranslationStatus,
+} from '../translation/DataTranslations'
 import { noticeProfile } from '../notices/api'
+import { NOTICE_TITLE_CONTEXT } from '../notices/notice-title-translations'
 import type { SignupProfile } from '../profile/demo-profile'
 import {
   dashboardErrorMessage,
@@ -119,7 +125,10 @@ function NoticeCards({ data }: { data: DashboardResult }) {
     ASKABLE_FIELDS.includes(field),
   )
   return (
-    <>
+    <DataTranslations
+      texts={data.matchedNotices.map((notice) => notice.title)}
+      context={NOTICE_TITLE_CONTEXT}
+    >
       {askProfile && (
         <p className="dashboard-profile-hint">
           {t('프로필에 국적·학위과정·학년을 입력하면 더 정확하게 골라드려요.')}{' '}
@@ -131,17 +140,19 @@ function NoticeCards({ data }: { data: DashboardResult }) {
           {t('지금 나에게 해당하는 공지가 없어요.')}
         </p>
       )}
+      <DataTranslationStatus />
       <div className="dashboard-notice-list">
         {data.matchedNotices.map((notice) => (
           <NoticeCard key={notice.noticeId} notice={notice} />
         ))}
       </div>
-    </>
+    </DataTranslations>
   )
 }
 
 function NoticeCard({ notice }: { notice: DashboardNotice }) {
   const { t, language } = useLanguage()
+  const tr = useDataText()
 
   const deadline = kstLabel(notice.deadline, language)
   // 앱의 공지 상세로 연다. 쉬운 설명·번역을 볼 수 있고, 처음 열면 공지 대상도 분석한다.
@@ -163,7 +174,7 @@ function NoticeCard({ notice }: { notice: DashboardNotice }) {
         </span>
         {notice.sample && <span>{t('예시 데이터')}</span>}
       </div>
-      <h3>{notice.title}</h3>
+      <h3>{tr(notice.title)}</h3>
       <ul className="dashboard-reasons">
         {notice.matchReasons.map((reason) => (
           <li key={reason}>{schoolMessage(language, reason)}</li>
