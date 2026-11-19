@@ -279,7 +279,7 @@ function CourseScheduleCard({
   return (
     <Link
       className="home-card dashboard-notice"
-      to={`/course-notices?courseId=${encodeURIComponent(schedule.courseId)}`}
+      to={`/course-notices/${encodeURIComponent(schedule.courseId)}/${encodeURIComponent(schedule.notificationId)}`}
     >
       <div className="notice-badges">
         <span>{t('과목일정')}</span>

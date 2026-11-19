@@ -1,4 +1,4 @@
-import type { NotificationType } from './api.ts'
+import type { CourseNotification, NotificationType } from './api.ts'
 
 export const TYPE_LABELS: Record<NotificationType, string> = {
   ANNOUNCEMENT: '공지',
@@ -36,4 +36,42 @@ export function isPastDue(dueAt: string | null, now = Date.now()) {
   if (!dueAt) return false
   const time = Date.parse(dueAt)
   return !Number.isNaN(time) && time < now
+}
+
+// 과제는 LMS 마감일, 공지는 서버가 본문의 "까지·마감" 문구에서 찾은 마감일을 쓴다. 학습자료는 마감이 없다.
+export function hasDeadlineField(item: { type: NotificationType }) {
+  return item.type === 'ANNOUNCEMENT' || item.type === 'ASSIGNMENT'
+}
+
+// 마감이 지나지 않은 과제·공지를 개인 일정에 저장할 수 있다.
+export function canSave(
+  item: { type: NotificationType; dueAt: string | null },
+  now = Date.now(),
+) {
+  return hasDeadlineField(item) && !!item.dueAt && !isPastDue(item.dueAt, now)
+}
+
+export function scheduleSource(item: { type: NotificationType }) {
+  return item.type === 'ANNOUNCEMENT'
+    ? ('COURSE_ANNOUNCEMENT' as const)
+    : ('COURSE_ASSIGNMENT' as const)
+}
+
+// 공지·과제는 앱의 상세(S09-N·S09-T)로, 학습자료는 상세가 없어 LMS 원문으로 연다.
+export function detailPath(item: {
+  courseId: string
+  id: string
+  type: NotificationType
+}) {
+  return hasDeadlineField(item)
+    ? `/course-notices/${encodeURIComponent(item.courseId)}/${encodeURIComponent(item.id)}`
+    : null
+}
+
+// 상세 화면이 목록을 다시 불러오지 않고 바로 보이도록 목록에서 항목과 과목 이름을 넘긴다.
+// from은 어느 목록에서 왔는지다. 상세의 "뒤로"는 그 목록으로 돌아간다.
+export interface CourseItemState {
+  item: CourseNotification
+  courseName: string | null
+  from: 'overview' | 'course'
 }

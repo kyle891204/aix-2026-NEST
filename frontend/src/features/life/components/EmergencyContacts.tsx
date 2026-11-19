@@ -29,10 +29,6 @@ export function EmergencyContacts() {
 
   return (
     <div className="emergency-contacts">
-      <p className="emergency-contacts-intro">
-        {t('한국에서 도움이 필요할 때 연락할 수 있는 번호입니다.')}
-      </p>
-
       <section aria-labelledby="korea-emergency-title">
         <h3 id="korea-emergency-title">{t('한국 긴급전화')}</h3>
         <ul className="emergency-phone-list">
@@ -54,10 +50,9 @@ export function EmergencyContacts() {
             </li>
           ))}
         </ul>
-        <p className="emergency-contact-meta">
-          {t(
-            '소방과 구급은 같은 119를 사용합니다. 번호를 누르면 기기의 전화 기능으로 연결됩니다.',
-          )}
+        <p className="emergency-contact-meta emergency-call-warning">
+          {t('번호를 누르면 기기의 전화 앱이 열립니다.')}{' '}
+          <strong>{t('긴급 상황일 때만 사용하세요.')}</strong>
         </p>
         <a
           className="emergency-source-link"
@@ -102,9 +97,6 @@ export function EmergencyContacts() {
                 ))}
               </select>
             </label>
-            <p className="emergency-contact-meta">
-              {t('이 화면에서만 사용하며 회원정보에는 저장하지 않습니다.')}
-            </p>
           </div>
         ) : (
           <p className="emergency-saved-country">

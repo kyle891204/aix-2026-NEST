@@ -5,7 +5,8 @@ import {
   upcomingCourseSchedules,
 } from '../src/features/dashboard/course-schedules.ts'
 import type {
-  CourseNotifications,
+  CourseNotification,
+  CourseOverview,
   CourseSummary,
 } from '../src/features/courses/api.ts'
 
@@ -20,11 +21,13 @@ afterEach(() => {
 })
 
 function notification(
+  courseId: string,
   id: string,
-  type: 'ASSIGNMENT' | 'ANNOUNCEMENT' | 'MATERIAL',
+  type: CourseNotification['type'],
   dueAt: string | null,
-) {
+): CourseNotification {
   return {
+    courseId,
     id,
     type,
     title: id,
@@ -35,95 +38,81 @@ function notification(
     moduleName: null,
     sourceUrl: null,
     savedScheduleId: null,
+    content: null,
   }
 }
 
+function overview(
+  notifications: CourseNotification[],
+  errors: CourseOverview['errors'] = [],
+): CourseOverview {
+  return { courses, notifications, errors, truncated: false }
+}
+
 test('dashboard course schedules include only upcoming deadlines across courses', () => {
-  const results: CourseNotifications[] = [
-    {
-      courseId: '1',
-      notifications: [
-        notification('past', 'ASSIGNMENT', '2026-11-18T10:00:00+09:00'),
-        notification('later', 'ASSIGNMENT', '2026-11-22T10:00:00+09:00'),
-        notification('material', 'MATERIAL', '2026-11-20T10:00:00+09:00'),
-      ],
-      errors: [],
-      truncated: false,
-    },
-    {
-      courseId: '2',
-      notifications: [
-        notification('soon', 'ANNOUNCEMENT', '2026-11-20T10:00:00+09:00'),
-        notification('undated', 'ANNOUNCEMENT', null),
-      ],
-      errors: [],
-      truncated: false,
-    },
-  ]
+  const data = overview([
+    notification('1', 'past', 'ASSIGNMENT', '2026-11-18T10:00:00+09:00'),
+    notification('1', 'later', 'ASSIGNMENT', '2026-11-22T10:00:00+09:00'),
+    notification('1', 'material', 'MATERIAL', '2026-11-20T10:00:00+09:00'),
+    notification('2', 'soon', 'ANNOUNCEMENT', '2026-11-20T10:00:00+09:00'),
+    notification('2', 'undated', 'ANNOUNCEMENT', null),
+  ])
 
   assert.deepEqual(
     upcomingCourseSchedules(
-      courses,
-      results,
+      data.courses,
+      data.notifications,
       Date.parse('2026-11-19T00:00:00+09:00'),
-    ).map(({ id, courseName }) => [id, courseName]),
+    ).map(({ id, courseName, notificationId }) => [
+      id,
+      courseName,
+      notificationId,
+    ]),
     [
-      ['2:soon', '자료구조'],
-      ['1:later', 'AI 개론'],
+      ['2:soon', '자료구조', 'soon'],
+      ['1:later', 'AI 개론', 'later'],
     ],
   )
 })
 
-test('dashboard keeps available deadlines when one course feed fails', async () => {
+test('dashboard uses the new course overview and keeps available deadlines after partial errors', async () => {
   const requested: string[] = []
   globalThis.fetch = (async (url: string) => {
     requested.push(url)
-    if (url === '/api/v1/courses')
-      return new Response(JSON.stringify({ courses, truncated: false }))
-    if (url.includes('/courses/1/'))
-      return new Response(JSON.stringify({ code: 'LMS_UNAVAILABLE' }), {
-        status: 503,
-      })
     return new Response(
-      JSON.stringify({
-        courseId: '2',
-        notifications: url.endsWith('?type=ASSIGNMENT')
-          ? [notification('soon', 'ASSIGNMENT', '2099-11-20T10:00:00+09:00')]
-          : [],
-        errors: [],
-        truncated: false,
-      }),
+      JSON.stringify(
+        overview(
+          [
+            notification(
+              '2',
+              'soon',
+              'ASSIGNMENT',
+              '2099-11-20T10:00:00+09:00',
+            ),
+          ],
+          [{ courseId: '1', type: 'ASSIGNMENT', code: 'LMS_UNAVAILABLE' }],
+        ),
+      ),
     )
   }) as typeof fetch
 
-  const result = await getDashboardCourseSchedules(3)
   assert.deepEqual(
-    result.map(({ id }) => id),
+    (await getDashboardCourseSchedules(3)).map(({ id }) => id),
     ['2:soon'],
   )
-  assert.ok(requested.some((url) => url.endsWith('?type=ASSIGNMENT')))
-  assert.ok(requested.some((url) => url.endsWith('?type=ANNOUNCEMENT')))
+  assert.deepEqual(requested, ['/api/v1/courses/notifications'])
 })
 
 test('a partial outage without deadlines is not reported as an empty schedule', async () => {
-  globalThis.fetch = (async (url: string) => {
-    if (url === '/api/v1/courses')
-      return new Response(
-        JSON.stringify({ courses: courses.slice(0, 1), truncated: false }),
-      )
-    if (url.endsWith('?type=ASSIGNMENT'))
-      return new Response(JSON.stringify({ code: 'LMS_UNAVAILABLE' }), {
-        status: 503,
-      })
-    return new Response(
-      JSON.stringify({
-        courseId: '1',
-        notifications: [],
-        errors: [],
-        truncated: false,
-      }),
-    )
-  }) as typeof fetch
+  globalThis.fetch = (async () =>
+    new Response(
+      JSON.stringify(
+        overview(
+          [],
+          [{ courseId: '1', type: 'ASSIGNMENT', code: 'LMS_UNAVAILABLE' }],
+        ),
+      ),
+    )) as typeof fetch
 
   await assert.rejects(getDashboardCourseSchedules(3))
 })

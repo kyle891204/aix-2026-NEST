@@ -30,7 +30,9 @@ import { ChecklistPage } from '../features/immigration/pages/ChecklistPage'
 import { EntryExitPage } from '../features/immigration/pages/EntryExitPage'
 import { NoticeListPage } from '../features/notices/pages/NoticeListPage'
 import { NoticeDetailPage } from '../features/notices/pages/NoticeDetailPage'
+import { CourseItemPage } from '../features/courses/CourseItemPage'
 import { CourseNoticesPage } from '../features/courses/CourseNoticesPage'
+import { CourseOverviewPage } from '../features/courses/CourseOverviewPage'
 import { AcademicSchedulePage } from '../features/schedule/AcademicSchedulePage'
 import { ProfilePage } from '../features/profile/pages/ProfilePage'
 import { DemoProfileProvider } from '../features/profile/DemoProfileProvider'
@@ -107,7 +109,15 @@ export default function App() {
               />
               <Route path="/notices" element={<NoticeListPage />} />
               <Route path="/notices/:noticeId" element={<NoticeDetailPage />} />
-              <Route path="/course-notices" element={<CourseNoticesPage />} />
+              <Route path="/course-notices" element={<CourseOverviewPage />} />
+              <Route
+                path="/course-notices/:courseId"
+                element={<CourseNoticesPage />}
+              />
+              <Route
+                path="/course-notices/:courseId/:itemId"
+                element={<CourseItemPage />}
+              />
               <Route path="/schedule" element={<AcademicSchedulePage />} />
               <Route path="/community" element={<CommunityPage />} />
               <Route path="/profile" element={<ProfilePage />} />
@@ -187,7 +197,7 @@ function ProtectedApp() {
     <div className="app-shell">
       <header className="site-header">
         <NavLink className="brand" to="/">
-          NEST <span>{t('캠퍼스 생활의 시작')}</span>
+          NEST
         </NavLink>
         <NavLink className="account-link" to="/profile">
           {t('내 계정')}
@@ -236,7 +246,6 @@ function ProtectedApp() {
           </NavLink>
         ))}
       </nav>
-      <footer>{t('외국인 유학생을 위한 학사·생활 지원 서비스')}</footer>
     </div>
   )
 }

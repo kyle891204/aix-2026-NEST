@@ -26,16 +26,11 @@ export function FreeBoardListPage() {
   const { posts, writable } = useFreeBoard()
   return (
     <>
-      <p className="market-eyebrow">L02</p>
       <h1>{t('자유게시판')}</h1>
-      <p className="market-intro">
-        {t('일상과 정보, 함께 나누고 싶은 이야기를 남겨요.')}
-      </p>
       <div className="market-count">
         <strong aria-live="polite">
           {t('총 {count}건', { count: posts.length })}
         </strong>
-        <span>{t('예시 데이터 · 탭 저장')}</span>
       </div>
       {writable && (
         <Link className="market-primary" to="new">

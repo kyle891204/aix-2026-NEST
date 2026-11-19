@@ -351,8 +351,16 @@ footer {
   border-bottom: 1px solid var(--ui-line);
 }
 .life-home .life-menu-row strong {
+  display: block;
+  margin-bottom: 6px;
   font-size: 15px;
   font-weight: 650;
+  line-height: 1.35;
+}
+.life-home .life-menu-row .dashboard-description {
+  display: block;
+  font-size: 13px;
+  line-height: 1.5;
 }
 .life-home .life-menu-row > span:last-child[aria-hidden] {
   color: #9aa8b6;
@@ -732,24 +740,78 @@ footer {
 .auth-shell {
   background: #fff;
   color: var(--ui-ink);
+  box-shadow: 0 8px 36px rgb(30 51 74 / 5%);
 }
 .auth-header {
-  height: 78px;
+  height: 88px;
+  padding: 0 28px;
   border-bottom: 1px solid var(--ui-line);
+}
+.auth-header img {
+  width: 34px;
+  height: 34px;
 }
 .auth-brand {
   color: var(--ui-ink);
   font-weight: 780;
   letter-spacing: -0.04em;
 }
-.auth-content {
-  gap: 18px;
-  padding: 30px 24px;
+.auth-language {
+  font-size: 12px;
 }
-.auth-content h1 {
+.auth-shell--login .auth-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0 28px 48px;
+}
+.auth-hero {
+  padding: 72px 0 48px;
+}
+.auth-shell--login .auth-content h1 {
   text-align: left;
-  font-size: 27px;
-  line-height: 1.3;
+  font-size: clamp(30px, 7vw, 36px);
+  line-height: 1.22;
+  letter-spacing: -0.045em;
+}
+.auth-signin {
+  min-height: 50px;
+}
+.auth-shell--login .auth-google-field,
+.auth-shell--login .auth-google-field > div,
+.auth-shell--login .auth-google-field .google-sign-in {
+  width: 100%;
+}
+.auth-language-picker {
+  margin-top: 32px;
+}
+.auth-language-picker .language-switch {
+  padding: 4px;
+  border-radius: 12px;
+}
+.auth-language-picker .language-switch button {
+  min-height: 44px;
+  border-radius: 9px;
+}
+.auth-language-picker .language-switch button[aria-pressed='true'] {
+  background: #fff;
+  box-shadow: 0 1px 5px rgb(23 36 53 / 9%);
+}
+.auth-shell--login .auth-privacy {
+  margin-top: 40px;
+  border-top: 1px solid var(--ui-line);
+  padding-top: 12px;
+  color: var(--ui-muted);
+}
+.auth-shell--login .auth-privacy summary {
+  font-size: 13px;
+  font-weight: 600;
+}
+.auth-shell--login .auth-content > .auth-caption {
+  margin-top: 20px;
+  color: var(--ui-faint);
+  font-size: 12px;
+  line-height: 1.5;
 }
 .auth-notice,
 .consent-item,

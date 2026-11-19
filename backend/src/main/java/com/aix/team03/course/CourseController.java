@@ -34,17 +34,32 @@ public class CourseController {
     @GetMapping
     public CourseList courses() { return courses.courses(); }
 
+    /** S08 전체 과목 화면. 모든 과목의 공지와 마감 전 과제를 모아 준다. 기간은 과목별 조회와 같은 규칙이다. */
+    @GetMapping("/notifications")
+    public CourseOverview overview(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        LocalDate end = end(endDate);
+        return courses.overview(start(startDate, end), end);
+    }
+
     @GetMapping("/{courseId}/notifications")
     public CourseNotifications notifications(@PathVariable long courseId,
             @RequestParam(defaultValue = "ALL") String type,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        // 공지 조회 기간 기본값은 기존 LMS 개발 API와 같이 한국 날짜 기준 최근 90일이다.
-        // 한쪽만 보내면 다른 쪽을 그 날짜 기준 90일로 채운다(종료일만 → 그 전 90일, 시작일만 → 오늘까지).
-        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
-        LocalDate end = endDate != null ? endDate : today;
-        LocalDate start = startDate != null ? startDate : end.minusDays(90);
-        return courses.notifications(courseId, types(type), start, end);
+        LocalDate end = end(endDate);
+        return courses.notifications(courseId, types(type), start(startDate, end), end);
+    }
+
+    // 공지 조회 기간 기본값은 기존 LMS 개발 API와 같이 한국 날짜 기준 최근 90일이다.
+    // 한쪽만 보내면 다른 쪽을 그 날짜 기준 90일로 채운다(종료일만 → 그 전 90일, 시작일만 → 오늘까지).
+    private static LocalDate end(LocalDate endDate) {
+        return endDate != null ? endDate : LocalDate.now(ZoneId.of("Asia/Seoul"));
+    }
+
+    private static LocalDate start(LocalDate startDate, LocalDate end) {
+        return startDate != null ? startDate : end.minusDays(90);
     }
 
     private static Set<NotificationType> types(String type) {

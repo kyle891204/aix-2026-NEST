@@ -54,7 +54,14 @@ export function collectBoardItems(
   const label = { free: '자유게시판', market: '장터', questions: '질문게시판' }[
     board
   ]
+  // 서버의 context 한도는 200자다. 화면에 보이는 원글만 참고해 각 항목에 맥락을 붙인다.
+  const context = (...parts: string[]) =>
+    parts.filter(Boolean).join(' · ').slice(0, 200)
   return visible.flatMap((post) => {
+    const title = post.title.trim().slice(0, 80)
+    const excerpt = post.content.trim().replace(/\s+/g, ' ').slice(0, 90)
+    const postTitle = title ? `글 제목: ${title}` : ''
+    const postExcerpt = excerpt ? `본문 일부: ${excerpt}` : ''
     const item = (
       field: string,
       text: string,
@@ -64,25 +71,31 @@ export function collectBoardItems(
       id: `${board}:${post.id}:${field}`,
       text,
       sourceLanguage,
-      context: `${label} ${context}`,
+      context,
     })
     const result = [
-      item('title', post.title, '게시글 제목'),
+      item('title', post.title, context(label, '게시글 제목', postExcerpt)),
       item(
         list ? 'preview' : 'content',
         list ? post.content.split('\n')[0] : post.content,
-        '게시글 본문',
+        context(label, '게시글 본문', postTitle),
       ),
     ]
     if (!list) {
       if (board === 'market' && post.location?.trim())
-        result.push(item('location', post.location, '거래 희망 장소'))
+        result.push(
+          item(
+            'location',
+            post.location,
+            context(label, '거래 희망 장소', postTitle),
+          ),
+        )
       for (const reply of post.replies)
         result.push(
           item(
             `reply:${reply.id}`,
             reply.content,
-            '게시글 답글',
+            context(label, '게시글 답글', postTitle, postExcerpt),
             reply.language,
           ),
         )

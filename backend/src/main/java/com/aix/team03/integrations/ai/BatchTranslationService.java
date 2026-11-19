@@ -53,7 +53,7 @@ public class BatchTranslationService {
                     continue;
                 }
                 var key = new Key(item.text(), item.sourceLanguage(), targetLanguage,
-                        item.context() == null ? "" : item.context(), "community-batch-v1");
+                        item.context() == null ? "" : item.context(), "community-batch-v2");
                 var saved = cache.get(key);
                 if (saved != null) {
                     ready.put(item.id(), new Result(item.id(), "SUCCEEDED", saved.text(), true, false));

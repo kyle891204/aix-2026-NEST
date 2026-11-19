@@ -2,10 +2,18 @@ import { strict as assert } from 'node:assert'
 import { afterEach, test } from 'node:test'
 import {
   getCourseNotifications,
+  getCourseOverview,
   getCourses,
   setCourseDemoPassword,
 } from '../src/features/courses/api.ts'
 import {
+  courseLabel,
+  shortName,
+  splitByTerm,
+} from '../src/features/courses/course-names.ts'
+import {
+  canSave,
+  detailPath,
   isPastDue,
   kstLabel,
   materialLabel,
@@ -88,6 +96,7 @@ test('notifications keep partial errors and reject unknown types', async () => {
     courseId: '12',
     notifications: [
       {
+        courseId: '12',
         id: 'assignment-22',
         type: 'ASSIGNMENT',
         title: '9주차 과제',
@@ -107,7 +116,9 @@ test('notifications keep partial errors and reject unknown types', async () => {
 
   mockFetch({
     courseId: '12',
-    notifications: [{ id: 'quiz-1', type: 'QUIZ', title: '퀴즈' }],
+    notifications: [
+      { courseId: '12', id: 'quiz-1', type: 'QUIZ', title: '퀴즈' },
+    ],
     errors: [],
     truncated: false,
   })
@@ -115,6 +126,18 @@ test('notifications keep partial errors and reject unknown types', async () => {
 
   mockFetch({ courseId: '12', notifications: [], errors: [] })
   await assert.rejects(getCourseNotifications('12'), /과목알림 응답/)
+})
+
+test('per-course notifications from the previous server get the course id of the response', async () => {
+  mockFetch({
+    courseId: '12',
+    notifications: [{ id: 'assignment-22', type: 'ASSIGNMENT', title: '과제' }],
+    errors: [],
+    truncated: false,
+  })
+  const result = await getCourseNotifications('12')
+  assert.equal(result.notifications[0].courseId, '12')
+  assert.equal(result.notifications[0].content, null)
 })
 
 test('only http and https source links become clickable', () => {
@@ -127,4 +150,111 @@ test('only http and https source links become clickable', () => {
   assert.equal(safeLinkUrl('data:text/html,hi'), null)
   assert.equal(safeLinkUrl('/relative/path'), null)
   assert.equal(safeLinkUrl(null), null)
+})
+
+test('the overview of every course is read from /courses/notifications', async () => {
+  const course = {
+    courseId: '12',
+    courseName: '자료구조',
+    courseCode: null,
+    termName: null,
+  }
+  mockFetch({
+    courses: [course],
+    notifications: [
+      {
+        courseId: '12',
+        id: 'announcement-1',
+        type: 'ANNOUNCEMENT',
+        title: '중간 발표',
+        content: '발표를 준비하세요.',
+      },
+    ],
+    errors: [{ courseId: '12', type: 'ASSIGNMENT', code: 'LMS_HTTP_ERROR' }],
+    truncated: false,
+  })
+  const result = await getCourseOverview()
+  assert.equal(requestedUrl, '/api/v1/courses/notifications')
+  assert.equal(result.notifications[0].content, '발표를 준비하세요.')
+  assert.equal(result.errors[0].courseId, '12')
+
+  // 어느 과목의 오류인지 모르면 화면에 안내할 수 없어 형식 오류로 본다.
+  mockFetch({
+    courses: [course],
+    notifications: [],
+    errors: [{ type: 'ASSIGNMENT', code: 'LMS_HTTP_ERROR' }],
+    truncated: false,
+  })
+  await assert.rejects(getCourseOverview(), /과목알림 응답/)
+})
+
+test('LMS course names are split into name, term and a short card label', () => {
+  const label = (courseName: string) =>
+    courseLabel({ courseId: '1', courseName, courseCode: null, termName: null })
+  assert.deepEqual(label('202620HY23658_AI+X공학융합프로젝트'), {
+    name: 'AI+X공학융합프로젝트',
+    term: '2026-2',
+    termKey: '202620',
+    short: 'AIX',
+  })
+  assert.equal(label('202510HY20287_CORE기초통계').term, '2025-1')
+  assert.equal(
+    label('202620HY20027_프로젝트관리입문(CPMS)(클러스터)').short,
+    'CPMS',
+  )
+  assert.equal(label('202620HY23657_데이터베이스').short, '데이터베')
+  // 형식이 다른 이름은 그대로 쓴다.
+  assert.deepEqual(label('자료구조'), {
+    name: '자료구조',
+    term: null,
+    termKey: '',
+    short: '자료구조',
+  })
+  assert.equal(shortName('ICT창업캡스톤디자인'), 'ICT')
+})
+
+test('only the latest semester courses are shown first', () => {
+  const course = (courseId: string, courseName: string) => ({
+    courseId,
+    courseName,
+    courseCode: null,
+    termName: null,
+  })
+  const { current, past } = splitByTerm([
+    course('1', '202510HY20287_CORE기초통계'),
+    course('2', '202620HY23657_데이터베이스'),
+    course('3', '자료구조'),
+  ])
+  assert.deepEqual(
+    current.map((item) => item.course.courseId),
+    ['2', '3'],
+  )
+  assert.deepEqual(
+    past.map((item) => item.course.courseId),
+    ['1'],
+  )
+})
+
+test('only announcements and assignments before the deadline can be saved or opened in the app', () => {
+  const now = Date.parse('2026-11-01T00:00:00Z')
+  const item = (
+    type: 'ANNOUNCEMENT' | 'ASSIGNMENT' | 'MATERIAL',
+    dueAt: string | null,
+  ) => ({
+    courseId: '12',
+    id: `${type}-1`,
+    type,
+    dueAt,
+  })
+  assert.equal(canSave(item('ASSIGNMENT', '2026-11-03T14:59:00Z'), now), true)
+  assert.equal(canSave(item('ANNOUNCEMENT', '2026-11-03T14:59:00Z'), now), true)
+  assert.equal(canSave(item('ASSIGNMENT', '2026-10-30T14:59:00Z'), now), false)
+  assert.equal(canSave(item('ASSIGNMENT', null), now), false)
+  assert.equal(canSave(item('MATERIAL', '2026-11-03T14:59:00Z'), now), false)
+
+  assert.equal(
+    detailPath(item('ANNOUNCEMENT', null)),
+    '/course-notices/12/ANNOUNCEMENT-1',
+  )
+  assert.equal(detailPath(item('MATERIAL', null)), null)
 })
