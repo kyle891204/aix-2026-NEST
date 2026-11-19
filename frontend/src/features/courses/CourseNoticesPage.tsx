@@ -6,6 +6,7 @@ import { deadlineLabel } from '../schedule/academic-format'
 import {
   addDeadlineSchedules,
   isSaved,
+  loadPersonalSchedules,
   type PersonalSchedule,
 } from '../schedule/personal-schedule-store'
 import { usePersonalSchedules } from '../schedule/usePersonalSchedules'
@@ -97,7 +98,10 @@ export function CourseNoticesPage() {
       <BackLink to="/course-notices" />
       <h1>{label?.name ?? t('과목알림')}</h1>
       <p className="home-description">
-        {t('필요한 마감만 선택해 개인 일정에 저장하세요.')}
+        {notices.load?.status === 'ready' &&
+        !hasSavable(notices.load.data, accountId)
+          ? t('이 과목에는 지금 저장할 수 있는 마감 일정이 없어요.')
+          : t('필요한 마감만 선택해 개인 일정에 저장하세요.')}
       </p>
       {notices.load?.status === 'ready' && (
         <p className="course-summary">
@@ -155,6 +159,19 @@ export function CourseNoticesPage() {
 
       <CourseFootnote />
     </div>
+  )
+}
+
+// 마감이 남아 있고 아직 저장하지 않은 항목이 하나라도 있는지. 상단 안내 문구를 고르는 데만 쓴다.
+function hasSavable(data: CourseNotifications, accountId: string | null) {
+  let saved: PersonalSchedule[] = []
+  try {
+    if (accountId) saved = loadPersonalSchedules(window.localStorage, accountId)
+  } catch {
+    // 저장소를 못 읽으면 저장한 일정이 없는 것으로 본다.
+  }
+  return data.notifications.some(
+    (item) => canSave(item) && !isSaved(saved, scheduleSource(item), item.id),
   )
 }
 
@@ -241,7 +258,7 @@ function NoticeList({
             onToggle={(checked) => toggle(item.id, checked)}
           />
         ) : hasDeadlineField(item) && !item.dueAt ? (
-          // 마감을 찾지 못한 공지·과제는 체크를 끄고 "마감 없음"으로 보여준다.
+          // 마감을 찾지 못한 공지·과제는 체크박스 없이 "마감 확인 필요"·"마감 없음"으로 보여준다.
           <SelectableCard item={item} courseName={courseName} checked={false} />
         ) : (
           <NoticeCard item={item} courseName={courseName} saved={saved(item)} />
@@ -343,7 +360,7 @@ function NoticeList({
 }
 
 // 왼쪽(체크·내용)을 누르면 선택하고, 오른쪽 화살표는 앱의 상세(S09-N·S09-T)를 연다(S09 검토 안내).
-// 마감일이 없어 저장할 수 없는 카드는 체크박스 없이 내용과 화살표만 보여준다.
+// 마감일이 없어 저장할 수 없는 카드는 체크박스 없이, 카드 전체가 상세 링크다.
 function SelectableCard({
   item,
   courseName,
@@ -391,22 +408,33 @@ function SelectableCard({
       )}
     </span>
   )
+  const className = `home-card course-card course-card--selectable${checked ? ' is-selected' : ''}`
+  // 고를 수 없는 카드는 저장됨·마감 지남 카드처럼 카드 어디를 눌러도 상세로 간다.
+  if (!onToggle)
+    return path ? (
+      <Link
+        className={className}
+        to={path}
+        state={{ item, courseName, from: 'course' } satisfies CourseItemState}
+      >
+        {content}
+        <span className="course-card-open" aria-hidden="true">
+          ›
+        </span>
+      </Link>
+    ) : (
+      <div className={className}>{content}</div>
+    )
   return (
-    <div
-      className={`home-card course-card course-card--selectable${checked ? ' is-selected' : ''}`}
-    >
-      {onToggle ? (
-        <label>
-          <input
-            type="checkbox"
-            checked={checked}
-            onChange={(event) => onToggle(event.target.checked)}
-          />
-          {content}
-        </label>
-      ) : (
-        content
-      )}
+    <div className={className}>
+      <label>
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={(event) => onToggle(event.target.checked)}
+        />
+        {content}
+      </label>
       {path && (
         <Link
           className="course-card-open"

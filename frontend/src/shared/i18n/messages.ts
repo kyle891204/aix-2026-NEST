@@ -2379,6 +2379,10 @@ export const messages: Record<string, { en: string; zh: string }> = {
     en: 'Select only the deadlines you need and save them to your schedule.',
     zh: '只选择需要的截止日期并保存到个人日程。',
   },
+  '이 과목에는 지금 저장할 수 있는 마감 일정이 없어요.': {
+    en: 'This course has no deadlines you can save right now.',
+    zh: '本课程目前没有可保存的截止日程。',
+  },
   '전체 선택': {
     en: 'Select all',
     zh: '全选',
