@@ -109,40 +109,6 @@ summary:focus-visible {
 .account-link:hover {
   background: #f6f8fa;
 }
-.mode-switch {
-  display: flex;
-  width: 100%;
-  gap: 0;
-  margin: 20px 0 26px;
-  padding: 0;
-  border: 0;
-  border-radius: 11px;
-  background: #f1f4f6;
-}
-.mode-switch a {
-  position: relative;
-  flex: 1;
-  min-height: 44px;
-  border-radius: 11px;
-  color: var(--ui-muted);
-  font-size: 13px;
-  font-weight: 640;
-}
-.mode-switch a.active,
-.mode-switch a[href='/life'].active {
-  background: transparent;
-  color: var(--ui-ink);
-}
-.mode-switch a.active::after {
-  content: '';
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  height: 3px;
-  border-radius: 3px;
-  background: var(--ui-blue);
-}
 main {
   min-width: 0;
 }

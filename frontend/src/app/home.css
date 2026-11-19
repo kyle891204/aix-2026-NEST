@@ -23,35 +23,50 @@
 
 /* SCHOOL / LIFE 전환 메뉴 */
 .mode-switch {
-    display: inline-flex;
-    gap: 4px;
-    margin: 16px 0;
-    padding: 4px;
-    border: 1px solid #e2e7f0;
-    border-radius: 999px;
-    background: #f4f6fc;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: 84px;
+  height: 36px;
+  margin: 20px 0 26px;
+  padding: 3px;
+  border: 1px solid #e5eaee;
+  border-radius: 999px;
+  background: #f1f4f6;
 }
 
 .mode-switch a {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 44px;
-    padding: 0 14px;
-    border-radius: 999px;
-    color: #657795;
-    font-size: 13px;
-    font-weight: 700;
-    text-decoration: none;
+  position: relative;
+  display: grid;
+  flex: 1;
+  height: 28px;
+  place-items: center;
+  color: #71849a;
+  text-decoration: none;
+}
+
+.mode-switch a svg {
+  position: relative;
+  z-index: 1;
+  width: 19px;
+  height: 19px;
 }
 
 .mode-switch a.active {
-    color: white;
-    background: #3f5fff;
+  color: #fff;
 }
 
-.mode-switch a[href="/life"].active {
-    background: #8671c6;
+.mode-switch a.active::before {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #2459d3;
+  content: '';
+}
+
+.mode-switch a:not(.active):hover {
+  color: #2459d3;
 }
 
 /* 두 홈 화면의 공통 배치 */
