@@ -3,7 +3,10 @@ import { Link, Navigate, useSearchParams } from 'react-router-dom'
 import { useLanguage } from '../../shared/i18n/language-context'
 import { deadlineLabel } from '../schedule/academic-format'
 import { useDataText } from '../translation/data-text-context'
-import { DataTranslations } from '../translation/DataTranslations'
+import {
+  DataTranslations,
+  DataTranslationStatus,
+} from '../translation/DataTranslations'
 import {
   getCourseOverview,
   setCourseDemoPassword,
@@ -192,6 +195,7 @@ function Overview({
         ))}
       </div>
 
+      <DataTranslationStatus />
       {tab === 'COURSES' && (
         <>
           {data.courses.length === 0 && (

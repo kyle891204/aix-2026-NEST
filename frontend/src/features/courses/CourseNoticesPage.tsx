@@ -10,7 +10,11 @@ import {
 } from '../schedule/personal-schedule-store'
 import { usePersonalSchedules } from '../schedule/usePersonalSchedules'
 import { useDataText } from '../translation/data-text-context'
-import { DataText, DataTranslations } from '../translation/DataTranslations'
+import {
+  DataText,
+  DataTranslations,
+  DataTranslationStatus,
+} from '../translation/DataTranslations'
 import {
   getCourseNotifications,
   getCourses,
@@ -99,7 +103,10 @@ export function CourseNoticesPage() {
       texts={[
         label?.name,
         ...(notices.load?.status === 'ready'
-          ? notices.load.data.notifications.map((item) => item.title)
+          ? notices.load.data.notifications.flatMap((item) => [
+              item.title,
+              item.moduleName,
+            ])
           : []),
       ]}
       context="대학교 LMS 과목명·과목 공지·과제 제목"
@@ -147,6 +154,7 @@ export function CourseNoticesPage() {
           ))}
         </div>
 
+        <DataTranslationStatus />
         {notices.load?.status === 'loading' && (
           <p className="course-status">{t('알림을 불러오고 있어요…')}</p>
         )}
@@ -499,6 +507,7 @@ function NoticeCard({
 
 function CardMeta({ item }: { item: CourseNotification }) {
   const { t, language } = useLanguage()
+  const tr = useDataText()
 
   if (item.type === 'ASSIGNMENT') {
     const due = kstLabel(item.dueAt, language)
@@ -521,7 +530,7 @@ function CardMeta({ item }: { item: CourseNotification }) {
     ) : null
   }
   const details = [
-    item.moduleName,
+    item.moduleName && tr(item.moduleName),
     t(materialLabel(item.materialType) ?? ''),
   ].filter(Boolean)
   return details.length > 0 ? (

@@ -2340,7 +2340,8 @@ export const messages: Record<string, { en: string; zh: string }> = {
     zh: '全部课程',
   },
   '과제·마감': {
-    en: 'Assignments & deadlines',
+    // 과목알림 탭은 한 줄로 고정이라 휴대폰 폭에서 잘리지 않도록 짧게 쓴다.
+    en: 'Assignments',
     zh: '作业·截止',
   },
   뒤로: {
@@ -2466,6 +2467,15 @@ export const messages: Record<string, { en: string; zh: string }> = {
   '마감 지난 공지': {
     en: 'Past-deadline announcements',
     zh: '已截止公告',
+  },
+  // 서버 데이터 번역(DataTranslations) 진행 안내
+  '번역 중이에요. 끝날 때까지 원문을 보여드려요.': {
+    en: 'Translating… Originals are shown until it finishes.',
+    zh: '正在翻译…完成前显示原文。',
+  },
+  '일부 내용을 번역하지 못해 원문을 보여드려요.': {
+    en: 'Some content could not be translated, so the originals are shown.',
+    zh: '部分内容未能翻译，已显示原文。',
   },
   // 과목 카드의 계절학기 표기("2026-여름")
   여름: {

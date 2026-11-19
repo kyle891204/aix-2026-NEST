@@ -1,6 +1,9 @@
 import { strict as assert } from 'node:assert'
 import { test } from 'node:test'
-import { collectDataItems } from '../src/features/translation/data-translation-items.ts'
+import {
+  collectDataItems,
+  dataTranslationStatus,
+} from '../src/features/translation/data-translation-items.ts'
 
 test('server data titles become deduplicated Korean translation items', () => {
   const items = collectDataItems(
@@ -26,4 +29,21 @@ test('server data titles become deduplicated Korean translation items', () => {
 test('text longer than the API limit is left untranslated', () => {
   assert.deepEqual(collectDataItems(['가'.repeat(3001)], 'ctx'), [])
   assert.equal(collectDataItems(['가'.repeat(3000)], 'ctx').length, 1)
+})
+
+test('status shows loading first, then failures; Korean (skipped) counts as done', () => {
+  assert.equal(
+    dataTranslationStatus([
+      { status: 'SUCCEEDED' },
+      { status: 'LOADING' },
+      { status: 'FAILED' },
+    ]),
+    'LOADING',
+  )
+  assert.equal(
+    dataTranslationStatus([{ status: 'SUCCEEDED' }, { status: 'FAILED' }]),
+    'FAILED',
+  )
+  assert.equal(dataTranslationStatus([{ status: 'SKIPPED' }]), 'DONE')
+  assert.equal(dataTranslationStatus([]), 'DONE')
 })

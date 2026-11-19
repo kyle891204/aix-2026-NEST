@@ -6,7 +6,10 @@ import { schoolMessage } from '../../shared/i18n/school-message'
 import { kstLabel } from '../../shared/format/kst'
 import { useAuth } from '../auth/auth-context'
 import { useDataText } from '../translation/data-text-context'
-import { DataTranslations } from '../translation/DataTranslations'
+import {
+  DataTranslations,
+  DataTranslationStatus,
+} from '../translation/DataTranslations'
 import { noticeProfile } from '../notices/api'
 import type { SignupProfile } from '../profile/demo-profile'
 import {
@@ -136,6 +139,7 @@ function NoticeCards({ data }: { data: DashboardResult }) {
           {t('지금 나에게 해당하는 공지가 없어요.')}
         </p>
       )}
+      <DataTranslationStatus />
       <div className="dashboard-notice-list">
         {data.matchedNotices.map((notice) => (
           <NoticeCard key={notice.noticeId} notice={notice} />

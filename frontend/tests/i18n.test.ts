@@ -53,6 +53,7 @@ const screens = [
   'features/market/MarketPages.tsx',
   'features/questions/QuestionPages.tsx',
   'features/translation/BoardTranslations.tsx',
+  'features/translation/DataTranslations.tsx',
   'shared/i18n/LanguageSwitcher.tsx',
 ]
 

@@ -5,7 +5,10 @@ import { schoolMessage } from '../../shared/i18n/school-message'
 import { ApiError } from '../../shared/api/client'
 import { useAuth } from '../auth/auth-context'
 import { useDataText } from '../translation/data-text-context'
-import { DataTranslations } from '../translation/DataTranslations'
+import {
+  DataTranslations,
+  DataTranslationStatus,
+} from '../translation/DataTranslations'
 import { getAcademicSchedules, type AcademicSchedules } from './api'
 import {
   dateRangeLabel,
@@ -181,6 +184,7 @@ function ScheduleTabs({ accountId }: { accountId: string | null }) {
           texts={personal.schedules.map((item) => item.title)}
           context="대학교 학사일정·공지·과제 제목"
         >
+          <DataTranslationStatus />
           <PersonalSchedules
             schedules={personal.schedules}
             recentIds={recentIds}
@@ -218,6 +222,7 @@ function ScheduleTabs({ accountId }: { accountId: string | null }) {
               texts={load.data.schedules.map((event) => event.title)}
               context="대학교 학사일정 제목"
             >
+              <DataTranslationStatus />
               <EventList
                 data={load.data}
                 today={today}

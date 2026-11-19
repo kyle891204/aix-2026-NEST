@@ -21,7 +21,11 @@ import {
   type CourseItemState,
 } from './course-notice-format'
 import { BackLink, DemoPasswordForm, Retry } from './course-ui'
-import { DataText, DataTranslations } from '../translation/DataTranslations'
+import {
+  DataText,
+  DataTranslations,
+  DataTranslationStatus,
+} from '../translation/DataTranslations'
 import './courses.css'
 
 function arrivedState(value: unknown, itemId: string): CourseItemState | null {
@@ -148,6 +152,7 @@ function ItemDetail({
         )}
         {kind}
       </p>
+      <DataTranslationStatus />
 
       <section
         className={`course-due-card${isPastDue(item.dueAt) ? ' is-past' : ''}`}
