@@ -21,6 +21,7 @@ import {
   type CourseItemState,
 } from './course-notice-format'
 import { BackLink, DemoPasswordForm, Retry } from './course-ui'
+import { DataText, DataTranslations } from '../translation/DataTranslations'
 import './courses.css'
 
 function arrivedState(value: unknown, itemId: string): CourseItemState | null {
@@ -132,10 +133,20 @@ function ItemDetail({
   const kind = t(announcement ? '공지' : '과제')
 
   return (
-    <>
-      <h1>{item.title}</h1>
+    <DataTranslations
+      texts={[item.title, courseName, item.content]}
+      context="대학교 LMS 과목 공지·과제"
+    >
+      <h1>
+        <DataText text={item.title} />
+      </h1>
       <p className="home-description">
-        {[courseName, kind].filter(Boolean).join(' · ')}
+        {courseName && (
+          <>
+            <DataText text={courseName} /> ·{' '}
+          </>
+        )}
+        {kind}
       </p>
 
       <section
@@ -165,7 +176,9 @@ function ItemDetail({
       <section className="home-card course-body">
         <h2>{t(announcement ? '공지 내용' : '과제 설명')}</h2>
         {item.content ? (
-          <p>{item.content}</p>
+          <p>
+            <DataText text={item.content} />
+          </p>
         ) : (
           <p className="course-meta">
             {t('본문이 비어 있어요. 원문에서 확인해 주세요.')}
@@ -184,6 +197,6 @@ function ItemDetail({
       <BackLink className="course-back-button" to={listTarget}>
         {t('목록으로 돌아가 일정 선택')}
       </BackLink>
-    </>
+    </DataTranslations>
   )
 }

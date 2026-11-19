@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { Link, Navigate, useSearchParams } from 'react-router-dom'
 import { useLanguage } from '../../shared/i18n/language-context'
 import { deadlineLabel } from '../schedule/academic-format'
+import { useDataText } from '../translation/data-text-context'
+import { DataTranslations } from '../translation/DataTranslations'
 import {
   getCourseOverview,
   setCourseDemoPassword,
@@ -161,7 +163,13 @@ function Overview({
   const shownCourses = showPast ? [...current, ...past] : current
 
   return (
-    <>
+    <DataTranslations
+      texts={[
+        ...[...labels.values()].map((label) => label.name),
+        ...data.notifications.map((item) => item.title),
+      ]}
+      context="대학교 LMS 과목명·과목 공지·과제 제목"
+    >
       <p className="course-summary">
         <strong>
           {t('알림 {count}건 · 수강 {courses}과목', {
@@ -216,19 +224,7 @@ function Overview({
         </>
       )}
 
-      {errors.map((error) => (
-        <p
-          className="course-error"
-          role="alert"
-          key={`${error.courseId}#${error.type}`}
-        >
-          {t('{course}의 {type}을(를) 불러오지 못했어요. ({code})', {
-            course: labels.get(error.courseId)?.name ?? error.courseId,
-            type: t(TYPE_LABELS[error.type]),
-            code: error.code,
-          })}
-        </p>
-      ))}
+      <OverviewErrors errors={errors} labels={labels} />
       {items.length === 0 && errors.length === 0 && (
         <p className="course-status">
           {t('진행 중인 {type}이(가) 없어요.', {
@@ -257,8 +253,35 @@ function Overview({
           )}
         </>
       )}
-    </>
+    </DataTranslations>
   )
+}
+
+function OverviewErrors({
+  errors,
+  labels,
+}: {
+  errors: CourseOverview['errors']
+  labels: Map<string, CourseLabel>
+}) {
+  const { t } = useLanguage()
+  const tr = useDataText()
+  return errors.map((error) => {
+    const name = labels.get(error.courseId)?.name
+    return (
+      <p
+        className="course-error"
+        role="alert"
+        key={`${error.courseId}#${error.type}`}
+      >
+        {t('{course}의 {type}을(를) 불러오지 못했어요. ({code})', {
+          course: name ? tr(name) : error.courseId,
+          type: t(TYPE_LABELS[error.type]),
+          code: error.code,
+        })}
+      </p>
+    )
+  })
 }
 
 function CourseCard({
@@ -271,6 +294,7 @@ function CourseCard({
   color: string
 }) {
   const { t } = useLanguage()
+  const name = useDataText()(label.name)
   const path = `/course-notices/${encodeURIComponent(courseId)}`
   return (
     <div className="course-tile">
@@ -278,8 +302,12 @@ function CourseCard({
         <span className="course-tile-head" style={{ background: color }}>
           {label.short}
         </span>
-        <strong>{label.name}</strong>
-        {label.term && <span className="course-meta">{label.term}</span>}
+        <strong>{name}</strong>
+        {label.term && (
+          <span className="course-meta">
+            {label.term.replace(/여름|겨울/, (season) => t(season))}
+          </span>
+        )}
       </Link>
       {/* 아이콘을 누르면 그 종류 탭이 열린 과목별 화면(S09)으로 간다. */}
       <span className="course-tile-icons">
@@ -288,7 +316,7 @@ function CourseCard({
             key={type}
             to={`${path}?type=${type}`}
             aria-label={t('{course} {type} 보기', {
-              course: label.name,
+              course: name,
               type: t(TYPE_LABELS[type]),
             })}
           >
@@ -326,6 +354,7 @@ function OverviewCard({
   label: CourseLabel | undefined
 }) {
   const { t, language } = useLanguage()
+  const tr = useDataText()
   const ongoing = !!item.dueAt && !isPastDue(item.dueAt)
   const pastDue = hasDeadlineField(item) && isPastDue(item.dueAt)
   const posted = kstLabel(item.publishedAt, language)
@@ -334,7 +363,7 @@ function OverviewCard({
     : posted
       ? t('게시 {date}', { date: posted })
       : null
-  const meta = [date, label?.name].filter(Boolean).join(' · ')
+  const meta = [date, label?.name && tr(label.name)].filter(Boolean).join(' · ')
   // 서버는 공지·과제만 보내지만, 상세가 없는 종류가 와도 카드가 깨지지 않게 한다.
   const path =
     detailPath(item) ?? `/course-notices/${encodeURIComponent(item.courseId)}`
@@ -363,7 +392,7 @@ function OverviewCard({
             </span>
           )}
         </span>
-        <strong>{item.title}</strong>
+        <strong>{tr(item.title)}</strong>
         {meta && <span className="course-meta">{meta}</span>}
       </span>
       <span className="course-card-open" aria-hidden="true">

@@ -2467,4 +2467,13 @@ export const messages: Record<string, { en: string; zh: string }> = {
     en: 'Past-deadline announcements',
     zh: '已截止公告',
   },
+  // 과목 카드의 계절학기 표기("2026-여름")
+  여름: {
+    en: 'Summer',
+    zh: '夏季',
+  },
+  겨울: {
+    en: 'Winter',
+    zh: '冬季',
+  },
 }
