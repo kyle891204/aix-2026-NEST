@@ -206,10 +206,6 @@
   background: #f4f6ff;
 }
 
-.course-card--selectable.is-disabled label {
-  cursor: default;
-}
-
 .course-card--selectable label {
   display: flex;
   flex: 1;
@@ -217,6 +213,11 @@
   gap: 12px;
   min-width: 0;
   cursor: pointer;
+}
+
+/* 마감일이 없어 체크박스가 없는 카드: 내용이 화살표 앞까지 채운다. */
+.course-card--selectable > .course-card-content {
+  flex: 1;
 }
 
 .course-card--selectable input {

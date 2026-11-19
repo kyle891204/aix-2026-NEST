@@ -343,6 +343,7 @@ function NoticeList({
 }
 
 // 왼쪽(체크·내용)을 누르면 선택하고, 오른쪽 화살표는 앱의 상세(S09-N·S09-T)를 연다(S09 검토 안내).
+// 마감일이 없어 저장할 수 없는 카드는 체크박스 없이 내용과 화살표만 보여준다.
 function SelectableCard({
   item,
   courseName,
@@ -360,52 +361,52 @@ function SelectableCard({
   const due = item.dueAt ? deadlineLabel(item.dueAt, language) : null
   const posted = kstLabel(item.publishedAt, language)
   const announcement = item.type === 'ANNOUNCEMENT'
-  return (
-    <div
-      className={`home-card course-card course-card--selectable${checked ? ' is-selected' : ''}${onToggle ? '' : ' is-disabled'}`}
-    >
-      <label>
-        <input
-          type="checkbox"
-          checked={checked}
-          disabled={!onToggle}
-          onChange={(event) => onToggle?.(event.target.checked)}
-        />
-        <span className="course-card-content">
-          <span className="course-badges">
-            <span className={`course-badge course-badge--${item.type}`}>
-              {t(TYPE_LABELS[item.type])}
-            </span>
-            <span className="course-due-tag">
-              {t(
-                due
-                  ? '마감 있음'
-                  : announcement
-                    ? '마감 확인 필요'
-                    : '마감 없음',
-              )}
-            </span>
-          </span>
-          <strong>{item.title}</strong>
-          <span className="course-meta">
-            {due
-              ? announcement
-                ? t('{date} · 공지 본문 기준', { date: due })
-                : due
-              : announcement && posted
-                ? t('게시 {date}', { date: posted })
-                : t('마감일 없음')}
-          </span>
-          {/* 공지 마감은 본문을 읽어 찾으므로, 못 찾았다고 마감이 없다고 단정하지 않는다. */}
-          {!due && announcement && (
-            <span className="course-meta course-meta--hint">
-              {t(
-                '본문에서 마감을 찾지 못했어요. 혹시 모르니 원문을 확인해 주세요.',
-              )}
-            </span>
+  const content = (
+    <span className="course-card-content">
+      <span className="course-badges">
+        <span className={`course-badge course-badge--${item.type}`}>
+          {t(TYPE_LABELS[item.type])}
+        </span>
+        <span className="course-due-tag">
+          {t(due ? '마감 있음' : announcement ? '마감 확인 필요' : '마감 없음')}
+        </span>
+      </span>
+      <strong>{item.title}</strong>
+      <span className="course-meta">
+        {due
+          ? announcement
+            ? t('{date} · 공지 본문 기준', { date: due })
+            : due
+          : announcement && posted
+            ? t('게시 {date}', { date: posted })
+            : t('마감일 없음')}
+      </span>
+      {/* 공지 마감은 본문을 읽어 찾으므로, 못 찾았다고 마감이 없다고 단정하지 않는다. */}
+      {!due && announcement && (
+        <span className="course-meta course-meta--hint">
+          {t(
+            '본문에서 마감을 찾지 못했어요. 혹시 모르니 원문을 확인해 주세요.',
           )}
         </span>
-      </label>
+      )}
+    </span>
+  )
+  return (
+    <div
+      className={`home-card course-card course-card--selectable${checked ? ' is-selected' : ''}`}
+    >
+      {onToggle ? (
+        <label>
+          <input
+            type="checkbox"
+            checked={checked}
+            onChange={(event) => onToggle(event.target.checked)}
+          />
+          {content}
+        </label>
+      ) : (
+        content
+      )}
       {path && (
         <Link
           className="course-card-open"
