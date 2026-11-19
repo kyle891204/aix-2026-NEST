@@ -6,6 +6,7 @@ import { deadlineLabel } from '../schedule/academic-format'
 import {
   addDeadlineSchedules,
   isSaved,
+  loadPersonalSchedules,
   type PersonalSchedule,
 } from '../schedule/personal-schedule-store'
 import { usePersonalSchedules } from '../schedule/usePersonalSchedules'
@@ -80,6 +81,10 @@ export function CourseNoticesPage() {
   const label = course ? courseLabel(course) : null
   // 상세를 보고 돌아오면 보던 위치로 되돌린다.
   const rememberScroll = useScrollMemory(notices.load?.status === 'ready')
+  const lead = leadMessage(
+    notices.load?.status === 'ready' ? notices.load.data : null,
+    accountId,
+  )
 
   if (needsDemoPassword(courses.load, notices.load))
     return (
@@ -114,9 +119,7 @@ export function CourseNoticesPage() {
       <div className="course-notices" onClickCapture={rememberScroll}>
         <BackLink to="/course-notices" />
         <h1>{label ? <DataText text={label.name} /> : t('과목알림')}</h1>
-        <p className="home-description">
-          {t('필요한 마감만 선택해 개인 일정에 저장하세요.')}
-        </p>
+        {lead && <p className="home-description">{t(lead)}</p>}
         {notices.load?.status === 'ready' && (
           <p className="course-summary">
             <strong>
@@ -175,6 +178,32 @@ export function CourseNoticesPage() {
         <CourseFootnote />
       </div>
     </DataTranslations>
+  )
+}
+
+// 상단 안내 문구. 저장할 항목이 없으면 그렇게 알리고, 일부를 못 불러와서 없는 것이면
+// 아래 오류 안내(다시 시도)에 맡기고 숨긴다.
+function leadMessage(
+  data: CourseNotifications | null,
+  accountId: string | null,
+) {
+  if (!data || hasSavable(data, accountId))
+    return '필요한 마감만 선택해 개인 일정에 저장하세요.'
+  return data.errors.length > 0
+    ? null
+    : '이 과목에는 지금 저장할 수 있는 마감 일정이 없어요.'
+}
+
+// 마감이 남아 있고 아직 저장하지 않은 항목이 하나라도 있는지. 상단 안내 문구를 고르는 데만 쓴다.
+function hasSavable(data: CourseNotifications, accountId: string | null) {
+  let saved: PersonalSchedule[] = []
+  try {
+    if (accountId) saved = loadPersonalSchedules(window.localStorage, accountId)
+  } catch {
+    // 저장소를 못 읽으면 저장한 일정이 없는 것으로 본다.
+  }
+  return data.notifications.some(
+    (item) => canSave(item) && !isSaved(saved, scheduleSource(item), item.id),
   )
 }
 
@@ -261,7 +290,7 @@ function NoticeList({
             onToggle={(checked) => toggle(item.id, checked)}
           />
         ) : hasDeadlineField(item) && !item.dueAt ? (
-          // 마감을 찾지 못한 공지·과제는 체크를 끄고 "마감 없음"으로 보여준다.
+          // 마감을 찾지 못한 공지·과제는 체크박스 없이 "마감 확인 필요"·"마감 없음"으로 보여준다.
           <SelectableCard item={item} courseName={courseName} checked={false} />
         ) : (
           <NoticeCard item={item} courseName={courseName} saved={saved(item)} />
@@ -363,6 +392,7 @@ function NoticeList({
 }
 
 // 왼쪽(체크·내용)을 누르면 선택하고, 오른쪽 화살표는 앱의 상세(S09-N·S09-T)를 연다(S09 검토 안내).
+// 마감일이 없어 저장할 수 없는 카드는 체크박스 없이, 카드 전체가 상세 링크다.
 function SelectableCard({
   item,
   courseName,
@@ -381,51 +411,62 @@ function SelectableCard({
   const due = item.dueAt ? deadlineLabel(item.dueAt, language) : null
   const posted = kstLabel(item.publishedAt, language)
   const announcement = item.type === 'ANNOUNCEMENT'
+  const content = (
+    <span className="course-card-content">
+      <span className="course-badges">
+        <span className={`course-badge course-badge--${item.type}`}>
+          {t(TYPE_LABELS[item.type])}
+        </span>
+        <span className="course-due-tag">
+          {t(due ? '마감 있음' : announcement ? '마감 확인 필요' : '마감 없음')}
+        </span>
+      </span>
+      <strong>{title}</strong>
+      <span className="course-meta">
+        {due
+          ? announcement
+            ? t('{date} · 공지 본문 기준', { date: due })
+            : due
+          : announcement && posted
+            ? t('게시 {date}', { date: posted })
+            : t('마감일 없음')}
+      </span>
+      {/* 공지 마감은 본문을 읽어 찾으므로, 못 찾았다고 마감이 없다고 단정하지 않는다. */}
+      {!due && announcement && (
+        <span className="course-meta course-meta--hint">
+          {t(
+            '본문에서 마감을 찾지 못했어요. 혹시 모르니 원문을 확인해 주세요.',
+          )}
+        </span>
+      )}
+    </span>
+  )
+  const className = `home-card course-card course-card--selectable${checked ? ' is-selected' : ''}`
+  // 고를 수 없는 카드는 저장됨·마감 지남 카드처럼 카드 어디를 눌러도 상세로 간다.
+  if (!onToggle)
+    return path ? (
+      <Link
+        className={className}
+        to={path}
+        state={{ item, courseName, from: 'course' } satisfies CourseItemState}
+      >
+        {content}
+        <span className="course-card-open" aria-hidden="true">
+          ›
+        </span>
+      </Link>
+    ) : (
+      <div className={className}>{content}</div>
+    )
   return (
-    <div
-      className={`home-card course-card course-card--selectable${checked ? ' is-selected' : ''}${onToggle ? '' : ' is-disabled'}`}
-    >
+    <div className={className}>
       <label>
         <input
           type="checkbox"
           checked={checked}
-          disabled={!onToggle}
-          onChange={(event) => onToggle?.(event.target.checked)}
+          onChange={(event) => onToggle(event.target.checked)}
         />
-        <span className="course-card-content">
-          <span className="course-badges">
-            <span className={`course-badge course-badge--${item.type}`}>
-              {t(TYPE_LABELS[item.type])}
-            </span>
-            <span className="course-due-tag">
-              {t(
-                due
-                  ? '마감 있음'
-                  : announcement
-                    ? '마감 확인 필요'
-                    : '마감 없음',
-              )}
-            </span>
-          </span>
-          <strong>{title}</strong>
-          <span className="course-meta">
-            {due
-              ? announcement
-                ? t('{date} · 공지 본문 기준', { date: due })
-                : due
-              : announcement && posted
-                ? t('게시 {date}', { date: posted })
-                : t('마감일 없음')}
-          </span>
-          {/* 공지 마감은 본문을 읽어 찾으므로, 못 찾았다고 마감이 없다고 단정하지 않는다. */}
-          {!due && announcement && (
-            <span className="course-meta course-meta--hint">
-              {t(
-                '본문에서 마감을 찾지 못했어요. 혹시 모르니 원문을 확인해 주세요.',
-              )}
-            </span>
-          )}
-        </span>
+        {content}
       </label>
       {path && (
         <Link
