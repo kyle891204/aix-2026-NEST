@@ -330,7 +330,10 @@ test('collects only displayed posts and replies, and never sends editing forms o
   assert.equal(detail.at(-1)?.sourceLanguage, 'zh')
   assert.match(list[0].context, /본문 일부: 첫 줄 둘째 줄/)
   assert.match(detail[1].context, /글 제목: 제목/)
-  assert.match(detail.at(-1)!.context, /글 제목: 제목 · 본문 일부: 첫 줄 둘째 줄/)
+  assert.match(
+    detail.at(-1)!.context,
+    /글 제목: 제목 · 본문 일부: 첫 줄 둘째 줄/,
+  )
   assert.ok(detail.every((entry) => entry.context.length <= 200))
   assert.equal(JSON.stringify(detail).includes('private-id'), false)
   assert.deepEqual(collectBoardItems('free', posts, '/life/free/new', ''), [])
@@ -353,8 +356,18 @@ test('reply context changes with the parent post while the original reply stays 
     language: 'ko' as const,
     replies: [{ id: 'r1', content: '거기서 봐요!', language: 'ko' as const }],
   })
-  const library = collectBoardItems('free', [makePost('도서관에서 스터디')], '/life/free/p1', '')
-  const market = collectBoardItems('free', [makePost('중고 책 거래')], '/life/free/p1', '')
+  const library = collectBoardItems(
+    'free',
+    [makePost('도서관에서 스터디')],
+    '/life/free/p1',
+    '',
+  )
+  const market = collectBoardItems(
+    'free',
+    [makePost('중고 책 거래')],
+    '/life/free/p1',
+    '',
+  )
   assert.equal(library.at(-1)?.text, '거기서 봐요!')
   assert.notEqual(library.at(-1)?.context, market.at(-1)?.context)
   assert.match(library.at(-1)!.context, /도서관에서 스터디/)
