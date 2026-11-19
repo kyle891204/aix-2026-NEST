@@ -81,6 +81,10 @@ export function CourseNoticesPage() {
   const label = course ? courseLabel(course) : null
   // 상세를 보고 돌아오면 보던 위치로 되돌린다.
   const rememberScroll = useScrollMemory(notices.load?.status === 'ready')
+  const lead = leadMessage(
+    notices.load?.status === 'ready' ? notices.load.data : null,
+    accountId,
+  )
 
   if (needsDemoPassword(courses.load, notices.load))
     return (
@@ -115,12 +119,7 @@ export function CourseNoticesPage() {
       <div className="course-notices" onClickCapture={rememberScroll}>
         <BackLink to="/course-notices" />
         <h1>{label ? <DataText text={label.name} /> : t('과목알림')}</h1>
-        <p className="home-description">
-          {notices.load?.status === 'ready' &&
-          !hasSavable(notices.load.data, accountId)
-            ? t('이 과목에는 지금 저장할 수 있는 마감 일정이 없어요.')
-            : t('필요한 마감만 선택해 개인 일정에 저장하세요.')}
-        </p>
+        {lead && <p className="home-description">{t(lead)}</p>}
         {notices.load?.status === 'ready' && (
           <p className="course-summary">
             <strong>
@@ -180,6 +179,19 @@ export function CourseNoticesPage() {
       </div>
     </DataTranslations>
   )
+}
+
+// 상단 안내 문구. 저장할 항목이 없으면 그렇게 알리고, 일부를 못 불러와서 없는 것이면
+// 아래 오류 안내(다시 시도)에 맡기고 숨긴다.
+function leadMessage(
+  data: CourseNotifications | null,
+  accountId: string | null,
+) {
+  if (!data || hasSavable(data, accountId))
+    return '필요한 마감만 선택해 개인 일정에 저장하세요.'
+  return data.errors.length > 0
+    ? null
+    : '이 과목에는 지금 저장할 수 있는 마감 일정이 없어요.'
 }
 
 // 마감이 남아 있고 아직 저장하지 않은 항목이 하나라도 있는지. 상단 안내 문구를 고르는 데만 쓴다.
