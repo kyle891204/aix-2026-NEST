@@ -10,6 +10,12 @@ import {
   type PersonalSchedule,
 } from '../schedule/personal-schedule-store'
 import { usePersonalSchedules } from '../schedule/usePersonalSchedules'
+import { useDataText } from '../translation/data-text-context'
+import {
+  DataText,
+  DataTranslations,
+  DataTranslationStatus,
+} from '../translation/DataTranslations'
 import {
   getCourseNotifications,
   getCourses,
@@ -94,71 +100,85 @@ export function CourseNoticesPage() {
     )
 
   return (
-    <div className="course-notices" onClickCapture={rememberScroll}>
-      <BackLink to="/course-notices" />
-      <h1>{label?.name ?? t('과목알림')}</h1>
-      <p className="home-description">
-        {notices.load?.status === 'ready' &&
-        !hasSavable(notices.load.data, accountId)
-          ? t('이 과목에는 지금 저장할 수 있는 마감 일정이 없어요.')
-          : t('필요한 마감만 선택해 개인 일정에 저장하세요.')}
-      </p>
-      {notices.load?.status === 'ready' && (
-        <p className="course-summary">
-          <strong>
-            {t('총 {count}건', {
-              count: notices.load.data.notifications.length,
-            })}
-          </strong>
+    <DataTranslations
+      texts={[
+        label?.name,
+        ...(notices.load?.status === 'ready'
+          ? notices.load.data.notifications.flatMap((item) => [
+              item.title,
+              item.moduleName,
+            ])
+          : []),
+      ]}
+      context="대학교 LMS 과목명·과목 공지·과제 제목"
+    >
+      <div className="course-notices" onClickCapture={rememberScroll}>
+        <BackLink to="/course-notices" />
+        <h1>{label ? <DataText text={label.name} /> : t('과목알림')}</h1>
+        <p className="home-description">
+          {notices.load?.status === 'ready' &&
+          !hasSavable(notices.load.data, accountId)
+            ? t('이 과목에는 지금 저장할 수 있는 마감 일정이 없어요.')
+            : t('필요한 마감만 선택해 개인 일정에 저장하세요.')}
         </p>
-      )}
+        {notices.load?.status === 'ready' && (
+          <p className="course-summary">
+            <strong>
+              {t('총 {count}건', {
+                count: notices.load.data.notifications.length,
+              })}
+            </strong>
+          </p>
+        )}
 
-      <div
-        className="course-tabs course-tabs--compact"
-        role="group"
-        aria-label={t('알림 종류')}
-      >
-        {FILTERS.map((value) => (
-          <button
-            type="button"
-            key={value}
-            aria-pressed={filter === value}
-            onClick={() =>
-              setSearchParams(value === 'ALL' ? {} : { type: value }, {
-                replace: true,
-              })
-            }
-          >
-            {t(
-              value === 'ALL'
-                ? '전체'
-                : value === 'MATERIAL'
-                  ? '학습자료'
-                  : TYPE_LABELS[value],
-            )}
-          </button>
-        ))}
+        <div
+          className="course-tabs course-tabs--compact"
+          role="group"
+          aria-label={t('알림 종류')}
+        >
+          {FILTERS.map((value) => (
+            <button
+              type="button"
+              key={value}
+              aria-pressed={filter === value}
+              onClick={() =>
+                setSearchParams(value === 'ALL' ? {} : { type: value }, {
+                  replace: true,
+                })
+              }
+            >
+              {t(
+                value === 'ALL'
+                  ? '전체'
+                  : value === 'MATERIAL'
+                    ? '학습자료'
+                    : TYPE_LABELS[value],
+              )}
+            </button>
+          ))}
+        </div>
+
+        <DataTranslationStatus />
+        {notices.load?.status === 'loading' && (
+          <p className="course-status">{t('알림을 불러오고 있어요…')}</p>
+        )}
+        {notices.load?.status === 'error' && (
+          <Retry message={notices.load.message} onRetry={notices.retry} />
+        )}
+        {/* 과목이나 계정이 바뀌면 선택과 저장 목록을 다시 만든다. */}
+        {notices.load?.status === 'ready' && (
+          <NoticeList
+            key={`${accountId ?? 'signed-out'}#${notices.load.data.courseId}`}
+            accountId={accountId}
+            data={notices.load.data}
+            filter={filter}
+            courseName={label?.name ?? null}
+          />
+        )}
+
+        <CourseFootnote />
       </div>
-
-      {notices.load?.status === 'loading' && (
-        <p className="course-status">{t('알림을 불러오고 있어요…')}</p>
-      )}
-      {notices.load?.status === 'error' && (
-        <Retry message={notices.load.message} onRetry={notices.retry} />
-      )}
-      {/* 과목이나 계정이 바뀌면 선택과 저장 목록을 다시 만든다. */}
-      {notices.load?.status === 'ready' && (
-        <NoticeList
-          key={`${accountId ?? 'signed-out'}#${notices.load.data.courseId}`}
-          accountId={accountId}
-          data={notices.load.data}
-          filter={filter}
-          courseName={label?.name ?? null}
-        />
-      )}
-
-      <CourseFootnote />
-    </div>
+    </DataTranslations>
   )
 }
 
@@ -374,6 +394,7 @@ function SelectableCard({
   onToggle?: (checked: boolean) => void
 }) {
   const { t, language } = useLanguage()
+  const title = useDataText()(item.title)
   const path = detailPath(item)
   const due = item.dueAt ? deadlineLabel(item.dueAt, language) : null
   const posted = kstLabel(item.publishedAt, language)
@@ -388,7 +409,7 @@ function SelectableCard({
           {t(due ? '마감 있음' : announcement ? '마감 확인 필요' : '마감 없음')}
         </span>
       </span>
-      <strong>{item.title}</strong>
+      <strong>{title}</strong>
       <span className="course-meta">
         {due
           ? announcement
@@ -440,7 +461,7 @@ function SelectableCard({
           className="course-card-open"
           to={path}
           state={{ item, courseName, from: 'course' } satisfies CourseItemState}
-          aria-label={t('{title} 상세 보기', { title: item.title })}
+          aria-label={t('{title} 상세 보기', { title })}
         >
           ›
         </Link>
@@ -473,7 +494,9 @@ function NoticeCard({
         )}
         {saved && <span className="course-badge">{t('저장됨')}</span>}
       </div>
-      <h2>{item.title}</h2>
+      <h2>
+        <DataText text={item.title} />
+      </h2>
       <CardMeta item={item} />
     </>
   )
@@ -513,6 +536,7 @@ function NoticeCard({
 
 function CardMeta({ item }: { item: CourseNotification }) {
   const { t, language } = useLanguage()
+  const tr = useDataText()
 
   if (item.type === 'ASSIGNMENT') {
     const due = kstLabel(item.dueAt, language)
@@ -535,7 +559,7 @@ function CardMeta({ item }: { item: CourseNotification }) {
     ) : null
   }
   const details = [
-    item.moduleName,
+    item.moduleName && tr(item.moduleName),
     t(materialLabel(item.materialType) ?? ''),
   ].filter(Boolean)
   return details.length > 0 ? (

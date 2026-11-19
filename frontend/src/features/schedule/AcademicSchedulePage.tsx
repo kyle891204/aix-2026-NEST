@@ -4,6 +4,11 @@ import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { schoolMessage } from '../../shared/i18n/school-message'
 import { ApiError } from '../../shared/api/client'
 import { useAuth } from '../auth/auth-context'
+import { useDataText } from '../translation/data-text-context'
+import {
+  DataTranslations,
+  DataTranslationStatus,
+} from '../translation/DataTranslations'
 import { getAcademicSchedules, type AcademicSchedules } from './api'
 import {
   dateRangeLabel,
@@ -175,12 +180,18 @@ function ScheduleTabs({ accountId }: { accountId: string | null }) {
           <Link to="/login">{t('로그인하기 ›')}</Link>
         </p>
       ) : tab === 'mine' ? (
-        <PersonalSchedules
-          schedules={personal.schedules}
-          recentIds={recentIds}
-          today={today}
-          onChange={personal.update}
-        />
+        <DataTranslations
+          texts={personal.schedules.map((item) => item.title)}
+          context="대학교 학사일정·공지·과제 제목"
+        >
+          <DataTranslationStatus />
+          <PersonalSchedules
+            schedules={personal.schedules}
+            recentIds={recentIds}
+            today={today}
+            onChange={personal.update}
+          />
+        </DataTranslations>
       ) : (
         <>
           <WeekCard today={today} />
@@ -207,12 +218,18 @@ function ScheduleTabs({ accountId }: { accountId: string | null }) {
             </div>
           )}
           {load?.status === 'ready' && (
-            <EventList
-              data={load.data}
-              today={today}
-              saved={personal.schedules}
-              onChange={personal.update}
-            />
+            <DataTranslations
+              texts={load.data.schedules.map((event) => event.title)}
+              context="대학교 학사일정 제목"
+            >
+              <DataTranslationStatus />
+              <EventList
+                data={load.data}
+                today={today}
+                saved={personal.schedules}
+                onChange={personal.update}
+              />
+            </DataTranslations>
           )}
 
           <footer className="schedule-source">
@@ -266,6 +283,7 @@ function EventList({
   onChange: (change: PersonalChange) => boolean
 }) {
   const { t, language } = useLanguage()
+  const tr = useDataText()
 
   if (data.schedules.length === 0)
     return <p className="schedule-status">{t('아직 올라온 일정이 없어요.')}</p>
@@ -282,12 +300,13 @@ function EventList({
             {group.events.map((event) => {
               const timing = eventTiming(event, today)
               const isSaved = isAcademicSaved(saved, event.scheduleId)
+              const title = tr(event.title)
               return (
                 <li
                   className={`schedule-event schedule-event--${timing}`}
                   key={event.scheduleId}
                 >
-                  <strong>{event.title}</strong>
+                  <strong>{title}</strong>
                   <span>
                     {t('학교 학사일정')} · {dateRangeLabel(event, language)}
                     {timing === 'ongoing' && <em>{t('진행 중')}</em>}
@@ -300,10 +319,8 @@ function EventList({
                         disabled={isSaved}
                         aria-label={
                           isSaved
-                            ? t('{title} 저장됨', { title: event.title })
-                            : t('{title} 내 일정에 저장', {
-                                title: event.title,
-                              })
+                            ? t('{title} 저장됨', { title })
+                            : t('{title} 내 일정에 저장', { title })
                         }
                         onClick={() =>
                           onChange((current) =>
