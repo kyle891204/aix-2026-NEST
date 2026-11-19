@@ -100,9 +100,10 @@ export async function getCourses(): Promise<CourseList> {
 
 export async function getCourseNotifications(
   courseId: string,
+  type?: NotificationType,
 ): Promise<CourseNotifications> {
   const value = await requestCourses(
-    `/courses/${encodeURIComponent(courseId)}/notifications`,
+    `/courses/${encodeURIComponent(courseId)}/notifications${type ? `?type=${type}` : ''}`,
   )
   if (
     !isRecord(value) ||

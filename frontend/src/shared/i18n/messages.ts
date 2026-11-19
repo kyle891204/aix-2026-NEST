@@ -1868,6 +1868,25 @@ export const messages: Record<string, { en: string; zh: string }> = {
   행사: { en: 'Event', zh: '活动' },
   기타: { en: 'Other', zh: '其他' },
   '나에게 해당하는 공지': { en: 'Notices for me', zh: '与我相关的通知' },
+  '공지 종류': { en: 'Notice type', zh: '通知类型' },
+  학교공지: { en: 'University notices', zh: '学校通知' },
+  과목일정: { en: 'Course deadlines', zh: '课程截止日程' },
+  '과목일정을 불러오지 못했어요.': {
+    en: 'Could not load course deadlines.',
+    zh: '无法加载课程截止日程。',
+  },
+  '과목일정을 보려면 과목알림에서 데모 암호를 입력해 주세요.': {
+    en: 'Enter the demo password in Course notifications to see course deadlines.',
+    zh: '请在课程通知中输入演示密码以查看课程截止日程。',
+  },
+  '과목알림 보기 ›': {
+    en: 'Open course notifications ›',
+    zh: '查看课程通知 ›',
+  },
+  '지금 표시할 과목일정이 없어요.': {
+    en: 'There are no upcoming course deadlines.',
+    zh: '目前没有即将到来的课程截止日程。',
+  },
   '모두 보기 ›': { en: 'View all ›', zh: '查看全部 ›' },
   '맞춤 공지를 고르고 있어요…': {
     en: 'Finding notices for you…',
