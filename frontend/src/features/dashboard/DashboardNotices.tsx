@@ -8,6 +8,7 @@ import { useAuth } from '../auth/auth-context'
 import { noticeProfile } from '../notices/api'
 import type { SignupProfile } from '../profile/demo-profile'
 import {
+  applicableDashboardNotices,
   dashboardErrorMessage,
   getDashboard,
   type DashboardNotice,
@@ -21,7 +22,7 @@ import {
 import './dashboard.css'
 
 const HOME_LIMIT = 3
-type NoticeFilter = 'all' | 'school' | 'course'
+type NoticeFilter = 'school' | 'course'
 
 const STATUS_LABELS: Record<DashboardNotice['matchStatus'], string> = {
   APPLICABLE: '해당',
@@ -54,7 +55,7 @@ export function DashboardNotices({
 
   // 로그인 세션(게스트 포함)과 CSRF 토큰을 먼저 받은 뒤 요청한다. 동시에 보내면 게스트 세션이 둘 생길 수 있다.
   const { loading: authLoading } = useAuth()
-  const [filter, setFilter] = useState<NoticeFilter>('all')
+  const [filter, setFilter] = useState<NoticeFilter>('school')
   // 전체공지와 같은 값을 보내 같은 공지 중에서 고른다.
   const requestKey = JSON.stringify(noticeProfile(profile))
   const [attempt, setAttempt] = useState(0)
@@ -98,7 +99,12 @@ export function DashboardNotices({
   }, [authLoading, requestKey, attempt])
 
   useEffect(() => {
-    if (authLoading) return
+    if (
+      authLoading ||
+      filter !== 'course' ||
+      courseResult?.attempt === courseAttempt
+    )
+      return
     let active = true
     getDashboardCourseSchedules(HOME_LIMIT)
       .then((items) => {
@@ -121,32 +127,22 @@ export function DashboardNotices({
     return () => {
       active = false
     }
-  }, [authLoading, courseAttempt])
+  }, [authLoading, courseAttempt, courseResult, filter])
 
-  const showSchool = filter !== 'course'
-  const showCourse = filter !== 'school'
-  const schoolNotices = load.status === 'ready' ? load.data.matchedNotices : []
+  const showSchool = filter === 'school'
+  const showCourse = filter === 'course'
+  const schoolNotices =
+    load.status === 'ready' ? applicableDashboardNotices(load.data) : []
   const courseSchedules = courseLoad.status === 'ready' ? courseLoad.items : []
-  const entries = [
-    ...(showSchool
-      ? schoolNotices.map((notice) => ({
-          kind: 'school' as const,
-          notice,
-          dueAt: notice.deadline,
-        }))
-      : []),
-    ...(showCourse
-      ? courseSchedules.map((schedule) => ({
-          kind: 'course' as const,
-          schedule,
-          dueAt: schedule.dueAt,
-        }))
-      : []),
-  ].sort((a, b) => {
-    const first = a.dueAt ? Date.parse(a.dueAt) : Infinity
-    const second = b.dueAt ? Date.parse(b.dueAt) : Infinity
-    return first - second
-  })
+  const entries = showSchool
+    ? schoolNotices.map((notice) => ({
+        kind: 'school' as const,
+        notice,
+      }))
+    : courseSchedules.map((schedule) => ({
+        kind: 'course' as const,
+        schedule,
+      }))
   const loading =
     (showSchool && load.status === 'loading') ||
     (showCourse && courseLoad.status === 'loading')
@@ -155,7 +151,13 @@ export function DashboardNotices({
     <section className="school-notices">
       <div className="home-section-heading">
         <h2>{t('나에게 해당하는 공지')}</h2>
-        <Link to={filter === 'course' ? '/course-notices' : '/notices'}>
+        <Link
+          to={
+            filter === 'course'
+              ? '/course-notices?tab=ASSIGNMENT'
+              : '/notices?match=APPLICABLE'
+          }
+        >
           {t('모두 보기 ›')}
         </Link>
       </div>
@@ -168,7 +170,7 @@ export function DashboardNotices({
         <button
           type="button"
           aria-pressed={filter === 'school'}
-          onClick={() => setFilter(filter === 'school' ? 'all' : 'school')}
+          onClick={() => setFilter('school')}
         >
           {t('학교공지')}
         </button>
@@ -176,7 +178,7 @@ export function DashboardNotices({
         <button
           type="button"
           aria-pressed={filter === 'course'}
-          onClick={() => setFilter(filter === 'course' ? 'all' : 'course')}
+          onClick={() => setFilter('course')}
         >
           {t('과목일정')}
         </button>

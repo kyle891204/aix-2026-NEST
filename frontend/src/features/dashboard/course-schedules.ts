@@ -13,7 +13,7 @@ export interface DashboardCourseSchedule {
   dueAt: string
 }
 
-// 과제와 본문에서 마감이 확인된 과목 공지만 일정으로 보여준다.
+// 과목알림의 '과제·마감' 탭과 같은 진행 중인 과제만 보여준다.
 export function upcomingCourseSchedules(
   courses: CourseSummary[],
   notifications: CourseNotification[],
@@ -25,7 +25,7 @@ export function upcomingCourseSchedules(
   return notifications
     .filter((item) => {
       const due = item.dueAt ? Date.parse(item.dueAt) : NaN
-      return item.type !== 'MATERIAL' && Number.isFinite(due) && due >= now
+      return item.type === 'ASSIGNMENT' && Number.isFinite(due) && due >= now
     })
     .map((item) => ({
       id: `${item.courseId}:${item.id}`,
@@ -45,7 +45,10 @@ export async function getDashboardCourseSchedules(limit: number) {
     overview.notifications,
   )
   // 일부 과목 조회가 실패했고 표시할 일정도 없다면 빈 목록이라고 단정하지 않는다.
-  if (overview.errors.length > 0 && schedules.length === 0)
+  if (
+    overview.errors.some((error) => error.type === 'ASSIGNMENT') &&
+    schedules.length === 0
+  )
     throw new Error('과목일정을 불러오지 못했어요.')
   return schedules.slice(0, limit)
 }

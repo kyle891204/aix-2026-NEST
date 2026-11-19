@@ -49,7 +49,7 @@ function overview(
   return { courses, notifications, errors, truncated: false }
 }
 
-test('dashboard course schedules include only upcoming deadlines across courses', () => {
+test('dashboard course schedules include only upcoming assignment deadlines', () => {
   const data = overview([
     notification('1', 'past', 'ASSIGNMENT', '2026-11-18T10:00:00+09:00'),
     notification('1', 'later', 'ASSIGNMENT', '2026-11-22T10:00:00+09:00'),
@@ -68,10 +68,7 @@ test('dashboard course schedules include only upcoming deadlines across courses'
       courseName,
       notificationId,
     ]),
-    [
-      ['2:soon', '자료구조', 'soon'],
-      ['1:later', 'AI 개론', 'later'],
-    ],
+    [['1:later', 'AI 개론', 'later']],
   )
 })
 
@@ -115,4 +112,18 @@ test('a partial outage without deadlines is not reported as an empty schedule', 
     )) as typeof fetch
 
   await assert.rejects(getDashboardCourseSchedules(3))
+})
+
+test('announcement errors do not affect the assignment deadline filter', async () => {
+  globalThis.fetch = (async () =>
+    new Response(
+      JSON.stringify(
+        overview(
+          [],
+          [{ courseId: '1', type: 'ANNOUNCEMENT', code: 'LMS_UNAVAILABLE' }],
+        ),
+      ),
+    )) as typeof fetch
+
+  assert.deepEqual(await getDashboardCourseSchedules(3), [])
 })
