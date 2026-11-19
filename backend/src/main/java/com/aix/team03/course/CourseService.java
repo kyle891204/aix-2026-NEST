@@ -7,12 +7,17 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,7 +28,10 @@ import static com.aix.team03.course.CourseModels.*;
 @Service
 public class CourseService {
     // 학습자료로 보여줄 모듈 항목 종류. 과제·퀴즈·토론은 각자의 목록에서 다룬다.
+    private static final ZoneId KOREA = ZoneId.of("Asia/Seoul");
     private static final Set<String> MATERIAL_TYPES = Set.of("File", "Page", "ExternalUrl", "ExternalTool");
+    // 전체 과목 화면은 과목마다 LMS를 두 번(공지·과제) 부른다. 한꺼번에 몰리지 않게 동시에 4과목까지만 조회한다.
+    private static final int OVERVIEW_PARALLELISM = 4;
 
     private final HanyangLmsClient lms;
     private final Clock clock;
@@ -76,6 +84,86 @@ public class CourseService {
                 List.copyOf(result.errors), result.truncated);
     }
 
+    /**
+     * S08 전체 과목 화면. 모든 과목의 공지(기간 안)와 마감 있는 과제를 모아 마감 임박순 → 마감 없는 공지(최근 게시순)
+     * → 마감 지난 공지·과제(최근 마감순)로 정렬한다. 마감 지난 과제는 공지와 같은 기간 안에 마감된 것만 넣고,
+     * 화면은 마감 지난 항목을 "마감 지난 공지·과제 보기"로 따로 펼친다.
+     * 과목 하나가 실패해도 나머지를 보여주고, 모든 과목이 실패하면 첫 LMS 오류를 그대로 돌려준다.
+     */
+    public CourseOverview overview(LocalDate start, LocalDate end) {
+        var list = courses();
+        var types = EnumSet.of(NotificationType.ANNOUNCEMENT, NotificationType.ASSIGNMENT);
+        var notifications = new ArrayList<Notification>();
+        var errors = new ArrayList<CourseError>();
+        boolean truncated = list.truncated();
+        LmsIntegrationException firstFailure = null;
+        int failedCourses = 0;
+        try (var executor = Executors.newFixedThreadPool(OVERVIEW_PARALLELISM)) {
+            var futures = new ArrayList<Future<CourseNotifications>>();
+            for (var course : list.courses()) {
+                long courseId = Long.parseLong(course.courseId());
+                futures.add(executor.submit(() -> notifications(courseId, types, start, end)));
+            }
+            for (int index = 0; index < futures.size(); index++) {
+                var courseId = list.courses().get(index).courseId();
+                try {
+                    var result = futures.get(index).get();
+                    notifications.addAll(result.notifications());
+                    result.errors().forEach(error -> errors.add(new CourseError(courseId, error.type(), error.code())));
+                    truncated |= result.truncated();
+                } catch (ExecutionException exception) {
+                    if (!(exception.getCause() instanceof LmsIntegrationException failure)) {
+                        throw new IllegalStateException(exception.getCause());
+                    }
+                    // 과목 전체가 실패하면 공지·과제 둘 다 못 읽은 것으로 알린다.
+                    for (var type : types) errors.add(new CourseError(courseId, type, failure.getCode()));
+                    if (firstFailure == null) firstFailure = failure;
+                    failedCourses++;
+                }
+            }
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException(exception);
+        }
+        if (firstFailure != null && failedCourses == list.courses().size()) throw firstFailure;
+        Instant now = clock.instant();
+        Instant from = start.atStartOfDay(KOREA).toInstant();
+        var sorted = notifications.stream()
+                .filter(item -> item.type() == NotificationType.ANNOUNCEMENT || isDueAfter(item.dueAt(), from))
+                .sorted(Comparator.comparing((Notification item) -> overviewGroup(item, now))
+                        .thenComparing(item -> upcomingDue(item, now), Comparator.nullsLast(Comparator.naturalOrder()))
+                        .thenComparing(item -> pastDue(item, now), Comparator.nullsLast(Comparator.reverseOrder()))
+                        .thenComparing(item -> parseInstant(item.publishedAt()),
+                                Comparator.nullsLast(Comparator.reverseOrder())))
+                .toList();
+        return new CourseOverview(list.courses(), sorted, List.copyOf(errors), truncated);
+    }
+
+    private static boolean isDueAfter(String dueAt, Instant from) {
+        Instant due = parseInstant(dueAt);
+        return due != null && !due.isBefore(from);
+    }
+
+    // 0: 마감 전, 1: 마감 없는 공지, 2: 마감 지난 공지·과제
+    private static int overviewGroup(Notification item, Instant now) {
+        if (isUpcoming(item.dueAt(), now)) return 0;
+        return parseInstant(item.dueAt()) == null ? 1 : 2;
+    }
+
+    private static Instant pastDue(Notification item, Instant now) {
+        return overviewGroup(item, now) == 2 ? parseInstant(item.dueAt()) : null;
+    }
+
+    private static boolean isUpcoming(String dueAt, Instant now) {
+        Instant due = parseInstant(dueAt);
+        return due != null && !due.isBefore(now);
+    }
+
+    // 마감이 남은 항목만 마감 시각으로 앞에 세운다. 마감이 없거나 지난 공지는 게시일 순서로 뒤에 온다.
+    private static Instant upcomingDue(Notification item, Instant now) {
+        return isUpcoming(item.dueAt(), now) ? parseInstant(item.dueAt()) : null;
+    }
+
     /** 유형별 조회 결과를 모은다. truncated는 LMS 페이지 상한에 걸린 목록이 하나라도 있으면 true다. */
     private static final class Collected {
         final List<Notification> notifications = new ArrayList<>();
@@ -94,9 +182,10 @@ public class CourseService {
                 .sorted(Comparator.comparing((LmsModels.Announcement item) -> parseInstant(item.postedAt()),
                         Comparator.nullsLast(Comparator.reverseOrder())))
                 // LMS 공지에는 마감일 칸이 없어 본문에서 "~까지" 같은 날짜를 찾아 마감으로 쓴다(개인 일정 저장용).
-                .map(item -> new Notification("announcement-" + item.id(), NotificationType.ANNOUNCEMENT,
-                        item.title(), item.postedAt(), AnnouncementDeadlines.find(item.message(), item.postedAt()),
-                        null, null, null, item.htmlUrl(), null))
+                .map(item -> new Notification(String.valueOf(courseId), "announcement-" + item.id(),
+                        NotificationType.ANNOUNCEMENT, item.title(), item.postedAt(),
+                        AnnouncementDeadlines.find(item.message(), item.postedAt()), null, null, null, item.htmlUrl(),
+                        null, CourseText.of(item.message())))
                 .forEach(result.notifications::add);
     }
 
@@ -117,8 +206,9 @@ public class CourseService {
         upcoming.sort(byDue);
         past.sort(byDue.reversed());
         Stream.of(upcoming, past, undated).flatMap(List::stream)
-                .map(item -> new Notification("assignment-" + item.id(), NotificationType.ASSIGNMENT,
-                        item.name(), null, item.dueAt(), item.lockAt(), null, null, item.htmlUrl(), null))
+                .map(item -> new Notification(String.valueOf(courseId), "assignment-" + item.id(),
+                        NotificationType.ASSIGNMENT, item.name(), null, item.dueAt(), item.lockAt(), null, null,
+                        item.htmlUrl(), null, CourseText.of(item.description())))
                 .forEach(result.notifications::add);
     }
 
@@ -142,8 +232,9 @@ public class CourseService {
                 result.items(lms.moduleItems(courseId, module.id())).stream()
                         .filter(item -> MATERIAL_TYPES.contains(item.type()))
                         .sorted(Comparator.comparing(LmsModels.ModuleItem::position, Comparator.nullsLast(Comparator.naturalOrder())))
-                        .map(item -> new Notification("material-" + item.id(), NotificationType.MATERIAL, item.title(),
-                                null, null, null, item.type(), module.name(), item.htmlUrl(), null))
+                        .map(item -> new Notification(String.valueOf(courseId), "material-" + item.id(),
+                                NotificationType.MATERIAL, item.title(), null, null, null, item.type(), module.name(),
+                                item.htmlUrl(), null, null))
                         .forEach(result.notifications::add);
             } catch (LmsIntegrationException exception) {
                 // 한 주차의 항목 조회가 실패해도 이미 읽은 자료는 남기고, 학습자료 일부 실패로 한 번만 알린다.

@@ -57,8 +57,8 @@ class CourseControllerTests {
     @Test
     void notificationsDefaultToAllTypesAndTheLastNinetyDays() throws Exception {
         when(courses.notifications(anyLong(), any(), any(), any())).thenReturn(new CourseNotifications("12",
-                List.of(new Notification("assignment-22", NotificationType.ASSIGNMENT, "9주차 과제", null,
-                        "2026-11-03T14:59:00Z", null, null, null, "https://lms.test/as/22", null)),
+                List.of(new Notification("12", "assignment-22", NotificationType.ASSIGNMENT, "9주차 과제", null,
+                        "2026-11-03T14:59:00Z", null, null, null, "https://lms.test/as/22", null, "제안서를 올려 주세요.")),
                 List.of(new NotificationError(NotificationType.MATERIAL, "LMS_CONNECTION_FAILED")), true));
 
         call("/api/v1/courses/12/notifications")
@@ -67,12 +67,31 @@ class CourseControllerTests {
                 .andExpect(jsonPath("$.notifications[0].type").value("ASSIGNMENT"))
                 .andExpect(jsonPath("$.notifications[0].dueAt").value("2026-11-03T14:59:00Z"))
                 .andExpect(jsonPath("$.notifications[0].savedScheduleId").isEmpty())
+                .andExpect(jsonPath("$.notifications[0].courseId").value("12"))
+                .andExpect(jsonPath("$.notifications[0].content").value("제안서를 올려 주세요."))
                 .andExpect(jsonPath("$.errors[0].type").value("MATERIAL"))
                 .andExpect(jsonPath("$.errors[0].code").value("LMS_CONNECTION_FAILED"))
                 .andExpect(jsonPath("$.truncated").value(true));
 
         LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
         verify(courses).notifications(12, EnumSet.allOf(NotificationType.class), today.minusDays(90), today);
+    }
+
+    @Test
+    void overviewUsesTheSameNinetyDayPeriod() throws Exception {
+        when(courses.overview(any(), any())).thenReturn(new CourseOverview(
+                List.of(new CourseSummary("12", "자료구조", "CSE2010", null)), List.of(),
+                List.of(new CourseError("12", NotificationType.ASSIGNMENT, "LMS_HTTP_ERROR")), false));
+
+        call("/api/v1/courses/notifications")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.courses[0].courseId").value("12"))
+                .andExpect(jsonPath("$.errors[0].courseId").value("12"))
+                .andExpect(jsonPath("$.errors[0].type").value("ASSIGNMENT"))
+                .andExpect(jsonPath("$.truncated").value(false));
+
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
+        verify(courses).overview(today.minusDays(90), today);
     }
 
     @Test

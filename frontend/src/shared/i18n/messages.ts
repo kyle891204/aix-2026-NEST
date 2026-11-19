@@ -2334,4 +2334,137 @@ export const messages: Record<string, { en: string; zh: string }> = {
     en: 'deadline has passed',
     zh: '截止时间已过',
   },
+  // 과목알림 S08·S09 (#62)
+  '전체 과목': {
+    en: 'All courses',
+    zh: '全部课程',
+  },
+  '과제·마감': {
+    en: 'Assignments & deadlines',
+    zh: '作业·截止',
+  },
+  뒤로: {
+    en: 'Back',
+    zh: '返回',
+  },
+  '과목알림을 불러오고 있어요…': {
+    en: 'Loading course notifications…',
+    zh: '正在加载课程通知…',
+  },
+  '알림 {count}건 · 수강 {courses}과목': {
+    en: '{count} notifications · {courses} courses',
+    zh: '{count} 条通知 · {courses} 门课程',
+  },
+  '지난 학기 과목 {count}개 보기': {
+    en: 'Show {count} past-semester courses',
+    zh: '查看 {count} 门往期课程',
+  },
+  '지난 학기 과목 숨기기': {
+    en: 'Hide past-semester courses',
+    zh: '隐藏往期课程',
+  },
+  '{course}의 {type}을(를) 불러오지 못했어요. ({code})': {
+    en: 'Could not load {type} for {course}. ({code})',
+    zh: '无法加载{course}的{type}。({code})',
+  },
+  '진행 중인 {type}이(가) 없어요.': {
+    en: 'No ongoing {type}.',
+    zh: '没有进行中的{type}。',
+  },
+  '{course} {type} 보기': {
+    en: 'View {type} for {course}',
+    zh: '查看{course}的{type}',
+  },
+  '필요한 마감만 선택해 개인 일정에 저장하세요.': {
+    en: 'Select only the deadlines you need and save them to your schedule.',
+    zh: '只选择需要的截止日期并保存到个人日程。',
+  },
+  '전체 선택': {
+    en: 'Select all',
+    zh: '全选',
+  },
+  '저장할 일정을 선택하세요': {
+    en: 'Select events to save',
+    zh: '请选择要保存的日程',
+  },
+  '왼쪽 체크: 일정 선택 · 오른쪽 화살표: 상세 보기': {
+    en: 'Left checkbox: select · Right arrow: details',
+    zh: '左侧勾选：选择日程 · 右侧箭头：查看详情',
+  },
+  '{date} · 공지 본문 기준': {
+    en: '{date} · from the notice text',
+    zh: '{date} · 依据通知正文',
+  },
+  '{title} 상세 보기': {
+    en: 'View details of {title}',
+    zh: '查看{title}详情',
+  },
+  '마감 · KST': {
+    en: 'Deadline · KST',
+    zh: '截止 · KST',
+  },
+  '공지 본문의 "까지·마감" 문구로 찾은 마감이에요.': {
+    en: 'This deadline was found from words like "until" or "due" in the notice.',
+    zh: '此截止时间根据通知正文中的“截至·截止”字样识别。',
+  },
+  '과제 설명': {
+    en: 'Assignment description',
+    zh: '作业说明',
+  },
+  '본문이 비어 있어요. 원문에서 확인해 주세요.': {
+    en: 'There is no text. Please check the original.',
+    zh: '正文为空，请查看原文。',
+  },
+  'LMS 원문 보기 ›': {
+    en: 'View original on LMS ›',
+    zh: '在 LMS 查看原文 ›',
+  },
+  '목록으로 돌아가 일정 선택': {
+    en: 'Back to the list to select events',
+    zh: '返回列表选择日程',
+  },
+  '알림을 찾을 수 없어요. 최근 90일이 지났거나 LMS에서 삭제됐을 수 있어요.': {
+    en: 'Notification not found. It may be older than 90 days or deleted from the LMS.',
+    zh: '找不到该通知。可能已超过 90 天或已从 LMS 删除。',
+  },
+  학습자료: {
+    en: 'Materials',
+    zh: '学习资料',
+  },
+  '마감 지난 항목 {count}개 보기': {
+    en: 'Show {count} past-deadline items',
+    zh: '查看 {count} 个已截止项目',
+  },
+  '마감 지난 항목 숨기기': {
+    en: 'Hide past-deadline items',
+    zh: '隐藏已截止项目',
+  },
+  '마감 지난 항목': {
+    en: 'Past deadline',
+    zh: '已截止项目',
+  },
+  '마감 지난 과제 {count}개 보기': {
+    en: 'Show {count} past-deadline assignments',
+    zh: '查看 {count} 个已截止作业',
+  },
+  '마감 지난 과제 숨기기': {
+    en: 'Hide past-deadline assignments',
+    zh: '隐藏已截止作业',
+  },
+  '마감 지난 과제': {
+    en: 'Past-deadline assignments',
+    zh: '已截止作业',
+  },
+  '마감 지난 공지 {count}개 보기': {
+    en: 'Show {count} past-deadline announcements',
+    zh: '查看 {count} 条已截止公告',
+  },
+  '마감 지난 공지 숨기기': {
+    en: 'Hide past-deadline announcements',
+    zh: '隐藏已截止公告',
+  },
+  '마감 지난 공지': {
+    en: 'Past-deadline announcements',
+    zh: '已截止公告',
+  },
 }

@@ -1,9 +1,8 @@
 import { useLanguage } from '../../shared/i18n/language-context'
-import { useEffect, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
-import { schoolMessage } from '../../shared/i18n/school-message'
-import { ApiError } from '../../shared/api/client'
+import { useState } from 'react'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../auth/auth-context'
+import { deadlineLabel } from '../schedule/academic-format'
 import {
   addDeadlineSchedules,
   isSaved,
@@ -14,316 +13,171 @@ import {
   getCourseNotifications,
   getCourses,
   setCourseDemoPassword,
-  type CourseList,
   type CourseNotification,
   type CourseNotifications,
   type NotificationType,
 } from './api'
 import {
+  needsDemoPassword,
+  useCourseLoad,
+  useHistoryState,
+  useScrollMemory,
+} from './course-load'
+import { courseLabel } from './course-names'
+import {
   TYPE_LABELS,
+  canSave,
+  detailPath,
+  hasDeadlineField,
   isPastDue,
   kstLabel,
   materialLabel,
   safeLinkUrl,
+  scheduleSource,
+  type CourseItemState,
 } from './course-notice-format'
+import { BackLink, CourseFootnote, DemoPasswordForm, Retry } from './course-ui'
 import './courses.css'
 
 type Filter = 'ALL' | NotificationType
-type Load<T> =
-  | { status: 'loading' }
-  | { status: 'error'; message: string; code: string | null }
-  | { status: 'ready'; data: T }
 
 const FILTERS: Filter[] = ['ALL', 'ANNOUNCEMENT', 'ASSIGNMENT', 'MATERIAL']
-const DEMO_PASSWORD_REQUIRED = 'LMS_DEMO_UNAUTHORIZED'
 
-function failure(cause: unknown, fallback: string) {
-  // 서버 메시지는 운영자용 안내가 섞여 있어 화면에는 공통 문구와 오류 코드만 보여준다.
-  const code = cause instanceof ApiError ? cause.code : null
-  return {
-    status: 'error' as const,
-    message: code ? `${fallback} (${code})` : fallback,
-    code,
-  }
+function parseFilter(value: string | null): Filter {
+  return FILTERS.includes(value as Filter) ? (value as Filter) : 'ALL'
 }
 
+// S09 과목별 공지·과제. 과목 카드(S08)에서 들어오며, 필요한 마감을 골라 개인 일정에 저장한다.
 export function CourseNoticesPage() {
   const { t } = useLanguage()
   const { session } = useAuth()
   const accountId = session?.user?.id ?? null
+  const { courseId = '' } = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
-  const [filter, setFilter] = useState<Filter>('ALL')
-  const [courses, setCourses] = useState<Load<CourseList>>({
-    status: 'loading',
-  })
-  const [coursesAttempt, setCoursesAttempt] = useState(0)
-  const [noticesAttempt, setNoticesAttempt] = useState(0)
+  const filter = parseFilter(searchParams.get('type'))
   const [passwordTried, setPasswordTried] = useState(false)
-  // 주소의 courseId는 과목 목록에 있을 때만 쓴다. 목록에 없는 값은 아래에서 첫 과목으로 바꾼다.
-  const requestedId = searchParams.get('courseId')
-  const selectedId =
-    courses.status === 'ready' &&
-    courses.data.courses.some((course) => course.courseId === requestedId)
-      ? requestedId
-      : null
-  // 결과에 요청 키(과목·재시도 횟수)를 붙여 두고, 현재 키와 다르면 불러오는 중으로 본다.
-  const [noticesResult, setNoticesResult] = useState<{
-    key: string
-    load: Load<CourseNotifications>
-  } | null>(null)
-  const noticesKey = selectedId ? `${selectedId}#${noticesAttempt}` : null
-  const notices: Load<CourseNotifications> | null =
-    noticesKey === null
-      ? null
-      : noticesResult?.key === noticesKey
-        ? noticesResult.load
-        : { status: 'loading' }
+  // 과목 이름은 과목 목록에서 찾는다. 목록을 못 읽어도 알림은 보여준다.
+  const courses = useCourseLoad(
+    'courses',
+    getCourses,
+    '과목 목록을 불러오지 못했어요.',
+  )
+  const notices = useCourseLoad(
+    courseId,
+    () => getCourseNotifications(courseId),
+    '과목알림을 불러오지 못했어요.',
+  )
+  const course =
+    courses.load?.status === 'ready'
+      ? courses.load.data.courses.find((item) => item.courseId === courseId)
+      : undefined
+  const label = course ? courseLabel(course) : null
+  // 상세를 보고 돌아오면 보던 위치로 되돌린다.
+  const rememberScroll = useScrollMemory(notices.load?.status === 'ready')
 
-  useEffect(() => {
-    let active = true
-    getCourses()
-      .then((data) => {
-        if (active) setCourses({ status: 'ready', data })
-      })
-      .catch((cause: unknown) => {
-        if (active) setCourses(failure(cause, '과목 목록을 불러오지 못했어요.'))
-      })
-    return () => {
-      active = false
-    }
-  }, [coursesAttempt])
-
-  // 선택한 과목이 없거나 목록에 없는 과목이면 첫 과목을 고른다. 새로고침해도 유지되도록 주소에 남긴다.
-  const firstCourseId =
-    courses.status === 'ready' ? courses.data.courses[0]?.courseId : undefined
-  useEffect(() => {
-    if (!selectedId && firstCourseId)
-      setSearchParams({ courseId: firstCourseId }, { replace: true })
-  }, [selectedId, firstCourseId, setSearchParams])
-
-  useEffect(() => {
-    if (!selectedId) return
-    const key = `${selectedId}#${noticesAttempt}`
-    let active = true
-    getCourseNotifications(selectedId)
-      .then((data) => {
-        if (active) setNoticesResult({ key, load: { status: 'ready', data } })
-      })
-      .catch((cause: unknown) => {
-        if (active)
-          setNoticesResult({
-            key,
-            load: failure(cause, '과목알림을 불러오지 못했어요.'),
-          })
-      })
-    return () => {
-      active = false
-    }
-  }, [selectedId, noticesAttempt])
-
-  function submitPassword(password: string) {
-    setCourseDemoPassword(password)
-    setPasswordTried(true)
-    setCourses({ status: 'loading' })
-    setCoursesAttempt((value) => value + 1)
-    setNoticesAttempt((value) => value + 1)
-  }
-
-  // 배포 서버는 데모 암호를 요구한다. 로컬 개발 서버는 암호 없이 바로 조회된다.
-  const needsPassword =
-    (courses.status === 'error' && courses.code === DEMO_PASSWORD_REQUIRED) ||
-    (notices?.status === 'error' && notices.code === DEMO_PASSWORD_REQUIRED)
-  if (needsPassword) {
+  if (needsDemoPassword(courses.load, notices.load))
     return (
       <div className="course-notices">
+        <BackLink to="/course-notices" />
         <h1>{t('과목알림')}</h1>
-        <DemoPasswordForm wrong={passwordTried} onSubmit={submitPassword} />
-      </div>
-    )
-  }
-
-  return (
-    <div className="course-notices">
-      <h1>{t('과목알림')}</h1>
-      <p className="home-description">
-        {t('수강 과목의 공지·과제·학습자료를 한곳에서 확인해요.')}
-      </p>
-
-      {courses.status === 'loading' && (
-        <p className="course-status">{t('과목 목록을 불러오고 있어요…')}</p>
-      )}
-      {courses.status === 'error' && (
-        <Retry
-          message={courses.message}
-          onRetry={() => {
-            setCourses({ status: 'loading' })
-            setCoursesAttempt((value) => value + 1)
+        <DemoPasswordForm
+          wrong={passwordTried}
+          onSubmit={(password) => {
+            setCourseDemoPassword(password)
+            setPasswordTried(true)
+            courses.retry()
+            notices.retry()
           }}
         />
-      )}
-      {courses.status === 'ready' && courses.data.courses.length === 0 && (
-        <p className="course-status">
-          {t('조회할 수 있는 수강 과목이 없어요.')}
-        </p>
-      )}
+      </div>
+    )
 
-      {courses.status === 'ready' && courses.data.courses.length > 0 && (
-        <>
-          <label className="course-select">
-            <span>{t('과목')}</span>
-            <select
-              value={selectedId ?? ''}
-              onChange={(event) =>
-                setSearchParams({ courseId: event.target.value })
-              }
-            >
-              {courses.data.courses.map((course) => (
-                <option key={course.courseId} value={course.courseId}>
-                  {course.courseCode
-                    ? `${course.courseName} (${course.courseCode})`
-                    : course.courseName}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <div className="course-tabs" role="group" aria-label={t('알림 종류')}>
-            {FILTERS.map((value) => (
-              <button
-                type="button"
-                key={value}
-                aria-pressed={filter === value}
-                onClick={() => setFilter(value)}
-              >
-                {t(value === 'ALL' ? '전체' : TYPE_LABELS[value])}
-              </button>
-            ))}
-          </div>
-
-          {notices?.status === 'loading' && (
-            <p className="course-status">{t('알림을 불러오고 있어요…')}</p>
-          )}
-          {notices?.status === 'error' && (
-            <Retry
-              message={notices.message}
-              onRetry={() => setNoticesAttempt((value) => value + 1)}
-            />
-          )}
-          {/* 과목이나 계정이 바뀌면 선택과 저장 목록을 다시 만든다. */}
-          {notices?.status === 'ready' && (
-            <NoticeList
-              key={`${accountId ?? 'signed-out'}#${notices.data.courseId}`}
-              accountId={accountId}
-              data={notices.data}
-              filter={filter}
-            />
-          )}
-        </>
-      )}
-
-      <p className="home-description course-footnote">
-        {t(
-          '현재는 데모용 공통 LMS 계정의 과목을 보여줘요. 공지는 최근 90일 것만 보여주고, 시간은 한국 시간(KST)이에요.',
-        )}
-        {courses.status === 'ready' && courses.data.truncated && (
-          <> {t('과목이 많아 일부만 표시했어요.')}</>
-        )}
-      </p>
-    </div>
-  )
-}
-
-function DemoPasswordForm({
-  wrong,
-  onSubmit,
-}: {
-  wrong: boolean
-  onSubmit: (password: string) => void
-}) {
-  const { t } = useLanguage()
-
-  const [password, setPassword] = useState('')
   return (
-    <form
-      className="course-password"
-      onSubmit={(event) => {
-        event.preventDefault()
-        if (password) onSubmit(password)
-      }}
-    >
+    <div className="course-notices" onClickCapture={rememberScroll}>
+      <BackLink to="/course-notices" />
+      <h1>{label?.name ?? t('과목알림')}</h1>
       <p className="home-description">
-        {t(
-          '과목알림은 데모용 공통 LMS 계정의 데이터라 데모 접근 암호가 필요해요. Canvas API 토큰을 넣지 마세요.',
-        )}
+        {t('필요한 마감만 선택해 개인 일정에 저장하세요.')}
       </p>
-      <label>
-        <span>{t('데모 접근 암호')}</span>
-        <input
-          type="password"
-          autoComplete="off"
-          value={password}
-          placeholder={t('발표자에게 받은 데모 암호')}
-          onChange={(event) => setPassword(event.target.value)}
-        />
-      </label>
-      {wrong && (
-        <p className="course-error" role="alert">
-          {t('암호가 맞지 않아요. 다시 입력해 주세요.')}
+      {notices.load?.status === 'ready' && (
+        <p className="course-summary">
+          <strong>
+            {t('총 {count}건', {
+              count: notices.load.data.notifications.length,
+            })}
+          </strong>
         </p>
       )}
-      <button type="submit" disabled={!password}>
-        {t('확인')}
-      </button>
-    </form>
-  )
-}
 
-function Retry({ message, onRetry }: { message: string; onRetry: () => void }) {
-  const { t, language } = useLanguage()
+      <div
+        className="course-tabs course-tabs--compact"
+        role="group"
+        aria-label={t('알림 종류')}
+      >
+        {FILTERS.map((value) => (
+          <button
+            type="button"
+            key={value}
+            aria-pressed={filter === value}
+            onClick={() =>
+              setSearchParams(value === 'ALL' ? {} : { type: value }, {
+                replace: true,
+              })
+            }
+          >
+            {t(
+              value === 'ALL'
+                ? '전체'
+                : value === 'MATERIAL'
+                  ? '학습자료'
+                  : TYPE_LABELS[value],
+            )}
+          </button>
+        ))}
+      </div>
 
-  return (
-    <div className="course-error" role="alert">
-      <p>{schoolMessage(language, message)}</p>
-      <button type="button" onClick={onRetry}>
-        {t('다시 시도')}
-      </button>
+      {notices.load?.status === 'loading' && (
+        <p className="course-status">{t('알림을 불러오고 있어요…')}</p>
+      )}
+      {notices.load?.status === 'error' && (
+        <Retry message={notices.load.message} onRetry={notices.retry} />
+      )}
+      {/* 과목이나 계정이 바뀌면 선택과 저장 목록을 다시 만든다. */}
+      {notices.load?.status === 'ready' && (
+        <NoticeList
+          key={`${accountId ?? 'signed-out'}#${notices.load.data.courseId}`}
+          accountId={accountId}
+          data={notices.load.data}
+          filter={filter}
+          courseName={label?.name ?? null}
+        />
+      )}
+
+      <CourseFootnote />
     </div>
   )
-}
-
-// 마감이 지나지 않은 과제·공지를 개인 일정에 저장할 수 있다. 공지는 본문에서 찾은 마감을 쓰고, 학습자료는 마감이 없다.
-function canSave(item: CourseNotification) {
-  return hasDeadlineField(item) && !!item.dueAt && !isPastDue(item.dueAt)
-}
-
-// 과제는 LMS 마감일, 공지는 서버가 본문의 "까지·마감" 문구에서 찾은 마감일을 쓴다. 학습자료는 마감이 없다.
-function hasDeadlineField(item: CourseNotification) {
-  return item.type === 'ANNOUNCEMENT' || item.type === 'ASSIGNMENT'
-}
-
-function sourceType(item: CourseNotification) {
-  return item.type === 'ANNOUNCEMENT'
-    ? 'COURSE_ANNOUNCEMENT'
-    : 'COURSE_ASSIGNMENT'
 }
 
 function NoticeList({
   accountId,
   data,
   filter,
+  courseName,
 }: {
   accountId: string | null
   data: CourseNotifications
   filter: Filter
+  courseName: string | null
 }) {
   const { t } = useLanguage()
   const navigate = useNavigate()
   const personal = usePersonalSchedules(accountId)
   // 탭을 바꾸면 선택을 비운다. 다른 탭에서 고른 항목이 안 보이는 채로 저장 개수에 남지 않게 한다.
-  const [selection, setSelection] = useState<{
+  // 상세를 보고 돌아와도 고른 항목이 남도록 방문 기록에 둔다.
+  const [selection, setSelection] = useHistoryState<{
     filter: Filter
     ids: string[]
-  }>({ filter, ids: [] })
+  }>('selection', { filter, ids: [] })
   const selected = selection.filter === filter ? selection.ids : []
   const setSelected = (update: (ids: string[]) => string[]) =>
     setSelection({ filter, ids: update(selected) })
@@ -333,11 +187,15 @@ function NoticeList({
   const items = data.notifications.filter(
     (item) => filter === 'ALL' || item.type === filter,
   )
-  const saved = (item: CourseNotification) =>
-    isSaved(personal.schedules, sourceType(item), item.id)
-  const selectable = data.notifications.some(
-    (item) => canSave(item) && !saved(item),
+  // 마감이 지난 공지·과제는 기본으로 접어 두고, 버튼을 누르면 목록 아래에 따로 보여준다.
+  const [showPast, setShowPast] = useHistoryState('showPast', false)
+  const pastItems = items.filter(
+    (item) => hasDeadlineField(item) && isPastDue(item.dueAt),
   )
+  const activeItems = items.filter((item) => !pastItems.includes(item))
+  const saved = (item: CourseNotification) =>
+    isSaved(personal.schedules, scheduleSource(item), item.id)
+  const selectable = items.filter((item) => canSave(item) && !saved(item))
 
   function toggle(id: string, checked: boolean) {
     setSelected((ids) =>
@@ -355,7 +213,7 @@ function NoticeList({
       const next = addDeadlineSchedules(
         current,
         picked.map((item) => ({
-          sourceType: sourceType(item),
+          sourceType: scheduleSource(item),
           sourceId: item.id,
           title: item.title,
           dueAt: item.dueAt as string,
@@ -370,6 +228,26 @@ function NoticeList({
     navigate('/schedule?tab=mine', {
       state: { savedIds: added.map((item) => item.id) },
     })
+  }
+
+  function renderItem(item: CourseNotification) {
+    return (
+      <li key={item.id}>
+        {canSave(item) && !saved(item) ? (
+          <SelectableCard
+            item={item}
+            courseName={courseName}
+            checked={selected.includes(item.id)}
+            onToggle={(checked) => toggle(item.id, checked)}
+          />
+        ) : hasDeadlineField(item) && !item.dueAt ? (
+          // 마감을 찾지 못한 공지·과제는 체크를 끄고 "마감 없음"으로 보여준다.
+          <SelectableCard item={item} courseName={courseName} checked={false} />
+        ) : (
+          <NoticeCard item={item} courseName={courseName} saved={saved(item)} />
+        )}
+      </li>
+    )
   }
 
   return (
@@ -387,45 +265,36 @@ function NoticeList({
           )}
         </p>
       ))}
-      {items.length === 0 && errors.length === 0 && (
+      {activeItems.length === 0 && errors.length === 0 && (
         <p className="course-status">
-          {t('표시할 {type}이(가) 없어요.', {
-            type: t(filter === 'ALL' ? '알림' : TYPE_LABELS[filter]),
-          })}
+          {t(
+            pastItems.length > 0
+              ? '진행 중인 {type}이(가) 없어요.'
+              : '표시할 {type}이(가) 없어요.',
+            { type: t(filter === 'ALL' ? '알림' : TYPE_LABELS[filter]) },
+          )}
         </p>
       )}
-      {selectable && (
+      {selectable.length > 0 && (
         <div className="course-selection">
-          <strong>
-            {selected.length > 0
-              ? t('{count}개 선택', { count: selected.length })
-              : t('마감 있는 공지·과제를 골라 개인 일정에 저장하세요.')}
-          </strong>
-          {selected.length > 0 && (
+          <strong>{t('{count}개 선택', { count: selected.length })}</strong>
+          {selected.length > 0 ? (
             <button type="button" onClick={() => setSelected(() => [])}>
               {t('전체 해제')}
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() =>
+                setSelected(() => selectable.map((item) => item.id))
+              }
+            >
+              {t('전체 선택')}
             </button>
           )}
         </div>
       )}
-      <ul className="course-list">
-        {items.map((item) => (
-          <li key={item.id}>
-            {canSave(item) && !saved(item) ? (
-              <SelectableCard
-                item={item}
-                checked={selected.includes(item.id)}
-                onToggle={(checked) => toggle(item.id, checked)}
-              />
-            ) : hasDeadlineField(item) && !item.dueAt ? (
-              // 마감을 찾지 못한 공지·과제는 체크를 끄고 "마감 없음"으로 보여준다.
-              <SelectableCard item={item} checked={false} />
-            ) : (
-              <NoticeCard item={item} saved={saved(item)} />
-            )}
-          </li>
-        ))}
-      </ul>
+      <ul className="course-list">{activeItems.map(renderItem)}</ul>
       {personal.saveFailed && (
         <p className="course-error" role="alert">
           {t(
@@ -433,30 +302,62 @@ function NoticeList({
           )}
         </p>
       )}
-      {/* 목록이 길어도 바로 누를 수 있게 하단 메뉴 위에 띄운다. */}
-      {selected.length > 0 && (
-        <button type="button" className="course-save" onClick={save}>
-          {t('선택한 {count}개 일정 저장', { count: selected.length })}
+      {/* 목록이 길어도 바로 누를 수 있게 하단 메뉴 위에 띄운다. 고르기 전에는 꺼 둔다(S09). */}
+      {selectable.length > 0 && (
+        <>
+          <button
+            type="button"
+            className="course-save"
+            disabled={selected.length === 0}
+            onClick={save}
+          >
+            {selected.length > 0
+              ? t('선택한 {count}개 일정 저장', { count: selected.length })
+              : t('저장할 일정을 선택하세요')}
+          </button>
+          <p className="course-meta course-save-hint">
+            {t('왼쪽 체크: 일정 선택 · 오른쪽 화살표: 상세 보기')}
+          </p>
+        </>
+      )}
+      {pastItems.length > 0 && (
+        <button
+          type="button"
+          className="course-past-toggle"
+          aria-expanded={showPast}
+          onClick={() => setShowPast(!showPast)}
+        >
+          {showPast
+            ? t('마감 지난 항목 숨기기')
+            : t('마감 지난 항목 {count}개 보기', { count: pastItems.length })}
         </button>
+      )}
+      {showPast && pastItems.length > 0 && (
+        <section className="course-past">
+          <h2>{t('마감 지난 항목')}</h2>
+          <ul className="course-list">{pastItems.map(renderItem)}</ul>
+        </section>
       )}
     </>
   )
 }
 
-// 왼쪽(체크·내용)을 누르면 선택하고, 오른쪽 화살표는 LMS 원문을 연다(S09 검토 안내).
+// 왼쪽(체크·내용)을 누르면 선택하고, 오른쪽 화살표는 앱의 상세(S09-N·S09-T)를 연다(S09 검토 안내).
 function SelectableCard({
   item,
+  courseName,
   checked,
   onToggle,
 }: {
   item: CourseNotification
+  courseName: string | null
   checked: boolean
   // 없으면 마감이 없어 고를 수 없는 카드다.
   onToggle?: (checked: boolean) => void
 }) {
   const { t, language } = useLanguage()
-  const href = safeLinkUrl(item.sourceUrl)
-  const due = kstLabel(item.dueAt, language)
+  const path = detailPath(item)
+  const due = item.dueAt ? deadlineLabel(item.dueAt, language) : null
   const posted = kstLabel(item.publishedAt, language)
   const announcement = item.type === 'ANNOUNCEMENT'
   return (
@@ -488,12 +389,9 @@ function SelectableCard({
           <strong>{item.title}</strong>
           <span className="course-meta">
             {due
-              ? t(
-                  announcement
-                    ? '마감 {date} · KST · 공지 본문 기준'
-                    : '마감 {date} · KST',
-                  { date: due },
-                )
+              ? announcement
+                ? t('{date} · 공지 본문 기준', { date: due })
+                : due
               : announcement && posted
                 ? t('게시 {date}', { date: posted })
                 : t('마감일 없음')}
@@ -508,16 +406,15 @@ function SelectableCard({
           )}
         </span>
       </label>
-      {href && (
-        <a
+      {path && (
+        <Link
           className="course-card-open"
-          href={href}
-          target="_blank"
-          rel="noreferrer"
-          aria-label={t('{title} 원문 보기', { title: item.title })}
+          to={path}
+          state={{ item, courseName, from: 'course' } satisfies CourseItemState}
+          aria-label={t('{title} 상세 보기', { title: item.title })}
         >
           ›
-        </a>
+        </Link>
       )}
     </div>
   )
@@ -525,9 +422,11 @@ function SelectableCard({
 
 function NoticeCard({
   item,
+  courseName,
   saved,
 }: {
   item: CourseNotification
+  courseName: string | null
   saved: boolean
 }) {
   const { t } = useLanguage()
@@ -550,7 +449,20 @@ function NoticeCard({
     </>
   )
 
-  // http·https 원문 링크만 새 탭으로 연다. 원문 권한은 LMS가 확인한다.
+  const className = `home-card course-card${pastDue ? ' course-card--past' : ''}`
+  // 공지·과제는 앱의 상세로 연다.
+  const path = detailPath(item)
+  if (path)
+    return (
+      <Link
+        className={className}
+        to={path}
+        state={{ item, courseName, from: 'course' } satisfies CourseItemState}
+      >
+        {content}
+      </Link>
+    )
+  // 학습자료는 상세가 없어 http·https 원문 링크만 새 탭으로 연다. 원문 권한은 LMS가 확인한다.
   const href = safeLinkUrl(item.sourceUrl)
   return href ? (
     <a
