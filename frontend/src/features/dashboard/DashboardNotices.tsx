@@ -11,6 +11,7 @@ import {
   DataTranslationStatus,
 } from '../translation/DataTranslations'
 import { noticeProfile } from '../notices/api'
+import { NOTICE_TITLE_CONTEXT } from '../notices/notice-title-translations'
 import type { SignupProfile } from '../profile/demo-profile'
 import {
   dashboardErrorMessage,
@@ -126,7 +127,7 @@ function NoticeCards({ data }: { data: DashboardResult }) {
   return (
     <DataTranslations
       texts={data.matchedNotices.map((notice) => notice.title)}
-      context="대학교 공지 제목"
+      context={NOTICE_TITLE_CONTEXT}
     >
       {askProfile && (
         <p className="dashboard-profile-hint">

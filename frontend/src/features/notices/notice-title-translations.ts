@@ -6,7 +6,8 @@ import type { TranslationItem } from '../translation/translation-client.ts'
 
 // 학교 공지는 한국어로 올라온다. 목록 응답에는 원문 언어가 없어 한국어로 본다.
 const NOTICE_LANGUAGE: Language = 'ko'
-const CONTEXT =
+// 대시보드 공지 카드도 같은 문구를 써서 같은 제목은 같은 번역(캐시)을 쓴다.
+export const NOTICE_TITLE_CONTEXT =
   'Title of a Hanyang University ERICA notice for international students'
 
 export interface TitleTranslation {
@@ -30,7 +31,7 @@ export function noticeTitleItems(
       id: notice.noticeId,
       text: notice.title,
       sourceLanguage: NOTICE_LANGUAGE,
-      context: CONTEXT,
+      context: NOTICE_TITLE_CONTEXT,
     })
   }
   return items

@@ -2190,7 +2190,8 @@ export const messages: Record<string, { en: string; zh: string }> = {
     en: 'Check official guidance for your circumstances',
     zh: '确认符合个人情况的官方指南',
   },
-  공지: { en: 'Announcement', zh: '公告' },
+  // 과목별 화면(S09) 탭은 한 줄 고정이라 휴대폰 폭(360px)에서 넘치지 않도록 짧게 쓴다.
+  공지: { en: 'Notice', zh: '公告' },
   과제: { en: 'Assignment', zh: '作业' },
   자료: { en: 'Materials', zh: '资料' },
   파일: { en: 'File', zh: '文件' },
