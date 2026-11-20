@@ -14,6 +14,8 @@ import {
 import { dateLine, matchLabel, sourceLabel } from '../notice-display'
 import { schoolMessage } from '../../../shared/i18n/school-message'
 import { NoticeLoading } from '../NoticeLoading'
+import { titleTranslationMessage } from '../notice-title-translations'
+import { useNoticeTitles } from '../useNoticeTitles'
 import '../notices.css'
 
 const SOURCE_FILTERS: { label: string; value: NoticeSource | null }[] = [
@@ -61,6 +63,8 @@ export function NoticeListPage() {
   const notices = current?.items ?? null
   const error = current?.error ?? null
   const signedOut = current?.signedOut ?? false
+  // 상세처럼 목록 제목도 선택 언어로 보여준다. 번역 전·실패한 제목은 원문이다.
+  const titles = useNoticeTitles(notices)
 
   useEffect(() => {
     if (authLoading) return
@@ -147,9 +151,23 @@ export function NoticeListPage() {
       {notices?.length === 0 && (
         <p className="notice-hint">{t('조건에 맞는 공지가 없어요.')}</p>
       )}
+      {titles.status === 'LOADING' && (
+        <p className="notice-hint" role="status">
+          {titleTranslationMessage(language, 'loading')}
+        </p>
+      )}
+      {titles.status === 'FAILED' && (
+        <div className="notice-message" role="status">
+          <p>{titleTranslationMessage(language, 'failed')}</p>
+          <button type="button" onClick={titles.retry}>
+            {titleTranslationMessage(language, 'retry')}
+          </button>
+        </div>
+      )}
 
       {notices?.map((notice) => {
         const badge = matchLabel(notice.matchStatus)
+        const title = titles.title(notice)
         return (
           <Link
             key={notice.noticeId}
@@ -166,7 +184,10 @@ export function NoticeListPage() {
                 {t(notice.sourceName ?? sourceLabel(notice.source))}
               </span>
             </span>
-            <strong>{notice.title}</strong>
+            {/* 원문 제목이면 화면 읽기 프로그램이 한국어로 읽도록 언어를 알린다. */}
+            <strong lang={title.translated ? undefined : 'ko'}>
+              {title.text}
+            </strong>
             {notice.matchReasons.length > 0 && (
               <span className="notice-hint">
                 {notice.matchReasons

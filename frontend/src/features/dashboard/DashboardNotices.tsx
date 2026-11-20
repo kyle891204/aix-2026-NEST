@@ -5,7 +5,13 @@ import { ApiError } from '../../shared/api/client'
 import { schoolMessage } from '../../shared/i18n/school-message'
 import { kstLabel } from '../../shared/format/kst'
 import { useAuth } from '../auth/auth-context'
+import { useDataText } from '../translation/data-text-context'
+import {
+  DataTranslations,
+  DataTranslationStatus,
+} from '../translation/DataTranslations'
 import { noticeProfile } from '../notices/api'
+import { NOTICE_TITLE_CONTEXT } from '../notices/notice-title-translations'
 import type { SignupProfile } from '../profile/demo-profile'
 import {
   applicableDashboardNotices,
@@ -238,21 +244,38 @@ export function DashboardNotices({
           </p>
         )}
       {entries.length > 0 && (
-        <div className="dashboard-notice-list">
-          {entries.map((entry) =>
-            entry.kind === 'school' ? (
-              <NoticeCard
-                key={`school:${entry.notice.noticeId}`}
-                notice={entry.notice}
-              />
-            ) : (
-              <CourseScheduleCard
-                key={`course:${entry.schedule.id}`}
-                schedule={entry.schedule}
-              />
-            ),
-          )}
-        </div>
+        <DataTranslations
+          texts={
+            showSchool
+              ? schoolNotices.map((notice) => notice.title)
+              : courseSchedules.flatMap((schedule) => [
+                  schedule.courseName,
+                  schedule.title,
+                ])
+          }
+          context={
+            showSchool
+              ? NOTICE_TITLE_CONTEXT
+              : '대학교 LMS 과목명·과목 공지·과제 제목'
+          }
+        >
+          <DataTranslationStatus />
+          <div className="dashboard-notice-list">
+            {entries.map((entry) =>
+              entry.kind === 'school' ? (
+                <NoticeCard
+                  key={`school:${entry.notice.noticeId}`}
+                  notice={entry.notice}
+                />
+              ) : (
+                <CourseScheduleCard
+                  key={`course:${entry.schedule.id}`}
+                  schedule={entry.schedule}
+                />
+              ),
+            )}
+          </div>
+        </DataTranslations>
       )}
     </section>
   )
@@ -278,6 +301,7 @@ function CourseScheduleCard({
   schedule: DashboardCourseSchedule
 }) {
   const { t, language } = useLanguage()
+  const tr = useDataText()
   return (
     <Link
       className="home-card dashboard-notice"
@@ -285,9 +309,9 @@ function CourseScheduleCard({
     >
       <div className="notice-badges">
         <span>{t('과목일정')}</span>
-        <span>{schedule.courseName}</span>
+        <span>{tr(schedule.courseName)}</span>
       </div>
-      <h3>{schedule.title}</h3>
+      <h3>{tr(schedule.title)}</h3>
       <p>
         {t('마감 {date} · KST', {
           date: kstLabel(schedule.dueAt, language) ?? '',
@@ -299,6 +323,7 @@ function CourseScheduleCard({
 
 function NoticeCard({ notice }: { notice: DashboardNotice }) {
   const { t, language } = useLanguage()
+  const tr = useDataText()
 
   const deadline = kstLabel(notice.deadline, language)
   // 앱의 공지 상세로 연다. 쉬운 설명·번역을 볼 수 있고, 처음 열면 공지 대상도 분석한다.
@@ -320,7 +345,7 @@ function NoticeCard({ notice }: { notice: DashboardNotice }) {
         </span>
         {notice.sample && <span>{t('예시 데이터')}</span>}
       </div>
-      <h3>{notice.title}</h3>
+      <h3>{tr(notice.title)}</h3>
       <ul className="dashboard-reasons">
         {notice.matchReasons.map((reason) => (
           <li key={reason}>{schoolMessage(language, reason)}</li>

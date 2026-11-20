@@ -32,6 +32,9 @@ const screens = [
   'features/immigration/pages/EntryExitPage.tsx',
   'features/immigration/pages/ChecklistPage.tsx',
   'features/courses/CourseNoticesPage.tsx',
+  'features/courses/CourseOverviewPage.tsx',
+  'features/courses/CourseItemPage.tsx',
+  'features/courses/course-ui.tsx',
   'features/schedule/AcademicSchedulePage.tsx',
   'features/schedule/PersonalSchedules.tsx',
   'features/auth/LoginPage.tsx',
@@ -50,6 +53,7 @@ const screens = [
   'features/market/MarketPages.tsx',
   'features/questions/QuestionPages.tsx',
   'features/translation/BoardTranslations.tsx',
+  'features/translation/DataTranslations.tsx',
   'shared/i18n/LanguageSwitcher.tsx',
 ]
 

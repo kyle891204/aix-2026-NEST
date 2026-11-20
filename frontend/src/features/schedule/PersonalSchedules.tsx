@@ -1,5 +1,6 @@
 import { useLanguage } from '../../shared/i18n/language-context'
 import { Link } from 'react-router-dom'
+import { useDataText } from '../translation/data-text-context'
 import {
   deadlineLabel,
   eventTiming,
@@ -31,10 +32,13 @@ export function PersonalSchedules({
   onChange: (change: PersonalChange) => boolean
 }) {
   const { t } = useLanguage()
+  const tr = useDataText()
 
   function remove(item: PersonalSchedule) {
     if (
-      window.confirm(t('"{title}" 일정을 삭제할까요?', { title: item.title }))
+      window.confirm(
+        t('"{title}" 일정을 삭제할까요?', { title: tr(item.title) }),
+      )
     )
       onChange((current) => removeSchedule(current, item.id))
   }
@@ -91,6 +95,7 @@ function SavedCard({
   onRemove: () => void
 }) {
   const { t, language } = useLanguage()
+  const title = useDataText()(item.title)
 
   return (
     <li className={`saved-card saved-card--${eventTiming(item, today)}`}>
@@ -99,7 +104,7 @@ function SavedCard({
         <small>{t('저장됨')}</small>
         <button
           type="button"
-          aria-label={t('{title} 삭제', { title: item.title })}
+          aria-label={t('{title} 삭제', { title })}
           onClick={onRemove}
         >
           {t('삭제')}
@@ -107,7 +112,7 @@ function SavedCard({
       </div>
       <div className="saved-card-body">
         <div>
-          <strong>{item.title}</strong>
+          <strong>{title}</strong>
           <p>
             {item.dueAt
               ? deadlineLabel(item.dueAt, language)
@@ -118,7 +123,7 @@ function SavedCard({
         {item.sourceType === 'NOTICE' ? (
           <Link
             to={`/notices/${encodeURIComponent(item.sourceId)}`}
-            aria-label={t('{title} 공지 상세 보기', { title: item.title })}
+            aria-label={t('{title} 공지 상세 보기', { title })}
           >
             ›
           </Link>
@@ -128,7 +133,7 @@ function SavedCard({
               href={item.sourceUrl}
               target="_blank"
               rel="noreferrer"
-              aria-label={t('{title} 원문 확인', { title: item.title })}
+              aria-label={t('{title} 원문 확인', { title })}
             >
               ›
             </a>

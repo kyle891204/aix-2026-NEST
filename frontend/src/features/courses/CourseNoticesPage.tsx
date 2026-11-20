@@ -6,9 +6,16 @@ import { deadlineLabel } from '../schedule/academic-format'
 import {
   addDeadlineSchedules,
   isSaved,
+  loadPersonalSchedules,
   type PersonalSchedule,
 } from '../schedule/personal-schedule-store'
 import { usePersonalSchedules } from '../schedule/usePersonalSchedules'
+import { useDataText } from '../translation/data-text-context'
+import {
+  DataText,
+  DataTranslations,
+  DataTranslationStatus,
+} from '../translation/DataTranslations'
 import {
   getCourseNotifications,
   getCourses,
@@ -74,6 +81,10 @@ export function CourseNoticesPage() {
   const label = course ? courseLabel(course) : null
   // 상세를 보고 돌아오면 보던 위치로 되돌린다.
   const rememberScroll = useScrollMemory(notices.load?.status === 'ready')
+  const lead = leadMessage(
+    notices.load?.status === 'ready' ? notices.load.data : null,
+    accountId,
+  )
 
   if (needsDemoPassword(courses.load, notices.load))
     return (
@@ -93,68 +104,106 @@ export function CourseNoticesPage() {
     )
 
   return (
-    <div className="course-notices" onClickCapture={rememberScroll}>
-      <BackLink to="/course-notices" />
-      <h1>{label?.name ?? t('과목알림')}</h1>
-      <p className="home-description">
-        {t('필요한 마감만 선택해 개인 일정에 저장하세요.')}
-      </p>
-      {notices.load?.status === 'ready' && (
-        <p className="course-summary">
-          <strong>
-            {t('총 {count}건', {
-              count: notices.load.data.notifications.length,
-            })}
-          </strong>
-        </p>
-      )}
+    <DataTranslations
+      texts={[
+        label?.name,
+        ...(notices.load?.status === 'ready'
+          ? notices.load.data.notifications.flatMap((item) => [
+              item.title,
+              item.moduleName,
+            ])
+          : []),
+      ]}
+      context="대학교 LMS 과목명·과목 공지·과제 제목"
+    >
+      <div className="course-notices" onClickCapture={rememberScroll}>
+        <BackLink to="/course-notices" />
+        <h1>{label ? <DataText text={label.name} /> : t('과목알림')}</h1>
+        {lead && <p className="home-description">{t(lead)}</p>}
+        {notices.load?.status === 'ready' && (
+          <p className="course-summary">
+            <strong>
+              {t('총 {count}건', {
+                count: notices.load.data.notifications.length,
+              })}
+            </strong>
+          </p>
+        )}
 
-      <div
-        className="course-tabs course-tabs--compact"
-        role="group"
-        aria-label={t('알림 종류')}
-      >
-        {FILTERS.map((value) => (
-          <button
-            type="button"
-            key={value}
-            aria-pressed={filter === value}
-            onClick={() =>
-              setSearchParams(value === 'ALL' ? {} : { type: value }, {
-                replace: true,
-              })
-            }
-          >
-            {t(
-              value === 'ALL'
-                ? '전체'
-                : value === 'MATERIAL'
-                  ? '학습자료'
-                  : TYPE_LABELS[value],
-            )}
-          </button>
-        ))}
+        <div
+          className="course-tabs course-tabs--compact"
+          role="group"
+          aria-label={t('알림 종류')}
+        >
+          {FILTERS.map((value) => (
+            <button
+              type="button"
+              key={value}
+              aria-pressed={filter === value}
+              onClick={() =>
+                setSearchParams(value === 'ALL' ? {} : { type: value }, {
+                  replace: true,
+                })
+              }
+            >
+              {t(
+                value === 'ALL'
+                  ? '전체'
+                  : value === 'MATERIAL'
+                    ? '학습자료'
+                    : TYPE_LABELS[value],
+              )}
+            </button>
+          ))}
+        </div>
+
+        <DataTranslationStatus />
+        {notices.load?.status === 'loading' && (
+          <p className="course-status">{t('알림을 불러오고 있어요…')}</p>
+        )}
+        {notices.load?.status === 'error' && (
+          <Retry message={notices.load.message} onRetry={notices.retry} />
+        )}
+        {/* 과목이나 계정이 바뀌면 선택과 저장 목록을 다시 만든다. */}
+        {notices.load?.status === 'ready' && (
+          <NoticeList
+            key={`${accountId ?? 'signed-out'}#${notices.load.data.courseId}`}
+            accountId={accountId}
+            data={notices.load.data}
+            filter={filter}
+            courseName={label?.name ?? null}
+          />
+        )}
+
+        <CourseFootnote />
       </div>
+    </DataTranslations>
+  )
+}
 
-      {notices.load?.status === 'loading' && (
-        <p className="course-status">{t('알림을 불러오고 있어요…')}</p>
-      )}
-      {notices.load?.status === 'error' && (
-        <Retry message={notices.load.message} onRetry={notices.retry} />
-      )}
-      {/* 과목이나 계정이 바뀌면 선택과 저장 목록을 다시 만든다. */}
-      {notices.load?.status === 'ready' && (
-        <NoticeList
-          key={`${accountId ?? 'signed-out'}#${notices.load.data.courseId}`}
-          accountId={accountId}
-          data={notices.load.data}
-          filter={filter}
-          courseName={label?.name ?? null}
-        />
-      )}
+// 상단 안내 문구. 저장할 항목이 없으면 그렇게 알리고, 일부를 못 불러와서 없는 것이면
+// 아래 오류 안내(다시 시도)에 맡기고 숨긴다.
+function leadMessage(
+  data: CourseNotifications | null,
+  accountId: string | null,
+) {
+  if (!data || hasSavable(data, accountId))
+    return '필요한 마감만 선택해 개인 일정에 저장하세요.'
+  return data.errors.length > 0
+    ? null
+    : '이 과목에는 지금 저장할 수 있는 마감 일정이 없어요.'
+}
 
-      <CourseFootnote />
-    </div>
+// 마감이 남아 있고 아직 저장하지 않은 항목이 하나라도 있는지. 상단 안내 문구를 고르는 데만 쓴다.
+function hasSavable(data: CourseNotifications, accountId: string | null) {
+  let saved: PersonalSchedule[] = []
+  try {
+    if (accountId) saved = loadPersonalSchedules(window.localStorage, accountId)
+  } catch {
+    // 저장소를 못 읽으면 저장한 일정이 없는 것으로 본다.
+  }
+  return data.notifications.some(
+    (item) => canSave(item) && !isSaved(saved, scheduleSource(item), item.id),
   )
 }
 
@@ -241,7 +290,7 @@ function NoticeList({
             onToggle={(checked) => toggle(item.id, checked)}
           />
         ) : hasDeadlineField(item) && !item.dueAt ? (
-          // 마감을 찾지 못한 공지·과제는 체크를 끄고 "마감 없음"으로 보여준다.
+          // 마감을 찾지 못한 공지·과제는 체크박스 없이 "마감 확인 필요"·"마감 없음"으로 보여준다.
           <SelectableCard item={item} courseName={courseName} checked={false} />
         ) : (
           <NoticeCard item={item} courseName={courseName} saved={saved(item)} />
@@ -343,6 +392,7 @@ function NoticeList({
 }
 
 // 왼쪽(체크·내용)을 누르면 선택하고, 오른쪽 화살표는 앱의 상세(S09-N·S09-T)를 연다(S09 검토 안내).
+// 마감일이 없어 저장할 수 없는 카드는 체크박스 없이, 카드 전체가 상세 링크다.
 function SelectableCard({
   item,
   courseName,
@@ -356,62 +406,74 @@ function SelectableCard({
   onToggle?: (checked: boolean) => void
 }) {
   const { t, language } = useLanguage()
+  const title = useDataText()(item.title)
   const path = detailPath(item)
   const due = item.dueAt ? deadlineLabel(item.dueAt, language) : null
   const posted = kstLabel(item.publishedAt, language)
   const announcement = item.type === 'ANNOUNCEMENT'
+  const content = (
+    <span className="course-card-content">
+      <span className="course-badges">
+        <span className={`course-badge course-badge--${item.type}`}>
+          {t(TYPE_LABELS[item.type])}
+        </span>
+        <span className="course-due-tag">
+          {t(due ? '마감 있음' : announcement ? '마감 확인 필요' : '마감 없음')}
+        </span>
+      </span>
+      <strong>{title}</strong>
+      <span className="course-meta">
+        {due
+          ? announcement
+            ? t('{date} · 공지 본문 기준', { date: due })
+            : due
+          : announcement && posted
+            ? t('게시 {date}', { date: posted })
+            : t('마감일 없음')}
+      </span>
+      {/* 공지 마감은 본문을 읽어 찾으므로, 못 찾았다고 마감이 없다고 단정하지 않는다. */}
+      {!due && announcement && (
+        <span className="course-meta course-meta--hint">
+          {t(
+            '본문에서 마감을 찾지 못했어요. 혹시 모르니 원문을 확인해 주세요.',
+          )}
+        </span>
+      )}
+    </span>
+  )
+  const className = `home-card course-card course-card--selectable${checked ? ' is-selected' : ''}`
+  // 고를 수 없는 카드는 저장됨·마감 지남 카드처럼 카드 어디를 눌러도 상세로 간다.
+  if (!onToggle)
+    return path ? (
+      <Link
+        className={className}
+        to={path}
+        state={{ item, courseName, from: 'course' } satisfies CourseItemState}
+      >
+        {content}
+        <span className="course-card-open" aria-hidden="true">
+          ›
+        </span>
+      </Link>
+    ) : (
+      <div className={className}>{content}</div>
+    )
   return (
-    <div
-      className={`home-card course-card course-card--selectable${checked ? ' is-selected' : ''}${onToggle ? '' : ' is-disabled'}`}
-    >
+    <div className={className}>
       <label>
         <input
           type="checkbox"
           checked={checked}
-          disabled={!onToggle}
-          onChange={(event) => onToggle?.(event.target.checked)}
+          onChange={(event) => onToggle(event.target.checked)}
         />
-        <span className="course-card-content">
-          <span className="course-badges">
-            <span className={`course-badge course-badge--${item.type}`}>
-              {t(TYPE_LABELS[item.type])}
-            </span>
-            <span className="course-due-tag">
-              {t(
-                due
-                  ? '마감 있음'
-                  : announcement
-                    ? '마감 확인 필요'
-                    : '마감 없음',
-              )}
-            </span>
-          </span>
-          <strong>{item.title}</strong>
-          <span className="course-meta">
-            {due
-              ? announcement
-                ? t('{date} · 공지 본문 기준', { date: due })
-                : due
-              : announcement && posted
-                ? t('게시 {date}', { date: posted })
-                : t('마감일 없음')}
-          </span>
-          {/* 공지 마감은 본문을 읽어 찾으므로, 못 찾았다고 마감이 없다고 단정하지 않는다. */}
-          {!due && announcement && (
-            <span className="course-meta course-meta--hint">
-              {t(
-                '본문에서 마감을 찾지 못했어요. 혹시 모르니 원문을 확인해 주세요.',
-              )}
-            </span>
-          )}
-        </span>
+        {content}
       </label>
       {path && (
         <Link
           className="course-card-open"
           to={path}
           state={{ item, courseName, from: 'course' } satisfies CourseItemState}
-          aria-label={t('{title} 상세 보기', { title: item.title })}
+          aria-label={t('{title} 상세 보기', { title })}
         >
           ›
         </Link>
@@ -444,7 +506,9 @@ function NoticeCard({
         )}
         {saved && <span className="course-badge">{t('저장됨')}</span>}
       </div>
-      <h2>{item.title}</h2>
+      <h2>
+        <DataText text={item.title} />
+      </h2>
       <CardMeta item={item} />
     </>
   )
@@ -484,6 +548,7 @@ function NoticeCard({
 
 function CardMeta({ item }: { item: CourseNotification }) {
   const { t, language } = useLanguage()
+  const tr = useDataText()
 
   if (item.type === 'ASSIGNMENT') {
     const due = kstLabel(item.dueAt, language)
@@ -506,7 +571,7 @@ function CardMeta({ item }: { item: CourseNotification }) {
     ) : null
   }
   const details = [
-    item.moduleName,
+    item.moduleName && tr(item.moduleName),
     t(materialLabel(item.materialType) ?? ''),
   ].filter(Boolean)
   return details.length > 0 ? (
