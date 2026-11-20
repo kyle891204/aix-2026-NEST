@@ -4,6 +4,59 @@
   gap: 12px;
 }
 
+.school-notices .home-section-heading {
+  margin-bottom: 2px;
+}
+
+.dashboard-filters {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 18px;
+  color: var(--ui-muted);
+  font-size: 13px;
+}
+
+.dashboard-filters button {
+  min-height: 32px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ui-muted);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.dashboard-filters button[aria-pressed='true'] {
+  color: var(--ui-blue);
+  font-weight: 700;
+}
+
+.dashboard-course-message {
+  margin-bottom: 12px;
+  color: var(--ui-muted);
+  font-size: 12px;
+}
+
+.dashboard-course-message p {
+  margin: 0 0 4px;
+}
+
+.dashboard-course-message a,
+.dashboard-course-message button {
+  margin-right: 12px;
+  color: var(--ui-blue);
+  font-size: 12px;
+}
+
+.dashboard-course-message button {
+  min-height: 28px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
 .dashboard-notice {
   display: block;
   color: inherit;

@@ -204,12 +204,23 @@ function ProtectedApp() {
         </NavLink>
       </header>
       <div className="mode-switch" role="group" aria-label={t('서비스 영역')}>
-        <NavLink to="/" end className={() => (isLife ? '' : 'active')}>
-          SCHOOL
+        <NavLink
+          to="/"
+          end
+          className={() => (isLife ? '' : 'active')}
+          aria-label={t('학교')}
+          title={t('학교')}
+        >
+          <ModeIcon mode="school" />
         </NavLink>
 
-        <NavLink to="/life" className={() => (isLife ? 'active' : '')}>
-          LIFE
+        <NavLink
+          to="/life"
+          className={() => (isLife ? 'active' : '')}
+          aria-label={t('생활')}
+          title={t('생활')}
+        >
+          <ModeIcon mode="life" />
         </NavLink>
       </div>
 
@@ -236,6 +247,33 @@ function ProtectedApp() {
         ))}
       </nav>
     </div>
+  )
+}
+
+function ModeIcon({ mode }: { mode: 'school' | 'life' }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+    >
+      {mode === 'school' ? (
+        <>
+          <path d="M3 10.5 12 4l9 6.5V20H3v-9.5Z" />
+          <path d="M9 20v-7h6v7M7 10h.01M17 10h.01" />
+        </>
+      ) : (
+        <>
+          <circle cx="13.5" cy="4.5" r="1.5" />
+          <path d="m12.5 8-2 4 3 2 1.5 6m-2.5-12 3 3 2.5 1M10.5 12 7 20m3.5-8L7 10" />
+        </>
+      )}
+    </svg>
   )
 }
 

@@ -1,6 +1,7 @@
 import { strict as assert } from 'node:assert'
 import { afterEach, test } from 'node:test'
 import {
+  applicableDashboardNotices,
   dashboardErrorMessage,
   getDashboard,
 } from '../src/features/dashboard/api.ts'
@@ -74,6 +75,33 @@ test('notices must carry a known match status and string reasons', async () => {
     matchedNotices: [{ ...notice, matchReasons: '문자열' }],
   })
   await assert.rejects(getDashboard(profile, 3), /대시보드 응답/)
+})
+
+test('school dashboard shows only notices that apply to the student', async () => {
+  mockFetch({
+    profileCompleted: true,
+    missingProfileFields: [],
+    matchedNotices: [
+      {
+        noticeId: 'applies',
+        title: '해당 공지',
+        matchStatus: 'APPLICABLE',
+        matchReasons: [],
+      },
+      {
+        noticeId: 'review',
+        title: '확인 필요 공지',
+        matchStatus: 'NEEDS_REVIEW',
+        matchReasons: [],
+      },
+    ],
+  })
+
+  const result = await getDashboard(profile, 3)
+  assert.deepEqual(
+    applicableDashboardNotices(result).map((notice) => notice.noticeId),
+    ['applies'],
+  )
 })
 
 test('deadlines are shown in Korean time', () => {

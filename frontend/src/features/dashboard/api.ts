@@ -33,6 +33,12 @@ export interface DashboardResult {
   matchedNotices: DashboardNotice[]
 }
 
+export function applicableDashboardNotices(result: DashboardResult) {
+  return result.matchedNotices.filter(
+    (notice) => notice.matchStatus === 'APPLICABLE',
+  )
+}
+
 const STATUSES: readonly string[] = ['APPLICABLE', 'NEEDS_REVIEW']
 
 function isRecord(value: unknown): value is Record<string, unknown> {
