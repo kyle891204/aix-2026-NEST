@@ -73,6 +73,12 @@ export function fullDateLabel(iso: string, locale: string) {
   }).format(new Date(`${iso}T00:00:00Z`))
 }
 
+/** 날짜를 며칠 앞뒤로 옮긴다. 11월 30일 + 1일 = 12월 1일처럼 달·해가 바뀌어도 맞게 넘어간다. */
+export function addDays(iso: string, days: number) {
+  const date = new Date(`${iso}T00:00:00Z`)
+  return new Date(date.getTime() + days * DAY_MS).toISOString().slice(0, 10)
+}
+
 /** 사용자가 있는 곳의 오늘 날짜. */
 export function todayIso(now = new Date()) {
   const month = String(now.getMonth() + 1).padStart(2, '0')

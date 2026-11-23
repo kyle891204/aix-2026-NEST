@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import {
+  addDays,
   monthGrid,
   monthTitle,
   parseIsoMonth,
@@ -42,4 +43,12 @@ test('month moves across years and bad dates are ignored', () => {
   assert.equal(parseIsoMonth(''), null)
   assert.equal(parseIsoMonth('2027-13-01'), null)
   assert.equal(todayIso(new Date(2027, 1, 5)), '2027-02-05')
+})
+
+test('arrow moves cross month and year ends', () => {
+  assert.equal(addDays('2026-11-30', 1), '2026-12-01')
+  assert.equal(addDays('2026-11-01', -1), '2026-10-31')
+  assert.equal(addDays('2026-11-24', 7), '2026-12-01')
+  assert.equal(addDays('2026-12-31', 1), '2027-01-01')
+  assert.equal(addDays('2028-02-28', 1), '2028-02-29')
 })

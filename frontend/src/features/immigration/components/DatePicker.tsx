@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { LANGUAGE_LOCALES } from '../../../shared/i18n/language'
 import type { Language } from '../../../shared/types/language'
 import {
+  addDays,
   fullDateLabel,
   monthGrid,
   monthTitle,
@@ -48,7 +49,7 @@ const TEXT: Record<
   },
 }
 
-// 화살표 키로 날짜 사이를 옮겨 다닌다. 위아래는 한 주씩이다.
+// 화살표 키로 날짜 사이를 옮겨 다닌다. 좌우는 하루, 위아래는 한 주씩이다.
 const ARROW_STEPS: Record<string, number> = {
   ArrowLeft: -1,
   ArrowRight: 1,
@@ -76,6 +77,12 @@ export function DatePicker({
   const [view, setView] = useState<CalendarMonth>(
     () => parseIsoMonth(value) ?? parseIsoMonth(todayIso())!,
   )
+  // 달력 안에서 지금 테두리(포커스)가 있는 날짜.
+  // 달력을 펼치면 고른 날짜(없으면 오늘)로 정하고, 화살표 키를 누르면 옆 날짜로 옮긴다.
+  // 11월 30일에서 → 를 누르면 12월로 넘어가 12월 1일이 되도록, 달이 바뀌어도 이 날짜를 기억한다.
+  const [activeIso, setActiveIso] = useState('')
+  // 펼칠 때와 화살표 키를 누를 때만 테두리를 옮긴다. 이전·다음 달 버튼을 누를 때는 옮기지 않는다.
+  const moveFocus = useRef(false)
   const root = useRef<HTMLDivElement>(null)
   const trigger = useRef<HTMLButtonElement>(null)
   const grid = useRef<HTMLDivElement>(null)
@@ -84,8 +91,18 @@ export function DatePicker({
   const today = todayIso()
 
   function show() {
-    setView(parseIsoMonth(value) ?? parseIsoMonth(today)!)
+    // 지난번에 화살표로 옮기다 닫았더라도 다시 펼치면 고른 날짜(없으면 오늘)에서 시작한다.
+    const start = parseIsoMonth(value) ? value : today
+    setActiveIso(start)
+    setView(parseIsoMonth(start)!)
+    moveFocus.current = true
     setOpen(true)
+  }
+
+  function moveTo(iso: string) {
+    setActiveIso(iso)
+    setView(parseIsoMonth(iso)!)
+    moveFocus.current = true
   }
 
   function close(returnFocus: boolean) {
@@ -98,12 +115,18 @@ export function DatePicker({
     close(true)
   }
 
-  // 열리면 고른 날짜(없으면 오늘)에 포커스를 둔다. 바깥을 누르면 닫는다.
+  // 펼치거나 화살표 키를 누르면 그 날짜 칸으로 테두리를 옮긴다.
   useEffect(() => {
-    if (!open) return
+    if (!open || !moveFocus.current) return
+    moveFocus.current = false
     grid.current
       ?.querySelector<HTMLButtonElement>('[data-focus="true"]')
       ?.focus()
+  }, [open, activeIso])
+
+  // 달력 바깥을 누르면 닫는다.
+  useEffect(() => {
+    if (!open) return
     function onPointerDown(event: PointerEvent) {
       if (!root.current?.contains(event.target as Node)) setOpen(false)
     }
@@ -112,11 +135,13 @@ export function DatePicker({
   }, [open])
 
   const days = monthGrid(view)
-  const focusIso = days.some((day) => day.iso === value && day.inMonth)
-    ? value
-    : days.some((day) => day.iso === today && day.inMonth)
-      ? today
-      : days.find((day) => day.inMonth)!.iso
+  const inView = (iso: string) =>
+    days.some((day) => day.iso === iso && day.inMonth)
+  // 보고 있는 달 안에서 테두리를 둘 날짜. 이전·다음 달 버튼으로 다른 달을 보면
+  // 그 달의 고른 날짜나 오늘, 둘 다 없으면 1일에 둔다.
+  const focusIso =
+    [activeIso, value, today].find(inView) ??
+    days.find((day) => day.inMonth)!.iso
 
   return (
     <div
@@ -127,6 +152,12 @@ export function DatePicker({
           event.stopPropagation()
           close(true)
         }
+      }}
+      // 키보드 Tab으로 달력 밖(예: 아래 체크박스)으로 옮겨 가면 달력을 닫는다.
+      // 달력 안의 "2026년 11월" 글자나 요일 글자, 칸 사이 여백을 마우스로 눌렀을 때는 닫지 않는다.
+      onBlur={(event) => {
+        const next = event.relatedTarget
+        if (open && next && !root.current?.contains(next)) setOpen(false)
       }}
     >
       <button
@@ -174,23 +205,13 @@ export function DatePicker({
             className="notice-calendar-grid"
             ref={grid}
             onKeyDown={(event) => {
+              // 화면에 보이는 칸 안에서 세지 않고 날짜를 계산해서 옮긴다.
+              // 그래서 11월 30일에서 → 를 누르면 12월 달력으로 넘어가 12월 1일이 된다.
               const step = ARROW_STEPS[event.key]
-              if (!step || !grid.current) return
-              const buttons = [
-                ...grid.current.querySelectorAll<HTMLButtonElement>(
-                  '.notice-calendar-day',
-                ),
-              ]
-              const current = buttons.indexOf(
-                document.activeElement as HTMLButtonElement,
-              )
-              if (current < 0) return
+              const current = (event.target as HTMLElement).dataset.iso
+              if (!step || !current) return
               event.preventDefault()
-              const next = Math.min(
-                Math.max(current + step, 0),
-                buttons.length - 1,
-              )
-              buttons[next].focus()
+              moveTo(addDays(current, step))
             }}
           >
             {weekdayNames(locale).map((name) => (
@@ -213,6 +234,7 @@ export function DatePicker({
                 aria-pressed={day.iso === value}
                 tabIndex={day.iso === focusIso ? 0 : -1}
                 data-focus={day.iso === focusIso}
+                data-iso={day.iso}
                 onClick={() => pick(day.iso)}
               >
                 {day.day}

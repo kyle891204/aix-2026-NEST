@@ -194,7 +194,7 @@
   font-weight: 700;
 }
 
-/* 날짜 칸: 보이는 글자는 앱 언어로 직접 그리고, 실제 날짜 입력은 달력을 띄우는 데만 쓴다. */
+/* 날짜 칸과 달력: 브라우저 기본 날짜 칸 대신 직접 그려서 앱 언어로 보여준다. */
 .notice-date {
   position: relative;
 }
@@ -237,6 +237,13 @@
   color: inherit;
   font: inherit;
   cursor: pointer;
+}
+
+/* 공통 버튼 여백(8px 14px)을 받으면 한 칸이 45px 이상이 되어, 360px 폰에서
+   토요일 열이 달력 밖으로 나간다. 날짜 칸은 여백 없이 7칸이 폭을 나눠 갖는다. */
+.notice-calendar .notice-calendar-day {
+  min-width: 0;
+  padding: 0;
 }
 
 .notice-calendar-head {
