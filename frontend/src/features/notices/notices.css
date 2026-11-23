@@ -194,6 +194,39 @@
   font-weight: 700;
 }
 
+/* 날짜 칸: 보이는 글자는 앱 언어로 직접 그리고, 실제 날짜 입력은 달력을 띄우는 데만 쓴다. */
+.notice-date {
+  position: relative;
+}
+
+.notice-date-button {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid #d5dbe6;
+  border-radius: 8px;
+  background: #fff;
+  color: inherit;
+  font: inherit;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+
+.notice-date-empty {
+  color: #8a97ad;
+}
+
+.notice-date-input {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
 .notice-primary:disabled {
   background: #e7ebf3;
   color: #657795;
