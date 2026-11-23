@@ -1,7 +1,6 @@
 import { useLanguage } from '../../../shared/i18n/language-context'
-import { useId, useRef, useState } from 'react'
+import { useId, useState } from 'react'
 import { Link } from 'react-router-dom'
-import type { Language } from '../../../shared/types/language'
 import { useAuth } from '../../auth/auth-context'
 import {
   CHECKLIST_ITEMS,
@@ -10,19 +9,12 @@ import {
   type Checklist,
   type Direction,
 } from '../checklist-store'
+import { DatePicker } from '../components/DatePicker'
 import '../../notices/notices.css'
 
 const TEXT = {
   entry: { title: '입국 준비', date: '예정 입국일' },
   exit: { title: '출국 준비', date: '예정 출국일' },
-}
-
-// 브라우저 기본 날짜 칸의 '년-월-일'은 브라우저 언어를 따라 앱 언어로 바뀌지 않는다.
-// 그래서 칸에 보이는 글자는 직접 그리고, 달력만 브라우저 것을 연다.
-const DATE_PLACEHOLDER: Record<Language, string> = {
-  ko: '년-월-일',
-  en: 'yyyy-mm-dd',
-  zh: '年-月-日',
 }
 
 function loadInitial(accountId: string | null, direction: Direction) {
@@ -37,19 +29,7 @@ function loadInitial(accountId: string | null, direction: Direction) {
 
 export function ChecklistPage({ direction }: { direction: Direction }) {
   const { t, language } = useLanguage()
-  const dateInput = useRef<HTMLInputElement>(null)
   const dateLabelId = useId()
-
-  function openDatePicker() {
-    const input = dateInput.current
-    if (!input) return
-    try {
-      input.showPicker()
-    } catch {
-      // showPicker가 없거나 막힌 브라우저에서는 숨긴 칸에 포커스해 키보드로 입력하게 한다.
-      input.focus()
-    }
-  }
 
   const { session } = useAuth()
   const accountId = session?.user?.id ?? null
@@ -98,35 +78,12 @@ export function ChecklistPage({ direction }: { direction: Direction }) {
 
       <div className="notice-field">
         <span id={dateLabelId}>{t(TEXT[direction].date)}</span>
-        <div className="notice-date">
-          <button
-            type="button"
-            className="notice-date-button"
-            aria-labelledby={dateLabelId}
-            aria-describedby={`${dateLabelId}-value`}
-            onClick={openDatePicker}
-          >
-            <span
-              id={`${dateLabelId}-value`}
-              className={
-                checklist.plannedDate ? undefined : 'notice-date-empty'
-              }
-            >
-              {checklist.plannedDate || DATE_PLACEHOLDER[language]}
-            </span>
-          </button>
-          <input
-            ref={dateInput}
-            type="date"
-            className="notice-date-input"
-            tabIndex={-1}
-            aria-hidden="true"
-            value={checklist.plannedDate}
-            onChange={(event) =>
-              update({ ...checklist, plannedDate: event.target.value })
-            }
-          />
-        </div>
+        <DatePicker
+          value={checklist.plannedDate}
+          onChange={(plannedDate) => update({ ...checklist, plannedDate })}
+          language={language}
+          labelId={dateLabelId}
+        />
       </div>
 
       <ul className="notice-card notice-actions">

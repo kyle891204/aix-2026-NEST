@@ -217,14 +217,95 @@
   color: #8a97ad;
 }
 
-.notice-date-input {
+.notice-calendar {
   position: absolute;
-  bottom: 0;
+  top: calc(100% + 4px);
   left: 0;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-  pointer-events: none;
+  z-index: 20;
+  width: min(320px, 100%);
+  padding: 12px;
+  border: 1px solid #d5dbe6;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgb(20 32 60 / 14%);
+  font-weight: 500;
+}
+
+.notice-calendar button {
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.notice-calendar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.notice-calendar-head button {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  font-size: 20px;
+}
+
+.notice-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  text-align: center;
+}
+
+.notice-calendar-weekday {
+  padding: 4px 0;
+  color: #657795;
+  font-size: 12px;
+}
+
+.notice-calendar-day {
+  aspect-ratio: 1;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.notice-calendar-day.is-outside {
+  color: #b3bccb;
+}
+
+.notice-calendar-day.is-today {
+  box-shadow: inset 0 0 0 1px #3f5fff;
+}
+
+.notice-calendar-day[aria-pressed='true'] {
+  background: #3f5fff;
+  color: #fff;
+}
+
+.notice-calendar-head button:hover,
+.notice-calendar-day:hover,
+.notice-calendar-foot button:hover {
+  background: #eef1f8;
+}
+
+.notice-calendar-day[aria-pressed='true']:hover {
+  background: #3f5fff;
+}
+
+.notice-calendar-foot {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+.notice-calendar-foot button {
+  padding: 6px 10px;
+  border-radius: 8px;
+  color: #3f5fff;
+  font-size: 14px;
 }
 
 .notice-primary:disabled {
