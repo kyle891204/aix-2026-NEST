@@ -83,6 +83,7 @@ test('storage write failures propagate and seed data is independent', () => {
 
 test('only the reply author can edit or delete, including when actor owns the post', () => {
   const posts = loadMarket(storage())
+  posts[0] = { ...posts[0], id: 'own-market-post', example: false }
   posts[0].replies = [
     {
       id: 'r',
@@ -167,7 +168,11 @@ test('new language examples join existing posts without overwriting replies or d
   }
   saveMarket(store, [own, original])
   const loaded = loadMarket(store)
-  assert.deepEqual(loaded.slice(0, 2), [own, original])
+  assert.deepEqual(loaded[0], own)
+  assert.deepEqual(loaded[1], {
+    ...original,
+    replies: [...original.replies, ...examples[0].replies],
+  })
   assert.equal(loaded.length, 6)
   assert.equal(loaded.filter((post) => post.language === 'en').length, 2)
   assert.equal(loaded.filter((post) => post.language === 'zh').length, 2)
@@ -201,7 +206,7 @@ test('legacy chair example wording updates while saved replies and user posts re
   const loaded = loadMarket(store)
   assert.equal(loaded[0].title, chair.title)
   assert.equal(loaded[0].content, chair.content)
-  assert.deepEqual(loaded[0].replies, legacy.replies)
+  assert.deepEqual(loaded[0].replies, [...legacy.replies, ...chair.replies])
   assert.deepEqual(loaded[1], own)
   assert.equal(store.getItem(MARKET_KEY), raw)
   saveMarket(store, loaded)
