@@ -81,8 +81,11 @@ export function DatePicker({
   // 달력을 펼치면 고른 날짜(없으면 오늘)로 정하고, 화살표 키를 누르면 옆 날짜로 옮긴다.
   // 11월 30일에서 → 를 누르면 12월로 넘어가 12월 1일이 되도록, 달이 바뀌어도 이 날짜를 기억한다.
   const [activeIso, setActiveIso] = useState('')
-  // 펼칠 때와 화살표 키를 누를 때만 테두리를 옮긴다. 이전·다음 달 버튼을 누를 때는 옮기지 않는다.
-  const moveFocus = useRef(false)
+  // 펼치거나 화살표 키를 누를 때마다 1씩 올려서 "테두리를 옮겨 줘"라고 알린다.
+  // 날짜로 알리면 안 된다. 예: 11월 24일에 테두리 → "다음 달" 버튼 → 12월 1일에서 ↑ 를 누르면
+  // 옮길 날짜가 다시 11월 24일이라 날짜가 그대로여서, 테두리가 회색 12월 1일 칸에 남았다.
+  // 이전·다음 달 버튼은 이 숫자를 올리지 않으므로 그때는 테두리가 버튼에 그대로 있다.
+  const [focusRequest, setFocusRequest] = useState(0)
   const root = useRef<HTMLDivElement>(null)
   const trigger = useRef<HTMLButtonElement>(null)
   const grid = useRef<HTMLDivElement>(null)
@@ -95,14 +98,14 @@ export function DatePicker({
     const start = parseIsoMonth(value) ? value : today
     setActiveIso(start)
     setView(parseIsoMonth(start)!)
-    moveFocus.current = true
+    setFocusRequest((n) => n + 1)
     setOpen(true)
   }
 
   function moveTo(iso: string) {
     setActiveIso(iso)
     setView(parseIsoMonth(iso)!)
-    moveFocus.current = true
+    setFocusRequest((n) => n + 1)
   }
 
   function close(returnFocus: boolean) {
@@ -117,12 +120,11 @@ export function DatePicker({
 
   // 펼치거나 화살표 키를 누르면 그 날짜 칸으로 테두리를 옮긴다.
   useEffect(() => {
-    if (!open || !moveFocus.current) return
-    moveFocus.current = false
+    if (!open || focusRequest === 0) return
     grid.current
       ?.querySelector<HTMLButtonElement>('[data-focus="true"]')
       ?.focus()
-  }, [open, activeIso])
+  }, [open, focusRequest])
 
   // 달력 바깥을 누르면 닫는다.
   useEffect(() => {
