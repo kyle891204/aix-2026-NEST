@@ -23,8 +23,6 @@ API: `POST /api/v1/notices/search`, `POST /api/v1/notices/{noticeId}/view`, `POS
 
 > 이 절은 학교 공지 **수집 설정과 Render 장애 진단**을 다룬다.
 
-브랜치: `fix/school-notice-fetch`.
-
 Render에서 일부 HTTPS 게시판의 읽기 시간 초과·연결 종료가 반복되어, 수집 조건을 조정하고 연결과 파싱 실패를 구분하도록 보완했다.
 지역·학교의 접근 정책·TLS·실행 자원 중 무엇이 실제 원인인지는 배포 후 비교가 필요하다.
 로컬 코드와 자동 테스트 통과만으로 Render 문제가 해결되었다고 판단하지 않는다.

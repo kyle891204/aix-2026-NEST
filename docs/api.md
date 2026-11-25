@@ -116,7 +116,20 @@ timestamp는 실행 시각을 UTC ISO 8601 형식으로 반환한다. 인증 없
 
 게시판(장터·질문·자유)의 제목·본문·댓글·답글과 공지 목록 제목을 한 번에 번역한다. 위 단건 API는 그대로 두고, 화면은 이 API를 쓴다.
 로그인·CSRF·`Cache-Control: no-store`는 다른 API와 같다. 요청 형식과 제한(1~100항목, 항목별 원문 3,000자 등), 항목별 결과(`SUCCEEDED`·`SKIPPED`·`FAILED`)는
-[번역 문서](features/translation.md#새-api)에 있다. 일부 항목이 실패해도 HTTP 200이며 항목별 `status`를 확인한다.
+[번역 문서](features/translation.md#새-api)에 있다.
+
+```json
+{
+  "targetLanguage": "en",
+  "items": [
+    { "id": "free:post-id:title", "status": "SUCCEEDED", "translatedText": "Looking for a study partner", "cached": false, "retryable": false }
+  ]
+}
+```
+
+- 응답은 배열이 아니라 `{ targetLanguage, items }` 객체다. `items`는 요청 항목마다 하나씩 `{ id, status, translatedText, cached, retryable }`이다.
+- `SKIPPED`(원문과 목표 언어가 같음)는 `translatedText`에 원문을 그대로 준다. `FAILED`는 `translatedText: null`, `retryable: true`다.
+- 입력 검증 실패(항목 수·길이·언어 코드, 요청 전체 60,000자 초과 등)는 400 `INVALID_REQUEST`다. 번역 처리 실패는 HTTP 200에 항목별 `FAILED`로 알린다. 단건 API의 502와 다르다.
 
 ### 공지 (전체 공지 S06·공지 상세 S07)
 
@@ -157,7 +170,12 @@ timestamp는 실행 시각을 UTC ISO 8601 형식으로 반환한다. 인증 없
 
 - 해당 → 확인 필요 → 해당 안 됨 순이고, 같은 상태 안에서는 마감일이 이른 순이다. 마감이 지난 공지도 빼지 않으며, 마감이 없으면 뒤로 간다.
 - 목록은 이미 분석한 공지만 분석 결과로 판별하고 Gemini를 부르지 않는다.
-- `category`는 `VISA` / `SCHOLARSHIP` / `ACADEMIC` / `EVENT` / `ETC`, `postedAt`은 `yyyy-MM-dd` 또는 `null`이다. `truncated`는 현재 항상 `false`다.
+- `category`는 `VISA` / `SCHOLARSHIP` / `ACADEMIC` / `EVENT` / `ETC`다. `truncated`는 현재 항상 `false`다.
+- `analysisStatus`는 공지 대상 조건의 상태다.
+  - `CONFIRMED`: 조건이 확실하다(게시판 분류의 학부·대학원, 또는 Gemini 분석)
+  - `UNCERTAIN`: Gemini가 확실하지 않다고 했거나, 적힌 마감을 날짜로 읽지 못했다
+  - `NOT_ANALYZED`: 분류로 알 수 없고 아직 Gemini 분석이 없다(분석 실패 포함)
+- `postedAt`은 `yyyy-MM-dd`이며 게시판에서 읽지 못하면 `null`이다. `deadline`은 한국 시간 오프셋이 붙은 ISO 8601(`2026-11-30T23:59:00+09:00`)이며, 분석 전이거나 마감이 없으면 `null`이다.
 - 잘못된 쿼리 값이나 읽을 수 없는 JSON은 400 `INVALID_REQUEST`, 학교 공지 목록을 한 번도 읽지 못했으면 503 `NOTICE_SOURCE_UNAVAILABLE`이다.
 
 #### POST /api/v1/notices/{noticeId}/view
@@ -222,6 +240,7 @@ timestamp는 실행 시각을 UTC ISO 8601 형식으로 반환한다. 인증 없
 ```
 
 - 해당(`APPLICABLE`)과 확인 필요(`NEEDS_REVIEW`) 공지만 주고, 마감이 지난 공지는 뺀다.
+- `postedAt`·`deadline`·`analysisStatus`의 형식과 `null` 가능 여부는 공지 목록과 같다.
 - `missingProfileFields`는 코드로 읽지 못한 프로필 필드의 요청 필드명이다. 프론트가 `visaType`을 항상 `null`로 보내므로 `profileCompleted`는 늘 `false`이고, 화면은 국적·학위과정·학년이 빠졌을 때만 입력을 안내한다.
 - 학교 공지 목록을 한 번도 읽지 못했으면 503 `NOTICE_SOURCE_UNAVAILABLE`이다.
 
@@ -242,7 +261,8 @@ timestamp는 실행 시각을 UTC ISO 8601 형식으로 반환한다. 인증 없
 - `type`: `ALL`(기본) / `ANNOUNCEMENT` / `ASSIGNMENT` / `MATERIAL`. 다른 값은 400 `INVALID_REQUEST`(`fields.type`)다.
 - `startDate`·`endDate`(`YYYY-MM-DD`)는 **공지**의 게시 기간이다. 기본은 한국 날짜 기준 최근 90일이고, 종료일만 보내면 그 전 90일, 시작일만 보내면 오늘까지다.
   종료일이 시작일보다 앞서거나 기간이 366일을 넘으면 400 `INVALID_LMS_QUERY`다.
-- 과목별 API의 과제는 기간과 관계없이 모두 준다. 전체 과목 API는 마감 있는 과제만 넣고, 마감 지난 과제는 시작일 이후에 마감된 것만 넣는다.
+- 과목별 API의 과제는 기간과 관계없이 모두 준다.
+- 전체 과목 API는 마감이 있고, 마감 시각이 조회 시작일의 한국 시간 00:00 이상인 과제만 넣는다. 아직 마감 전이어도 시작일보다 먼저 마감되면 빠진다. 과제에는 조회 종료일 조건을 쓰지 않는다.
 - 한 과목이나 한 유형이 실패하면 `errors`에 적고 나머지를 준다. 모두 실패하면 LMS 오류를 그대로 돌려준다. `truncated`는 LMS 페이지 상한에 걸린 목록이 있으면 `true`다.
 
 알림 항목:
@@ -256,7 +276,8 @@ timestamp는 실행 시각을 UTC ISO 8601 형식으로 반환한다. 인증 없
 ```
 
 - `id`는 `announcement-`·`assignment-`·`material-` 뒤에 LMS ID를 붙인 값이다.
-- 공지의 `dueAt`은 본문에서 규칙으로 찾은 마감이고, 못 찾으면 `null`이다. 과제의 `dueAt`·`lockAt`은 LMS 값 그대로다.
+- 날짜는 모두 오프셋이 붙은 ISO 8601이다. `publishedAt`은 공지에만 있고 과제·학습자료는 `null`이다.
+- 공지의 `dueAt`은 본문에서 규칙으로 찾은 마감(한국 시간)이고, 못 찾으면 `null`이다. 과제의 `dueAt`·`lockAt`은 LMS 값 그대로이며 없으면 `null`이다. 학습자료는 둘 다 `null`이다.
 - `content`는 공지 본문·과제 설명을 줄바꿈만 살린 글로 바꾼 값이며, 학습자료는 `null`이다. `savedScheduleId`는 현재 항상 `null`이다.
 
 ## 구현된 LMS 개발 검사 API
