@@ -33,7 +33,7 @@ React + TypeScript + Vite / Java 21 + Spring Boot로 구성되어 있습니다.
 | [auth.md](docs/features/auth.md) | Google 로그인·세션·게스트 모드 | `auth` | `authentication.md` |
 | [profile.md](docs/features/profile.md) | 가입 동의·프로필 저장, 대시보드 판별 입력 | `profile`, `auth`(가입 화면) | `demo-profile.md` |
 | [notices.md](docs/features/notices.md) | 학교 공지 수집 설정·Render 장애 진단 | `integrations/school`, `notices` | `school-notice-fetch.md` |
-| [lms.md](docs/features/lms.md) | LMS 조회 테스트·코드 흐름·검증 기록 | `courses`, `course`, `lms-test`, `integrations/lms` | `lms-testing.md`, `lms-code-walkthrough.md`, `lms-verification.md` |
+| [lms.md](docs/features/lms.md) | LMS 조회 테스트·코드 흐름·검증 기록 | `lms-test`, `integrations/lms` | `lms-testing.md`, `lms-code-walkthrough.md`, `lms-verification.md` |
 | [schedule.md](docs/features/schedule.md) | 학사일정·개인 일정 | `schedule` | `frontend/src/features/schedule/README.md` |
 | [boards.md](docs/features/boards.md) | 장터·질문·자유게시판 | `market`, `questions`, `free-board` | `market-demo.md`, `frontend/src/features/free-board/README.md` |
 | [translation.md](docs/features/translation.md) | 게시글·댓글·답글 자동 번역 | `translation`, `integrations/ai`, 백엔드 `community` | `community-translation-review.md` |
@@ -41,7 +41,7 @@ React + TypeScript + Vite / Java 21 + Spring Boot로 구성되어 있습니다.
 | [emergency-contacts.md](docs/features/emergency-contacts.md) | 긴급 연락처 | `life` | `emergency-contacts.md` |
 | [nearby-facilities.md](docs/features/nearby-facilities.md) | 주변 편의시설 지도 | `life` | `nearby-facilities.md` |
 
-아직 문서가 없는 기능: 맞춤 공지 대시보드(`dashboard`, `matching`), 공지 목록·상세·분석(`notices`), 입출국 체크리스트(`immigration`), SCHOOL 홈(`school`), LIFE 홈(`life`)
+아직 문서가 없는 기능: 과목알림(`courses`, `course`), 맞춤 공지 대시보드(`dashboard`, `matching`), 공지 목록·상세·분석(`notices`), 입출국 체크리스트(`immigration`), SCHOOL 홈(`school`), LIFE 홈(`life`)
 
 초기 계획 기록 (`docs/archive/`): [초기 디렉터리 구성안](docs/archive/initial-structure.md), [와이어프레임 초안](docs/archive/wireframes.md)
 
