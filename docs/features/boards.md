@@ -100,6 +100,8 @@ LIFE 홈의 장터 카드와 하단 장터 메뉴가 목록에 연결된다. 기
 
 ### 파일 구조
 
+코드 위치: `frontend/src/features/free-board/`
+
 - `free-board-store.ts`: 글·댓글 타입, 예시 글, 저장·복원, 입력 검증 및 작성자 검사
 - `free-board-context.ts`: Context와 `useFreeBoard` 훅
 - `FreeBoardLayout.tsx`: 로그인·프로필의 작성자 정보 연결, 탭 저장 및 저장 실패 처리
