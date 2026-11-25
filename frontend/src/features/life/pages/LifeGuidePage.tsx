@@ -26,7 +26,8 @@ export function LifeGuidePage() {
   if (historyTab !== null && historyTab !== lastTab) {
     setLastTab(historyTab)
   }
-  const selectedTab = historyTab ?? lastTab
+  // 처음 들어오면 편의시설 탭을 연다.
+  const selectedTab = historyTab ?? lastTab ?? 'facilities'
 
   // 화면에 보이는 탭이 방문 기록에 없으면 기록에 채워 새로고침 후에도 같은 탭을 연다.
   useEffect(() => {
