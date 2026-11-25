@@ -97,8 +97,8 @@ AUTH_COOKIE_SECURE=true
 이는 Vercel/Render 사이의 제3자 쿠키에 의존하지 않기 위한 구성이다.
 API rewrite는 SPA의 `/index.html` fallback보다 먼저 적용되어야 한다.
 
-백엔드 변경을 먼저 배포하고 프론트를 배포한다. 저장소 원칙에 따라 기능 브랜치를
-`develop`에 통합하고 검증 후 `main`에 반영한다. 자동 운영 배포 브랜치는 `main`이다.
+백엔드 변경을 먼저 배포하고 프론트를 배포한다. 저장소 원칙에 따라 기능 브랜치에서
+`main`으로 PR을 보내 반영한다. 자동 운영 배포 브랜치는 `main`이다.
 이번 로컬 구현만으로 현재 운영 사이트가 바뀌지는 않는다.
 
 참고: [Vercel 외부 rewrite](https://vercel.com/docs/routing/rewrites).

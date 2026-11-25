@@ -1,6 +1,6 @@
 # 배포
 
-개발 변경은 `develop`에 통합하고, 검증 후 `develop` → `main` PR을 병합한다.
+개발 변경은 작업 브랜치에서 `main`으로 PR을 보내 병합한다.
 Vercel과 Render의 운영 배포 브랜치는 `main`이다.
 
 ## Render 백엔드

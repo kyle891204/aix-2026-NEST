@@ -8,9 +8,16 @@ React는 표현 계층, Spring Boot의 서비스는 로직 계층, 저장소·�
 | API 진입·로직 | 백엔드 기능별 `controller`, `service`, `dto` | 인증·권한·입력 검증·공지 판별·게시글 처리 |
 | 데이터·외부 연동 | 기능별 `repository`, `integrations/lms`, `school`, `ai` | 저장·조회·공지 수집·외부 AI 요청 |
 
-현재 연결된 기능은 `BackendStatus → HealthController`와 `LmsTestPage → LmsDevController → HanyangLmsClient`다.
-LMS는 개발자 본인의 `.env` 토큰으로 과목 설명·공지·과제·마감·모듈/학습 항목을 읽기 검사하며 실제 한양대 데이터 반환은 아직 미검증이다.
-Google 인증과 서버 세션을 이용한 로그인·로그아웃을 추가했다. 회원 DB·가입/동의 이력·AI 공급자 연동은 미구현이다.
+현재 연결된 주요 흐름:
+
+- 학교 공지: `NoticeController → NoticeService → CollectedNoticeRepository(integrations/school 수집) · NoticeAnalyses → NoticeAnalysisClient(Gemini 분석) · integrations/ai 번역`
+- 맞춤 공지 대시보드: `DashboardController → DashboardService → matching/NoticeMatcher`
+- 과목알림: `CourseController → CourseService → integrations/lms/HanyangLmsClient` (공통 데모 계정)
+- 학사일정: `ScheduleController → ScheduleService` (공식 일정을 옮긴 seed JSON)
+- 게시글·답글 번역: `community/CommunityTranslationController · BatchTranslationController → integrations/ai`
+- 개발 검사: `LmsTestPage → LmsDevController → HanyangLmsClient`, `BackendStatus → HealthController`
+
+LMS 실제 한양대 데이터 반환은 아직 미검증이다. Google 인증과 서버 세션을 이용한 로그인·로그아웃을 사용한다. 회원 DB·가입/동의 이력은 미구현이다.
 인증 코드는 `auth` 패키지와 `features/auth`에 있으며 [설정 및 한계](authentication.md)를 참고한다.
 
 초기 폴더 구성은 `initial-structure.md`, 검사 코드의 요청 흐름은 `lms-code-walkthrough.md`,
@@ -20,8 +27,8 @@ Google 인증과 서버 세션을 이용한 로그인·로그아웃을 추가했
 
 - `profile`: 프로필·한국어/영어/중국어 선호 언어.
 - `notices`: 공지 수집 결과 조회·핵심정보 추출·개인화·번역.
-- `community`: MVP의 게시글·답글·자동 번역.
-- `schedule`: 후속 일정·타임라인.
+- `community`: 게시글·답글 번역 API. 게시판 화면과 저장은 프론트 `market`·`questions`·`free-board`에 있다.
+- `schedule`: 학사일정 조회. 개인 일정은 프론트 localStorage에 저장한다.
 
 UI가 DB·LMS·AI 공급자를 직접 호출하지 않는다. 백엔드 서비스는 공급자별 코드를 수집·AI 모듈에 숨긴다.
 번역 실패 시 공지 서비스가 원문과 실패 상태를 반환하고 화면에서 실패 안내와 원문을 표시한다.
