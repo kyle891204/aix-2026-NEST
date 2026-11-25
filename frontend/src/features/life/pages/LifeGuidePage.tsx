@@ -7,9 +7,9 @@ import '../life.css'
 export function LifeGuidePage() {
   const { t } = useLanguage()
 
-  const [selectedTab, setSelectedTab] = useState<
-    'facilities' | 'emergency' | null
-  >(null)
+  const [selectedTab, setSelectedTab] = useState<'facilities' | 'emergency'>(
+    'facilities',
+  )
 
   return (
     <section className="life-guide">
