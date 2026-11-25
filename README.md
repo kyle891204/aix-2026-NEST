@@ -41,7 +41,7 @@ React + TypeScript + Vite / Java 21 + Spring Boot로 구성되어 있습니다.
 | [emergency-contacts.md](docs/features/emergency-contacts.md) | 긴급 연락처 | `life` | `emergency-contacts.md` |
 | [nearby-facilities.md](docs/features/nearby-facilities.md) | 주변 편의시설 지도 | `life` | `nearby-facilities.md` |
 
-아직 문서가 없는 기능: 과목알림(`courses`, `course`), 맞춤 공지 대시보드(`dashboard`, `matching`), 공지 목록·상세·분석(`notices`), 입출국 체크리스트(`immigration`), SCHOOL 홈(`school`), LIFE 홈(`life`)
+아직 문서가 없는 기능: 과목알림(`courses`, `course`), 맞춤 공지 대시보드(`dashboard`, `matching`), 공지 목록·상세·분석(`notices`), 입출국 체크리스트(`immigration`)
 
 초기 계획 기록 (`docs/archive/`): [초기 디렉터리 구성안](docs/archive/initial-structure.md), [와이어프레임 초안](docs/archive/wireframes.md)
 

@@ -4,6 +4,7 @@
 
 - 기능별 담당자 1명, 완료 조건, 선행 작업을 이슈에 적는다.
 - React: 기능 안에 화면·컴포넌트·훅·API를 묶고 공통 HTTP 코드는 `shared/api`를 사용한다.
+- 화면에서 직접 fetch하지 않고 `shared/api/client.ts`를 통해 요청한다. 아직 없는 API는 구현 완료처럼 표시하지 않는다.
 - Java: 기능별 패키지 안에서 controller → service → repository/외부 연동 책임을 나눈다.
 - API·DB 변경은 관련 문서와 예시도 함께 수정한다.
 - 문서를 새로 만들거나 옮기면 README의 문서 표도 함께 수정한다.
