@@ -18,4 +18,4 @@
 - 과목별 화면에서 마감이 남은 공지·과제를 골라 [개인 일정](schedule.md)에 저장한다.
 - 공지 본문·과제 설명 HTML은 실행하지 않고, 줄바꿈만 살린 글로 바꿔 보여준다.
 
-API: `GET /api/v1/courses`, `GET /courses/notifications`, `GET /courses/{courseId}/notifications?type=ALL|ANNOUNCEMENT|ASSIGNMENT|MATERIAL&startDate=&endDate=`. [API 계약](../api.md)에는 아직 없다.
+API: `GET /api/v1/courses`, `GET /api/v1/courses/notifications`, `GET /api/v1/courses/{courseId}/notifications` (로그인 필요). 요청·응답은 [API 계약](../api.md#과목알림-9)에 있다.

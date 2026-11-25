@@ -17,7 +17,7 @@
 - 선호 언어가 원문과 다르면 상세를 자동 번역한다. 원문과 같은 언어면 호출하지 않는다. 원문이 3,000자를 넘으면 앞부분만 번역하고 나머지는 원문에서 보도록 안내한다. 번역에 실패하면 원문을 그대로 보여주고 원문과 번역을 섞지 않는다.
 - 분석으로 마감이 나온 공지만 [개인 일정](schedule.md)에 저장할 수 있다. 로그인하지 않았거나, 마감이 지났거나, 예시 공지(`sample: true`)면 저장할 수 없다.
 
-API: `POST /api/v1/notices/search`, `POST /notices/{id}/view`, `POST /notices/{id}/translations` (로그인 필요). [API 계약](../api.md)에는 아직 반영되지 않았다.
+API: `POST /api/v1/notices/search`, `POST /api/v1/notices/{noticeId}/view`, `POST /api/v1/notices/{noticeId}/translations` (로그인 필요). 요청·응답은 [API 계약](../api.md#post-apiv1noticessearch)부터 이어진다.
 
 ## 수집 진단과 설정 (Render)
 

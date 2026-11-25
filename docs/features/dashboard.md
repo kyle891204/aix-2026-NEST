@@ -25,4 +25,4 @@
 - 해당 공지를 먼저, 각각 마감 임박순으로, 마감 없는 공지는 게시일 최신순으로 둔다. `limit`(기본 20, 1~50)으로 자르기 전에 정렬해 확인 필요 공지가 해당 공지 자리를 차지하지 않게 한다. 마감 지난 공지는 뺀다.
 - `collegeId`는 공지를 고를 때만 쓰고 판별에는 쓰지 않는다. 응답의 `missingProfileFields`로 프로필 입력을 안내한다.
 
-API: `POST /api/v1/dashboard?limit=` (로그인 필요). [API 계약](../api.md)에는 아직 없다.
+API: `POST /api/v1/dashboard?limit=` (로그인 필요). 요청·응답은 [API 계약](../api.md#post-apiv1dashboard)에 있다.

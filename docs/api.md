@@ -64,7 +64,7 @@ timestamp는 실행 시각을 UTC ISO 8601 형식으로 반환한다. 인증 없
 ### POST /api/v1/community/translations
 
 장터·질문 글과 답글을 조회자의 선호 언어로 번역한다. 로그인 세션이 필요하며(비로그인 401 `AUTH_REQUIRED`) 응답은 `Cache-Control: no-store`다.
-화면 연결은 아직 없다.
+화면 연결은 아직 없다. 게시판 화면은 아래 묶음 번역 API를 쓴다.
 
 | 필드 | 규칙 |
 | --- | --- |
@@ -112,6 +112,153 @@ timestamp는 실행 시각을 UTC ISO 8601 형식으로 반환한다. 인증 없
 `node scripts/academic-calendar-to-seed.mjs <파일>...`로 변환한다. 학년도별 파일을 모두 넘긴다(`sYear=2026`은 2026년 3월~2027년 2월).
 `checkedAt`은 변환한 날로 들어간다. 예전에 저장한 파일을 다시 변환할 때는 `--checked-at=YYYY-MM-DD`로 저장한 날을 넣는다.
 
+### POST /api/v1/community/translations/batch
+
+게시판(장터·질문·자유)의 제목·본문·댓글·답글과 공지 목록 제목을 한 번에 번역한다. 위 단건 API는 그대로 두고, 화면은 이 API를 쓴다.
+로그인·CSRF·`Cache-Control: no-store`는 다른 API와 같다. 요청 형식과 제한(1~100항목, 항목별 원문 3,000자 등), 항목별 결과(`SUCCEEDED`·`SKIPPED`·`FAILED`)는
+[번역 문서](features/translation.md#새-api)에 있다. 일부 항목이 실패해도 HTTP 200이며 항목별 `status`를 확인한다.
+
+### 공지 (전체 공지 S06·공지 상세 S07)
+
+동작 규칙은 [공지 문서](features/notices.md)에 있다. 아래 세 API는 로그인이 필요하고(비로그인 401 `AUTH_REQUIRED`), POST라 `X-CSRF-Token`이 필요하다.
+응답은 `Cache-Control: no-store`다. 프로필은 브라우저에만 있어 조회도 POST 본문으로 보내며, 서버는 저장하지 않는다.
+
+프로필 본문(목록·상세 공통, 생략 가능):
+
+| 필드 | 설명 |
+| --- | --- |
+| `nationality` | ISO 국가 코드 2자리 (예: `CN`) |
+| `visaType` | 비자 코드 (예: `D-2`). 프로필에서 받지 않아 프론트는 항상 `null`을 보낸다 |
+| `degree` | `BACHELOR` / `MASTER` / `DOCTORAL` / `EXCHANGE` / `LANGUAGE` |
+| `year` | `"1"`~`"6"` |
+| `collegeId` | 단과대 ID (예: `business-economics`). 없으면 ERICA 전체 공지만 본다 |
+
+코드로 읽을 수 없는 값은 값 없음으로 판별하고, 길이가 길어도 400을 내지 않는다.
+
+#### POST /api/v1/notices/search
+
+| 쿼리 | 필수 | 설명 |
+| --- | --- | --- |
+| `source` | N | `UNIVERSITY` / `INTERNATIONAL` / `COLLEGE`. 없으면 전체 |
+| `match` | N | `APPLICABLE` / `NEEDS_REVIEW`. 없으면 전체. `NOT_APPLICABLE`은 받지 않는다 |
+
+```json
+{
+  "items": [
+    {
+      "noticeId": "<게시판 키>-<글 ID>", "source": "INTERNATIONAL", "sourceName": "<게시판 이름>", "category": "VISA",
+      "title": "공지 제목", "postedAt": "2026-11-20", "analysisStatus": "CONFIRMED",
+      "matchStatus": "APPLICABLE", "matchReasons": ["…"], "deadline": "2026-11-30T23:59:00+09:00", "sample": false
+    }
+  ],
+  "truncated": false
+}
+```
+
+- 해당 → 확인 필요 → 해당 안 됨 순이고, 같은 상태 안에서는 마감일이 이른 순이다. 마감이 지난 공지도 빼지 않으며, 마감이 없으면 뒤로 간다.
+- 목록은 이미 분석한 공지만 분석 결과로 판별하고 Gemini를 부르지 않는다.
+- `category`는 `VISA` / `SCHOLARSHIP` / `ACADEMIC` / `EVENT` / `ETC`, `postedAt`은 `yyyy-MM-dd` 또는 `null`이다. `truncated`는 현재 항상 `false`다.
+- 잘못된 쿼리 값이나 읽을 수 없는 JSON은 400 `INVALID_REQUEST`, 학교 공지 목록을 한 번도 읽지 못했으면 503 `NOTICE_SOURCE_UNAVAILABLE`이다.
+
+#### POST /api/v1/notices/{noticeId}/view
+
+공지 상세. 목록과 같은 프로필 본문을 보낸다. 처음 여는 실제 공지는 이때 Gemini로 분석하고, 실패하면 분석 전 공지를 그대로 준다.
+
+응답은 목록 항목의 필드에 다음을 더한다.
+
+| 필드 | 설명 |
+| --- | --- |
+| `target` | 공지 대상 설명 |
+| `targetConditions` | `{ nationalities, visaTypes, degrees, years }`. 목록이 비어 있으면 그 조건은 전체 대상 |
+| `actions` | 해야 할 일 `[{ id, text }]` |
+| `documents` | 준비 서류 이름 목록 |
+| `attachments` | 첨부 `[{ name, url }]` |
+| `originalContent`, `originalLanguage`, `sourceUrl` | 원문, 원문 언어, 원문 링크 |
+| `savedScheduleId` | 현재 항상 `null`. 개인 일정은 브라우저에 저장한다 |
+
+- 없는 공지와 다른 단과대 공지는 404 `NOTICE_NOT_FOUND`다.
+
+#### POST /api/v1/notices/{noticeId}/translations
+
+| 필드 | 규칙 |
+| --- | --- |
+| `targetLanguage` | 필수, `ko` / `en` / `zh`(간체) |
+| `collegeId` | 선택. 다른 단과대 공지를 번역하지 않도록 상세와 같이 보낸다 |
+
+```json
+{
+  "noticeId": "…", "targetLanguage": "en", "translationStatus": "SUCCEEDED",
+  "translated": { "title": "…", "target": "…", "actions": [{ "id": "…", "text": "…" }], "documents": ["…"], "content": "…" },
+  "retryable": false, "message": null
+}
+```
+
+- 번역에 실패해도 HTTP 200이다. `translationStatus: "FAILED"`, `translated: null`, `retryable: true`와 재시도 안내 `message`를 준다. 원인은 서버 로그에만 남긴다.
+- 원문과 같은 언어면 Gemini를 부르지 않는다. 본문이 3,000자를 넘으면 앞부분만 번역하고 안내 문구를 붙인다.
+- 번역한 필드는 서버 캐시에 남아, 재시도하면 실패한 필드부터 이어서 호출한다.
+- 검증 실패는 400 `INVALID_REQUEST`, 없는 공지는 404 `NOTICE_NOT_FOUND`다.
+
+### POST /api/v1/dashboard
+
+맞춤 공지 대시보드(#6). 판별 규칙은 [대시보드 문서](features/dashboard.md)에 있다. 로그인과 `X-CSRF-Token`이 필요하다.
+본문은 위 공지 API의 프로필 본문과 같다. 생략하면 빈 프로필로 판별한다. `collegeId`는 공지를 고를 때만 쓴다.
+
+| 쿼리 | 필수 | 설명 |
+| --- | --- | --- |
+| `limit` | N | 1~50, 기본 20. 벗어나면 400 `INVALID_REQUEST`(`fields.limit`) |
+
+```json
+{
+  "profileCompleted": false,
+  "missingProfileFields": ["visaType"],
+  "matchedNotices": [
+    {
+      "noticeId": "…", "title": "공지 제목", "category": "VISA", "postedAt": "2026-11-20",
+      "deadline": "2026-11-30T23:59:00+09:00", "sourceUrl": "https://…", "matchReasons": ["…"],
+      "matchStatus": "NEEDS_REVIEW", "analysisStatus": "CONFIRMED", "savedScheduleId": null, "sample": false
+    }
+  ]
+}
+```
+
+- 해당(`APPLICABLE`)과 확인 필요(`NEEDS_REVIEW`) 공지만 주고, 마감이 지난 공지는 뺀다.
+- `missingProfileFields`는 코드로 읽지 못한 프로필 필드의 요청 필드명이다. 프론트가 `visaType`을 항상 `null`로 보내므로 `profileCompleted`는 늘 `false`이고, 화면은 국적·학위과정·학년이 빠졌을 때만 입력을 안내한다.
+- 학교 공지 목록을 한 번도 읽지 못했으면 503 `NOTICE_SOURCE_UNAVAILABLE`이다.
+
+### 과목알림 (#9)
+
+동작 규칙은 [과목알림 문서](features/courses.md)에 있다. 공통 데모 계정 하나의 LMS 데이터이며, 사용자별 수강 여부는 판별하지 않는다.
+
+- 로그인이 필요하다. 운영(`prod`)에서는 `lms-demo` 프로필일 때만 열리고, `X-LMS-Demo-Password` 헤더로 데모 암호를 확인한다.
+  틀리면 401 `LMS_DEMO_UNAUTHORIZED`, 서버에 암호가 없으면 503 `LMS_DEMO_NOT_CONFIGURED`다. 설정은 [배포 문서](deployment.md#공통-계정-lms-데모)에 있다.
+- LMS 오류는 `{ code, message, upstreamStatus }` 형식이다.
+
+| 메서드·경로 | 쿼리 | 응답 |
+| --- | --- | --- |
+| GET `/courses` | 없음 | `{ courses: [{ courseId, courseName, courseCode, termName }], truncated }`. `termName`은 아직 `null` |
+| GET `/courses/notifications` | `startDate`, `endDate` | `{ courses, notifications, errors: [{ courseId, type, code }], truncated }`. 전체 과목의 공지와 마감 있는 과제 |
+| GET `/courses/{courseId}/notifications` | `type`, `startDate`, `endDate` | `{ courseId, notifications, errors: [{ type, code }], truncated }` |
+
+- `type`: `ALL`(기본) / `ANNOUNCEMENT` / `ASSIGNMENT` / `MATERIAL`. 다른 값은 400 `INVALID_REQUEST`(`fields.type`)다.
+- `startDate`·`endDate`(`YYYY-MM-DD`)는 **공지**의 게시 기간이다. 기본은 한국 날짜 기준 최근 90일이고, 종료일만 보내면 그 전 90일, 시작일만 보내면 오늘까지다.
+  종료일이 시작일보다 앞서거나 기간이 366일을 넘으면 400 `INVALID_LMS_QUERY`다.
+- 과목별 API의 과제는 기간과 관계없이 모두 준다. 전체 과목 API는 마감 있는 과제만 넣고, 마감 지난 과제는 시작일 이후에 마감된 것만 넣는다.
+- 한 과목이나 한 유형이 실패하면 `errors`에 적고 나머지를 준다. 모두 실패하면 LMS 오류를 그대로 돌려준다. `truncated`는 LMS 페이지 상한에 걸린 목록이 있으면 `true`다.
+
+알림 항목:
+
+```json
+{
+  "courseId": "42", "id": "announcement-123", "type": "ANNOUNCEMENT", "title": "과제 안내",
+  "publishedAt": "2026-11-10T09:00:00+09:00", "dueAt": "2026-11-20T23:59:00+09:00", "lockAt": null,
+  "materialType": null, "moduleName": null, "sourceUrl": "https://…", "savedScheduleId": null, "content": "…"
+}
+```
+
+- `id`는 `announcement-`·`assignment-`·`material-` 뒤에 LMS ID를 붙인 값이다.
+- 공지의 `dueAt`은 본문에서 규칙으로 찾은 마감이고, 못 찾으면 `null`이다. 과제의 `dueAt`·`lockAt`은 LMS 값 그대로다.
+- `content`는 공지 본문·과제 설명을 줄바꿈만 살린 글로 바꾼 값이며, 학습자료는 `null`이다. `savedScheduleId`는 현재 항상 `null`이다.
+
 ## 구현된 LMS 개발 검사 API
 
 - GET `/dev/lms/profile`: 토큰 소유자 정보.
@@ -138,15 +285,11 @@ ID는 양수여야 한다. 선택 필드가 누락되면 `null`을 유지한다.
 | 경로 | 역할 |
 | --- | --- |
 | GET/PATCH `/profiles/me` | 본인 프로필·선호 언어 |
-| GET `/notices`, `/notices/{id}` | 권한 있는 공지의 목록·상세 |
-| POST `/notices/{id}/translations` | 선호 언어 번역 요청 |
 | GET/POST `/community/posts` | 게시글 조회·작성 |
 | POST `/community/posts/{id}/comments` | 답글 작성 |
 
 위 후보는 팀 합의 후 DTO·응답·오류·권한 기준과 함께 확정한다.
-`frontend/src/features/notices/types.ts`의 타입도 검토용 초안이다.
-대상 판별은 `APPLICABLE / NOT_APPLICABLE / NEEDS_REVIEW`, 번역은 `PENDING / SUCCEEDED / FAILED`로 구분하는 안을 제안한다.
-번역 실패여도 `originalContent`를 제공하고 원문을 숨기지 않는다.
+공지 목록·상세·번역은 위 "공지" 절의 API로 구현했다. `frontend/src/features/notices/types.ts`는 그 전의 초안이며 지금은 어디에서도 쓰지 않는다.
 
 제품 API의 서버 세션 인증 경로 보호를 추가했다. 각 비공개 기능 구현 시 본인 소유권·과목 열람 권한을 추가 검증한다.
 기존 공통 계정 LMS 데모는 별도 데모 암호로 보호하며 Google 로그인이 사용자별 LMS 권한을 부여하지 않는다.
