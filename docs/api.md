@@ -22,7 +22,7 @@ Google 토큰이나 세션 ID를 URL/브라우저 저장소에 넣지 않는다.
 서버 로그인 보호 및 `Cache-Control: no-store` 적용 경로에
 `/courses/**`, `/dashboard/**`, `/schedules/**`를 추가했다.
 경로 보호 등록은 해당 API의 기능 구현 완료를 의미하지 않는다.
-게스트 설정과 사용 제한은 [로그인 문서](authentication.md)를 참고한다.
+게스트 설정과 사용 제한은 [로그인 문서](features/auth.md)를 참고한다.
 
 실제 로그인 사용자의 `id`는 Google `sub`이며, 게스트는 세션별 `guest-` ID를 사용한다.
 이 값은 회원 DB의 가입 완료 여부를 뜻하지 않는다.
@@ -33,7 +33,7 @@ Google 토큰이나 세션 ID를 URL/브라우저 저장소에 넣지 않는다.
 `/auth/**`를 제외한 `/api/v1/**`의 POST·PUT·PATCH·DELETE에는 세션과 일치하는 `X-CSRF-Token`이 필요하다.
 없거나 틀리면 `AUTH_CSRF_INVALID`(403)다. 프론트는 `requestJson`이 자동 첨부한다.
 10분이 지난 로그인 시도는 `/auth/session`을 다시 읽어 새 nonce로 재시도한다.
-설정·배포·한계는 [로그인 문서](authentication.md)를 참고한다.
+설정·배포·한계는 [로그인 문서](features/auth.md)를 참고한다.
 
 ### GET /api/v1/health
 
@@ -131,7 +131,7 @@ ID는 양수여야 한다. 선택 필드가 누락되면 `null`을 유지한다.
 화면에서 한국 시간과 원본 값을 함께 보여준다. `due_at`와 `lock_at`는 서로 다른 의미다.
 과제는 `override_assignment_dates=true`로 현재 조회 계정에 적용되는 날짜를 요청한다.
 공지 조회 기간은 과제·모듈 조회를 제한하지 않는다. 각 API 실패는 해당 영역의 오류로 표시한다.
-개발용 검사 API는 `prod` 프로필에서는 비활성화한다. 자세한 설정은 `lms-testing.md`를 참고한다.
+개발용 검사 API는 `prod` 프로필에서는 비활성화한다. 자세한 설정은 [LMS 문서](features/lms.md)를 참고한다.
 
 ## 다음 구현 후보 - 아직 호출하지 말 것
 

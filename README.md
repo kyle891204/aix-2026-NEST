@@ -17,15 +17,33 @@ React + TypeScript + Vite / Java 21 + Spring Boot로 구성되어 있습니다.
 
 회원 DB·서버 동의/프로필 저장·개인별 LMS 연결은 아직 구현하지 않았습니다. 실제 한양대 계정 데이터 반환은 별도 검증이 필요합니다.
 
-- [계정별 프로필 데모와 테스트](docs/demo-profile.md)
+### 문서
 
-- [Google 로그인 설정과 검증 범위](docs/authentication.md)
+공통
 
-- [LMS 실행·테스트 방법](docs/lms-testing.md)
-- [코드 구성과 호출 흐름](docs/lms-code-walkthrough.md)
-- [검증 기록](docs/lms-verification.md)
-- [초기 디렉터리 구성안](docs/initial-structure.md)
-- [와이어프레임 초안](docs/wireframes.md)
+- [API 계약](docs/api.md)
+- [코드 구조와 3계층 책임](docs/architecture.md)
+- [배포](docs/deployment.md)
+- [개발 규칙 (브랜치·PR)](docs/development.md) — 구 `development.md` + `branch_rules.md`
+
+기능별 (`docs/features/`)
+
+| 문서 | 내용 | 관련 코드 | 이전 파일 |
+| --- | --- | --- | --- |
+| [auth.md](docs/features/auth.md) | Google 로그인·세션·게스트 모드 | `auth` | `authentication.md` |
+| [profile.md](docs/features/profile.md) | 가입 동의·프로필 저장, 대시보드 판별 입력 | `profile`, `auth`(가입 화면) | `demo-profile.md` |
+| [notices.md](docs/features/notices.md) | 학교 공지 수집 설정·Render 장애 진단 | `integrations/school`, `notices` | `school-notice-fetch.md` |
+| [lms.md](docs/features/lms.md) | LMS 조회 테스트·코드 흐름·검증 기록 | `courses`, `course`, `lms-test`, `integrations/lms` | `lms-testing.md`, `lms-code-walkthrough.md`, `lms-verification.md` |
+| [schedule.md](docs/features/schedule.md) | 학사일정·개인 일정 | `schedule` | `frontend/src/features/schedule/README.md` |
+| [boards.md](docs/features/boards.md) | 장터·질문·자유게시판 | `market`, `questions`, `free-board` | `market-demo.md`, `frontend/src/features/free-board/README.md` |
+| [translation.md](docs/features/translation.md) | 게시글·댓글·답글 자동 번역 | `translation`, `integrations/ai`, 백엔드 `community` | `community-translation-review.md` |
+| [i18n.md](docs/features/i18n.md) | 화면 고정 문구 다국어 | `shared/i18n` | `i18n-auth-life.md`, `i18n-school.md` |
+| [emergency-contacts.md](docs/features/emergency-contacts.md) | 긴급 연락처 | `life` | `emergency-contacts.md` |
+| [nearby-facilities.md](docs/features/nearby-facilities.md) | 주변 편의시설 지도 | `life` | `nearby-facilities.md` |
+
+아직 문서가 없는 기능: 맞춤 공지 대시보드(`dashboard`, `matching`), 공지 목록·상세·분석(`notices`), 입출국 체크리스트(`immigration`), SCHOOL 홈(`school`), LIFE 홈(`life`)
+
+초기 계획 기록 (`docs/archive/`): [초기 디렉터리 구성안](docs/archive/initial-structure.md), [와이어프레임 초안](docs/archive/wireframes.md)
 
 ## 1. 문제 정의 / Problem Definition
 - 사용자 / Users:

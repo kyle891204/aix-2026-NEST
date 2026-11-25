@@ -106,7 +106,7 @@ Dockerfile의 기본값만 쓰고 있었다면 다음과 같이 설정한다.
 
 ### Vercel 서울 함수
 
-같은 저장소의 [`scripts/school-fetch-probe`](../scripts/school-fetch-probe/README.md)를 별도 Vercel 프로젝트로 배포할 수 있게 준비했다.
+같은 저장소의 [`scripts/school-fetch-probe`](../../scripts/school-fetch-probe/README.md)를 별도 Vercel 프로젝트로 배포할 수 있게 준비했다.
 기존 프론트의 `/api/*` 프록시와 분리되어 있고, 현재 Vercel 배포에는 영향을 주지 않는다.
 Root Directory를 `scripts/school-fetch-probe`, Framework를 `Other`로 선택해 배포하고 `/api/probe`를 확인한다.
 

@@ -18,10 +18,10 @@ React는 표현 계층, Spring Boot의 서비스는 로직 계층, 저장소·�
 - 개발 검사: `LmsTestPage → LmsDevController → HanyangLmsClient`, `BackendStatus → HealthController`
 
 LMS 실제 한양대 데이터 반환은 아직 미검증이다. Google 인증과 서버 세션을 이용한 로그인·로그아웃을 사용한다. 회원 DB·가입/동의 이력은 미구현이다.
-인증 코드는 `auth` 패키지와 `features/auth`에 있으며 [설정 및 한계](authentication.md)를 참고한다.
+인증 코드는 `auth` 패키지와 `features/auth`에 있으며 [설정 및 한계](features/auth.md)를 참고한다.
 
-초기 폴더 구성은 `initial-structure.md`, 검사 코드의 요청 흐름은 `lms-code-walkthrough.md`,
-화면 초안은 `wireframes.md`를 참고한다. 제안된 제품 기능과 현재 개발 검사 도구를 구분한다.
+초기 폴더 구성은 [archive/initial-structure.md](archive/initial-structure.md), 검사 코드의 요청 흐름은 [features/lms.md](features/lms.md),
+화면 초안은 [archive/wireframes.md](archive/wireframes.md)를 참고한다. 제안된 제품 기능과 현재 개발 검사 도구를 구분한다.
 
 기능별 패키지와 폴더:
 

@@ -11,7 +11,7 @@ npm run dev
 개발 주소: `http://127.0.0.1:5173`.
 로그인에는 백엔드가 함께 실행되어야 합니다. `backend/.env`에 `GOOGLE_CLIENT_ID`와
 로컬 HTTP용 `AUTH_COOKIE_SECURE=false`를 설정합니다. ID가 없으면 로그인 준비 상태를 표시합니다.
-등록할 주소와 배포 설정은 [로그인 문서](../docs/authentication.md)를 참고하세요.
+등록할 주소와 배포 설정은 [로그인 문서](../docs/features/auth.md)를 참고하세요.
 
 기능별 화면은 `src/features/`에 있습니다. 기능 설명은 `../docs/features/`를 참고하세요.
 `/lms-test`는 백엔드 `.env` 토큰으로 수강 과목·공지 API를 검사하는 개발 화면입니다.
