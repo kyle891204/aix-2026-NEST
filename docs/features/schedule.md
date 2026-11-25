@@ -9,6 +9,6 @@
 
 학사일정 데이터 갱신 방법은 [API 계약](../api.md#get-apiv1schedulesacademic)의 "일정 갱신"을 참고한다.
 
-후속 기능: 공지·과제를 개인 일정으로 저장한다.
+공지 상세(`notices/pages/NoticeDetailPage.tsx`)와 과목별 공지·과제(`courses/CourseNoticesPage.tsx`)에서도 마감을 개인 일정으로 저장한다.
 
 화면에서 직접 fetch하지 않고 `shared/api/client.ts`를 통해 요청한다. 아직 없는 API는 구현 완료처럼 표시하지 않는다.
