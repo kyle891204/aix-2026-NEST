@@ -52,23 +52,33 @@ export function LifeHomePage() {
       </section>
 
       <section className="dashboard-card life-links">
-        <div className="life-menu-row">
+        <Link
+          className="life-menu-row"
+          to="/life/guide"
+          state={{ tab: 'facilities' }}
+        >
           <span>
             <strong>{t('병원·마트 등 편의시설')}</strong>
             <span className="dashboard-description">
-              {t('캠퍼스·지역별 지도와 위치 안내')}
+              {t('캠퍼스 주변 지도와 위치 안내')}
             </span>
           </span>
-        </div>
+          <span aria-hidden="true">›</span>
+        </Link>
 
-        <div className="life-menu-row">
+        <Link
+          className="life-menu-row"
+          to="/life/guide"
+          state={{ tab: 'emergency' }}
+        >
           <span>
             <strong>{t('긴급 연락처')}</strong>
             <span className="dashboard-description">
               {t('경찰·소방·구급·자국 대사관')}
             </span>
           </span>
-        </div>
+          <span aria-hidden="true">›</span>
+        </Link>
       </section>
     </div>
   )

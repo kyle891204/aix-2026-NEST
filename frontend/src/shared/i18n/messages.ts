@@ -443,7 +443,7 @@ export const messages: Record<string, { en: string; zh: string }> = {
     en: 'Hospitals, shops, and nearby facilities',
     zh: '医院、超市等便民设施',
   },
-  '캠퍼스·지역별 지도와 위치 안내': {
+  '캠퍼스 주변 지도와 위치 안내': {
     en: 'Maps and locations around campus',
     zh: '校园及周边地图与位置指南',
   },
@@ -466,10 +466,6 @@ export const messages: Record<string, { en: string; zh: string }> = {
   '주변 편의시설 안내': {
     en: 'Nearby facilities',
     zh: '周边便民设施',
-  },
-  긴급연락처: {
-    en: 'Emergency contacts',
-    zh: '紧急联系方式',
   },
   '한양대학교 ERICA 주변 지도': {
     en: 'Map around Hanyang University ERICA',
