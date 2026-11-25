@@ -1,5 +1,5 @@
 import { useLanguage } from '../../../shared/i18n/language-context'
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../auth/auth-context'
 import {
@@ -9,6 +9,7 @@ import {
   type Checklist,
   type Direction,
 } from '../checklist-store'
+import { DatePicker } from '../components/DatePicker'
 import '../../notices/notices.css'
 
 const TEXT = {
@@ -27,7 +28,8 @@ function loadInitial(accountId: string | null, direction: Direction) {
 }
 
 export function ChecklistPage({ direction }: { direction: Direction }) {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
+  const dateLabelId = useId()
 
   const { session } = useAuth()
   const accountId = session?.user?.id ?? null
@@ -74,16 +76,15 @@ export function ChecklistPage({ direction }: { direction: Direction }) {
       </Link>
       <h1>{t(TEXT[direction].title)}</h1>
 
-      <label className="notice-field">
-        <span>{t(TEXT[direction].date)}</span>
-        <input
-          type="date"
+      <div className="notice-field">
+        <span id={dateLabelId}>{t(TEXT[direction].date)}</span>
+        <DatePicker
           value={checklist.plannedDate}
-          onChange={(event) =>
-            update({ ...checklist, plannedDate: event.target.value })
-          }
+          onChange={(plannedDate) => update({ ...checklist, plannedDate })}
+          language={language}
+          labelId={dateLabelId}
         />
-      </label>
+      </div>
 
       <ul className="notice-card notice-actions">
         {CHECKLIST_ITEMS[direction].map((item, index) => (
