@@ -1,3 +1,8 @@
+import {
+  createDemoReplies,
+  mergeDemoReplies,
+} from '../community/demo-replies.ts'
+
 export type FreeBoardLanguage = 'ko' | 'en' | 'zh'
 
 export interface FreeBoardReply {
@@ -38,7 +43,9 @@ export const examplePosts: FreeBoardPost[] = [
       '요즘 캠퍼스 단풍이 예뻐요.\n여러분이 좋아하는 산책 코스도 알려주세요!',
     createdAt: '2026-11-01T00:00:00Z',
     example: true,
-    replies: [],
+    replies: createDemoReplies('campus-walk', '2026-11-01T00:00:00Z', {
+      en: 'The autumn colors are lovely! I usually take a short walk after studying at the library. Where did you take your favorite photo?',
+    }),
   },
   {
     id: 'weekend-together',
@@ -50,7 +57,10 @@ export const examplePosts: FreeBoardPost[] = [
       '가볍게 배드민턴 치거나 산책할 친구를 찾고 있어요.\n관심 있으면 댓글 남겨주세요.',
     createdAt: '2026-10-31T03:00:00Z',
     example: true,
-    replies: [],
+    replies: createDemoReplies('weekend-together', '2026-10-31T03:00:00Z', {
+      ko: '저도 배드민턴 같이 치고 싶어요! 실력은 초보인데 괜찮을까요? 토요일 오후에는 시간 맞출 수 있어요.',
+      zh: '我也想参加！如果天气好，先散步再打羽毛球怎么样？我周六下午有空，需要自己带球拍吗？',
+    }),
   },
   {
     id: 'coffee-language-exchange',
@@ -62,7 +72,13 @@ export const examplePosts: FreeBoardPost[] = [
       'I would love to meet new friends and practice Korean!\nWe could grab a coffee after class and chat in Korean and English. Beginners are welcome. Leave a comment if you are interested!',
     createdAt: '2026-10-30T08:00:00Z',
     example: true,
-    replies: [],
+    replies: createDemoReplies(
+      'coffee-language-exchange',
+      '2026-10-30T08:00:00Z',
+      {
+        zh: '我也想参加语言交换！可以一半时间说韩语，一半时间说英语，这样大家都能练习。周四下课后见面方便吗？',
+      },
+    ),
   },
   {
     id: 'movie-night-friends',
@@ -74,7 +90,10 @@ export const examplePosts: FreeBoardPost[] = [
       'I have been watching Korean movies to practice listening, and I would love some recommendations.\nComedies and feel-good stories are my favorites. What should I watch next?',
     createdAt: '2026-10-30T06:00:00Z',
     example: true,
-    replies: [],
+    replies: createDemoReplies('movie-night-friends', '2026-10-30T06:00:00Z', {
+      ko: '따뜻하고 웃긴 영화라면 ‘극한직업’ 추천해요! 대사가 빠른 장면도 있어서 처음에는 자막 켜고 보면 더 편할 것 같아요.',
+      en: 'I really enjoyed Little Forest. It is a calm, comforting film, and the food scenes always make me hungry! I watched it with subtitles the first time.',
+    }),
   },
   {
     id: 'campus-life-moments',
@@ -86,7 +105,9 @@ export const examplePosts: FreeBoardPost[] = [
       '来韩国留学一个月了，慢慢适应了这里的校园生活。\n最近喜欢下课后去图书馆看书，再和朋友一起吃晚饭。大家平时都喜欢做什么？欢迎在评论区分享！',
     createdAt: '2026-10-30T02:00:00Z',
     example: true,
-    replies: [],
+    replies: createDemoReplies('campus-life-moments', '2026-10-30T02:00:00Z', {
+      ko: '저도 수업 끝나면 도서관에 자주 가요! 저녁 먹고 친구랑 캠퍼스 한 바퀴 걷는 게 요즘 소소한 즐거움이에요.',
+    }),
   },
   {
     id: 'weekend-cooking',
@@ -98,7 +119,10 @@ export const examplePosts: FreeBoardPost[] = [
       '这个周末打算自己做泡菜炒饭，已经准备好食材了！\n这是我第一次尝试做韩式料理，有没有简单又好吃的做法推荐？也欢迎大家分享自己家乡的美食。',
     createdAt: '2026-10-29T08:00:00Z',
     example: true,
-    replies: [],
+    replies: createDemoReplies('weekend-cooking', '2026-10-29T08:00:00Z', {
+      en: 'Kimchi fried rice was one of the first dishes I learned here! I like adding a fried egg on top. If your kimchi is very sour, a tiny pinch of sugar can help.',
+      zh: '我做的时候会先把泡菜切小炒香，再加入米饭，最后放一点香油。第一次做可以少放辣椒酱，尝过味道再加。期待你分享成品！',
+    }),
   },
 ]
 
@@ -151,7 +175,7 @@ export function loadFreeBoard(storage: StorageLike): FreeBoardPost[] {
     !data.posts.every(validPost)
   )
     throw new Error('저장된 자유게시판 데이터를 읽을 수 없습니다.')
-  return data.posts
+  return mergeDemoReplies(data.posts, examplePosts)
 }
 
 export function saveFreeBoard(storage: StorageLike, posts: FreeBoardPost[]) {

@@ -236,7 +236,11 @@ test('new language examples join existing posts without overwriting replies or d
   }
   saveQuestion(store, [own, original])
   const loaded = loadQuestion(store)
-  assert.deepEqual(loaded.slice(0, 2), [own, original])
+  assert.deepEqual(loaded[0], own)
+  assert.deepEqual(loaded[1], {
+    ...original,
+    replies: [...original.replies, ...examples[0].replies],
+  })
   assert.equal(loaded.length, 6)
   assert.equal(loaded.filter((post) => post.language === 'en').length, 2)
   assert.equal(loaded.filter((post) => post.language === 'zh').length, 2)

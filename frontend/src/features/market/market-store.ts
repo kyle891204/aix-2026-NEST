@@ -1,3 +1,8 @@
+import {
+  createDemoReplies,
+  mergeDemoReplies,
+} from '../community/demo-replies.ts'
+
 export type TradeType = 'sell' | 'buy'
 export type TradeStatus = 'available' | 'completed'
 export type MarketLanguage = 'ko' | 'en' | 'zh'
@@ -43,7 +48,9 @@ export const examplePosts: MarketPost[] = [
     location: 'ERICA 캠퍼스',
     createdAt: '2026-10-28T00:00:00Z',
     example: true,
-    replies: [],
+    replies: createDemoReplies('example-book', '2026-10-28T00:00:00Z', {
+      en: 'Could you share the book title and edition? If it matches my course, I would be interested at 10,000 KRW. Would meeting near the library work for you?',
+    }),
   },
   {
     id: 'example-lamp',
@@ -59,7 +66,10 @@ export const examplePosts: MarketPost[] = [
     location: '기숙사 앞',
     createdAt: '2026-10-28T01:00:00Z',
     example: true,
-    replies: [],
+    replies: createDemoReplies('example-lamp', '2026-10-28T01:00:00Z', {
+      ko: '사용하지 않는 스탠드가 하나 있어요. 밝기 조절이 되고 작동도 잘 됩니다. 12,000원에 드릴 수 있는데, 사진 먼저 확인해 보실래요?',
+      zh: '我有一盏闲置的台灯，能正常使用，也可以调节亮度。12,000韩元可以出，需要的话我先发照片，确认后再约宿舍门口见面。',
+    }),
   },
   {
     id: 'example-bike-en',
@@ -75,7 +85,9 @@ export const examplePosts: MarketPost[] = [
     location: 'ERICA main gate',
     createdAt: '2026-11-07T00:00:00Z',
     example: true,
-    replies: [],
+    replies: createDemoReplies('example-bike-en', '2026-11-07T00:00:00Z', {
+      zh: '我对这辆50,000韩元的自行车感兴趣。请问车架尺寸是多少？11月12日下午3点在正门见面没问题，我想先检查刹车和车灯，再当面付款。',
+    }),
   },
   {
     id: 'example-kettle-en',
@@ -91,7 +103,10 @@ export const examplePosts: MarketPost[] = [
     location: 'Near the ERICA dormitory',
     createdAt: '2026-11-07T01:00:00Z',
     example: true,
-    replies: [],
+    replies: createDemoReplies('example-kettle-en', '2026-11-07T01:00:00Z', {
+      ko: '1리터 전기주전자 하나 있어요. 내부는 세척해 뒀고 10,000원에 드릴 수 있어요. 오후 6시 이후 기숙사 근처에서 확인하고 가져가셔도 됩니다.',
+      en: 'I have a one-liter kettle in good working condition. I can offer it for 10,000 KRW and send photos of the inside first. A pickup near the dormitory after 6 PM would work for me.',
+    }),
   },
   {
     id: 'example-chair-zh',
@@ -107,7 +122,9 @@ export const examplePosts: MarketPost[] = [
     location: 'ERICA宿舍门口',
     createdAt: '2026-11-07T02:00:00Z',
     example: true,
-    replies: [],
+    replies: createDemoReplies('example-chair-zh', '2026-11-07T02:00:00Z', {
+      ko: '책상 없이 의자만 20,000원인 거 확인했어요. 11월 13일 오후 4시에 기숙사 앞에서 높이 조절이 잘 되는지 확인하고 구매해도 될까요?',
+    }),
   },
   {
     id: 'example-backpack-zh',
@@ -123,7 +140,10 @@ export const examplePosts: MarketPost[] = [
     location: 'ERICA图书馆门口',
     createdAt: '2026-11-07T03:00:00Z',
     example: true,
-    replies: [],
+    replies: createDemoReplies('example-backpack-zh', '2026-11-07T03:00:00Z', {
+      en: 'I have a backpack with a compartment that fits a 14-inch laptop. The zippers and straps are in good condition, and I am asking 8,000 KRW. I can send photos and meet at the library entrance.',
+      zh: '我有一个能放14英寸笔记本电脑的双肩包，拉链和肩带都完好，想卖8,000韩元。可以先发照片，你觉得合适的话，我们再约图书馆门口见面。',
+    }),
   },
 ]
 type StorageLike = Pick<Storage, 'getItem' | 'setItem'>
@@ -179,7 +199,7 @@ export function loadMarket(storage: StorageLike): MarketPost[] {
   const missing = examplePosts.filter(
     (post) => post.language !== 'ko' && !ids.has(post.id),
   )
-  return [...posts, ...structuredClone(missing)]
+  return mergeDemoReplies([...posts, ...structuredClone(missing)], examplePosts)
 }
 export function saveMarket(storage: StorageLike, posts: MarketPost[]) {
   if (!posts.every(validPost)) throw new Error('게시글 내용을 확인해 주세요.')
