@@ -42,8 +42,8 @@ UI가 DB·LMS·AI 공급자를 직접 호출하지 않는다. 백엔드 서비�
 | --- | --- | --- |
 | `pages/` | 라우트에 연결되는 화면. 게시판처럼 하위 라우트가 있으면 `<기능>Layout.tsx`와 `<기능>Pages.tsx`로 나눈다 | `pages/NoticeListPage.tsx`, `pages/MarketLayout.tsx` |
 | `components/` | 화면 안에서 쓰는 컴포넌트 | `components/MarketReplyCard.tsx` |
-| `data/` | 화면에 쓰는 고정 데이터 | `life/data/emergency-contacts.ts` |
-| `api.ts` | 백엔드 요청. `shared/api/client.ts`를 통해 보낸다 | `notices/api.ts` |
+| `data/` | 화면에 쓰는 고정 데이터와 그 변환 규칙 | `life/data/emergency-contacts.ts`, `life/data/kakao-places.ts` |
+| `api.ts` | 백엔드 요청. `shared/api/client.ts`를 통해 보낸다. 예외: 번역 요청은 캐시·묶음 처리와 함께 `translation/translation-client.ts`에 있다 | `notices/api.ts` |
 | 기능 폴더 바로 아래 | Provider, Context(`<이름>-context.ts`), 저장(`<이름>-store.ts`), 훅(`use-<이름>.ts`), 표시·계산 함수, 기능 CSS | `market-context.ts`, `use-notice-titles.ts` |
 
 파일 이름은 React 컴포넌트 파일이면 PascalCase(`NoticeLoading.tsx`), 그 밖의 파일이면 kebab-case(`notice-display.ts`)로 쓴다.
