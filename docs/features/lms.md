@@ -158,7 +158,7 @@ DB 저장·공지 AI 분석·번역·서비스 로그인은 이 검사 도구의
 | `frontend/vite.config.ts` | 브라우저의 `/api` 요청을 로컬 백엔드 8081로 프록시 |
 | `frontend/src/shared/api/client.ts` | 공통 fetch, JSON·HTTP 오류 처리, code/upstreamStatus 보존 |
 | `frontend/src/features/lms-test/api.ts` | 각 검사 API 경로와 TypeScript 응답 타입 |
-| `frontend/src/features/lms-test/LmsTestPage.tsx` | 버튼·과목/기간 입력·결과·오류·날짜 표시 |
+| `frontend/src/features/lms-test/pages/LmsTestPage.tsx` | 버튼·과목/기간 입력·결과·오류·날짜 표시 |
 | `backend/src/test/java/com/aix/team03/integrations/lms/HanyangLmsClientTests.java` | 로컬 가상 Canvas로 요청·응답·실패 경로 검증 |
 
 `.../`는 `backend/src/main/java/com/aix/team03/integrations/lms/`를 뜻한다.

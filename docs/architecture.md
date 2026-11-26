@@ -34,6 +34,21 @@ UI가 DB·LMS·AI 공급자를 직접 호출하지 않는다. 백엔드 서비�
 번역 실패 시 공지 서비스가 원문과 실패 상태를 반환하고 화면에서 실패 안내와 원문을 표시한다.
 인증된 LMS 공지의 원문·요약·번역은 모두 같은 열람 권한을 확인한 뒤 제공한다.
 
+## 프론트 기능 폴더 구성
+
+`frontend/src/features/<기능>/`은 아래 구성을 따른다. 해당하는 파일이 없는 기능은 그 폴더나 파일을 만들지 않는다.
+
+| 위치 | 담는 것 | 예 |
+| --- | --- | --- |
+| `pages/` | 라우트에 연결되는 화면. 게시판처럼 하위 라우트가 있으면 `<기능>Layout.tsx`와 `<기능>Pages.tsx`로 나눈다 | `pages/NoticeListPage.tsx`, `pages/MarketLayout.tsx` |
+| `components/` | 화면 안에서 쓰는 컴포넌트 | `components/MarketReplyCard.tsx` |
+| `data/` | 화면에 쓰는 고정 데이터 | `life/data/emergency-contacts.ts` |
+| `api.ts` | 백엔드 요청. `shared/api/client.ts`를 통해 보낸다 | `notices/api.ts` |
+| 기능 폴더 바로 아래 | Provider, Context(`<이름>-context.ts`), 저장(`<이름>-store.ts`), 훅(`use-<이름>.ts`), 표시·계산 함수, 기능 CSS | `market-context.ts`, `use-notice-titles.ts` |
+
+파일 이름은 React 컴포넌트 파일이면 PascalCase(`NoticeLoading.tsx`), 그 밖의 파일이면 kebab-case(`notice-display.ts`)로 쓴다.
+`node --test`가 직접 읽는 `.ts` 파일은 상대 경로 import에 `.ts` 확장자를 붙인다.
+
 ## 첫 개발 순서
 
 1. 프로필과 서비스 로그인/권한의 API 계약을 합의한다.
