@@ -43,7 +43,12 @@ import {
   scheduleSource,
   type CourseItemState,
 } from '../course-notice-format'
-import { BackLink, CourseFootnote, DemoPasswordForm, Retry } from '../components/CourseUi'
+import {
+  BackLink,
+  CourseFootnote,
+  DemoPasswordForm,
+  Retry,
+} from '../components/CourseUi'
 import '../courses.css'
 
 type Filter = 'ALL' | NotificationType

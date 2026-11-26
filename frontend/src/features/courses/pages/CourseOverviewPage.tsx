@@ -29,7 +29,12 @@ import {
   kstLabel,
   type CourseItemState,
 } from '../course-notice-format'
-import { CourseFootnote, DemoPasswordForm, Retry, TypeIcon } from '../components/CourseUi'
+import {
+  CourseFootnote,
+  DemoPasswordForm,
+  Retry,
+  TypeIcon,
+} from '../components/CourseUi'
 import '../courses.css'
 
 // S08 탭. "전체 과목"은 과목 카드와 모든 알림, 나머지는 그 종류의 알림만 보여준다.

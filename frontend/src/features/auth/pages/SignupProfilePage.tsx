@@ -1,6 +1,9 @@
 import { LanguageSwitcher } from '../../../shared/i18n/LanguageSwitcher'
 import { useLanguage } from '../../../shared/i18n/language-context'
-import { SUPPORTED_LANGUAGES, type Language } from '../../../shared/types/language'
+import {
+  SUPPORTED_LANGUAGES,
+  type Language,
+} from '../../../shared/types/language'
 import { ERICA_SCHOOL, ERICA_COLLEGES } from '../erica-academics'
 import type { SignupProfile } from '../../profile/demo-profile'
 import { getCountries } from '../../../shared/data/countries'
