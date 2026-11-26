@@ -1,32 +1,15 @@
 import { formatBoardDate as dateLabel } from '../../../shared/i18n/language'
 import { useLanguage } from '../../../shared/i18n/language-context'
 import {
-  BoardTranslations,
   TranslationText,
   ReplyLanguageSelect,
 } from '../../translation/components/BoardTranslations'
-import {
-  createContext,
-  useContext,
-  useState,
-  type ReactNode,
-  type FormEvent,
-} from 'react'
-import {
-  Link,
-  Outlet,
-  useNavigate,
-  useParams,
-  useSearchParams,
-} from 'react-router-dom'
-import { useAuth } from '../../auth/auth-context'
-import { useDemoProfile } from '../../profile/demo-profile-context'
+import { useState, type ReactNode, type FormEvent } from 'react'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useMarket } from '../market-context'
+import { MarketReplyCard } from '../components/MarketReplyCard'
 import {
   editMarketPost,
-  updateMarketReply,
-  type Reply,
-  loadMarket,
-  saveMarket,
   typeLabels,
   statusLabels,
   languageLabels,
@@ -37,84 +20,8 @@ import {
 } from '../market-store'
 import '../market.css'
 
-type MarketContextValue = {
-  posts: MarketPost[]
-  commit: (posts: MarketPost[]) => boolean
-  actor: { id: string; name: string; language: MarketLanguage }
-  writable: boolean
-}
-const MarketContext = createContext<MarketContextValue | null>(null)
-function useMarket() {
-  const context = useContext(MarketContext)
-  if (!context) throw new Error('장터 화면 안에서 사용하세요.')
-  return context
-}
-export function MarketLayout() {
-  const { session } = useAuth()
-  return <MarketSession key={session?.user?.id ?? 'preview'} />
-}
-function MarketSession() {
-  const { t, language: uiLanguage } = useLanguage()
+export { MarketLayout } from './MarketLayout'
 
-  const { session } = useAuth()
-  const { savedProfile } = useDemoProfile()
-  const [initial] = useState(() => {
-    try {
-      return { posts: loadMarket(window.sessionStorage), error: '' }
-    } catch {
-      return {
-        posts: [] as MarketPost[],
-        error:
-          '이 탭의 장터 데이터를 불러오지 못했어요. 저장소 설정을 확인하고 새로고침해 주세요.',
-      }
-    }
-  })
-  const [posts, setPosts] = useState(initial.posts)
-  const [error, setError] = useState(initial.error)
-  const actor = {
-    id: session?.user?.id ?? 'local-preview',
-    name: savedProfile?.profile.nickname ?? t('체험 사용자'),
-    language: uiLanguage,
-  }
-  const writable = !initial.error && (!!session?.user || import.meta.env.DEV)
-  function commit(next: MarketPost[]) {
-    if (!writable) return false
-    try {
-      saveMarket(window.sessionStorage, next)
-      setPosts(next)
-      setError('')
-      return true
-    } catch {
-      setError(
-        '저장하지 못했어요. 브라우저 저장소 사용을 허용한 뒤 다시 시도해 주세요. 입력 내용은 유지됩니다.',
-      )
-      return false
-    }
-  }
-  return (
-    <MarketContext.Provider value={{ posts, commit, actor, writable }}>
-      <section className="market-page">
-        {error && (
-          <p className="market-error" role="alert">
-            {t(error)}
-          </p>
-        )}
-        <BoardTranslations
-          board="market"
-          posts={posts}
-          targetLanguage={actor.language}
-        >
-          <Outlet />
-        </BoardTranslations>
-        <p className="market-footnote">
-          {t(
-            '목업 장터 · 작성한 글과 답글은 이 탭에서만 유지되며 다른 사용자에게 전송되지 않아요.',
-          )}
-        </p>
-      </section>
-    </MarketContext.Provider>
-  )
-}
 function Segments<T extends string>({
   label,
   value,
@@ -141,6 +48,7 @@ function Segments<T extends string>({
     </div>
   )
 }
+
 export function MarketListPage() {
   const { t, language: uiLanguage } = useLanguage()
 
@@ -230,6 +138,7 @@ export function MarketListPage() {
     </>
   )
 }
+
 function MissingPost({ children }: { children?: ReactNode }) {
   const { t } = useLanguage()
 
@@ -242,6 +151,7 @@ function MissingPost({ children }: { children?: ReactNode }) {
     </>
   )
 }
+
 export function MarketDetailPage() {
   const { t, language: uiLanguage } = useLanguage()
 
@@ -357,124 +267,7 @@ export function MarketDetailPage() {
     </>
   )
 }
-function MarketReplyCard({ postId, reply }: { postId: string; reply: Reply }) {
-  const { t, language: uiLanguage } = useLanguage()
 
-  const { posts, actor, commit, writable } = useMarket()
-  const [editing, setEditing] = useState(false)
-  const [draft, setDraft] = useState(reply.content)
-  const [deleting, setDeleting] = useState(false)
-  const [error, setError] = useState('')
-  const canManage = writable && actor.id === reply.authorId
-  function apply(
-    action: { type: 'edit'; content: string } | { type: 'delete' },
-  ) {
-    if (!canManage) return
-    try {
-      if (
-        commit(updateMarketReply(posts, postId, reply.id, actor.id, action))
-      ) {
-        setEditing(false)
-        setDeleting(false)
-        setError('')
-      }
-    } catch (cause) {
-      setError(
-        cause instanceof Error ? cause.message : '답글 변경에 실패했어요.',
-      )
-    }
-  }
-  return (
-    <article className="market-card">
-      <p className="market-meta">
-        {reply.author} · {languageLabels[reply.language]} {t('원문')}
-      </p>
-      {editing && canManage ? (
-        <form
-          onSubmit={(event) => {
-            event.preventDefault()
-            apply({ type: 'edit', content: draft })
-          }}
-        >
-          <label>
-            {t('답글 수정')}
-            <textarea
-              value={draft}
-              onChange={(event) => setDraft(event.target.value)}
-              maxLength={1000}
-              required
-              rows={3}
-              autoFocus
-            />
-          </label>
-          <div className="market-reply-actions">
-            <button type="submit" disabled={!draft.trim()}>
-              {t('저장')}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setEditing(false)
-                setError('')
-              }}
-            >
-              {t('취소')}
-            </button>
-          </div>
-        </form>
-      ) : (
-        <TranslationText itemId={`${postId}:reply:${reply.id}`}>
-          <p className="market-body">{reply.content}</p>
-        </TranslationText>
-      )}
-      <p className="market-meta">
-        {dateLabel(reply.createdAt, uiLanguage)} · KST
-      </p>
-      {canManage &&
-        !editing &&
-        (deleting ? (
-          <div>
-            <p>{t('이 답글을 삭제할까요?')}</p>
-            <div className="market-reply-actions">
-              <button type="button" onClick={() => apply({ type: 'delete' })}>
-                {t('삭제 확인')}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setDeleting(false)
-                  setError('')
-                }}
-              >
-                {t('취소')}
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="market-reply-actions">
-            <button
-              type="button"
-              onClick={() => {
-                setDraft(reply.content)
-                setEditing(true)
-                setError('')
-              }}
-            >
-              {t('수정')}
-            </button>
-            <button type="button" onClick={() => setDeleting(true)}>
-              {t('삭제')}
-            </button>
-          </div>
-        ))}
-      {error && (
-        <p className="market-error" role="alert">
-          {t(error)}
-        </p>
-      )}
-    </article>
-  )
-}
 export function MarketFormPage() {
   const { t } = useLanguage()
 
@@ -486,6 +279,7 @@ export function MarketFormPage() {
     return <MissingPost>{t('내가 작성한 글만 수정할 수 있어요')}</MissingPost>
   return <MarketForm key={postId ?? 'new'} existing={existing} />
 }
+
 function MarketForm({ existing }: { existing?: MarketPost }) {
   const { t } = useLanguage()
 

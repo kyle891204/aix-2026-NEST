@@ -1,0 +1,131 @@
+import { formatBoardDate as dateLabel } from '../../../shared/i18n/language'
+import { useLanguage } from '../../../shared/i18n/language-context'
+import { TranslationText } from '../../translation/components/BoardTranslations'
+import { useState } from 'react'
+import { useMarket } from '../market-context'
+import { updateMarketReply, languageLabels, type Reply } from '../market-store'
+
+export function MarketReplyCard({
+  postId,
+  reply,
+}: {
+  postId: string
+  reply: Reply
+}) {
+  const { t, language: uiLanguage } = useLanguage()
+
+  const { posts, actor, commit, writable } = useMarket()
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState(reply.content)
+  const [deleting, setDeleting] = useState(false)
+  const [error, setError] = useState('')
+  const canManage = writable && actor.id === reply.authorId
+  function apply(
+    action: { type: 'edit'; content: string } | { type: 'delete' },
+  ) {
+    if (!canManage) return
+    try {
+      if (
+        commit(updateMarketReply(posts, postId, reply.id, actor.id, action))
+      ) {
+        setEditing(false)
+        setDeleting(false)
+        setError('')
+      }
+    } catch (cause) {
+      setError(
+        cause instanceof Error ? cause.message : '답글 변경에 실패했어요.',
+      )
+    }
+  }
+  return (
+    <article className="market-card">
+      <p className="market-meta">
+        {reply.author} · {languageLabels[reply.language]} {t('원문')}
+      </p>
+      {editing && canManage ? (
+        <form
+          onSubmit={(event) => {
+            event.preventDefault()
+            apply({ type: 'edit', content: draft })
+          }}
+        >
+          <label>
+            {t('답글 수정')}
+            <textarea
+              value={draft}
+              onChange={(event) => setDraft(event.target.value)}
+              maxLength={1000}
+              required
+              rows={3}
+              autoFocus
+            />
+          </label>
+          <div className="market-reply-actions">
+            <button type="submit" disabled={!draft.trim()}>
+              {t('저장')}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setEditing(false)
+                setError('')
+              }}
+            >
+              {t('취소')}
+            </button>
+          </div>
+        </form>
+      ) : (
+        <TranslationText itemId={`${postId}:reply:${reply.id}`}>
+          <p className="market-body">{reply.content}</p>
+        </TranslationText>
+      )}
+      <p className="market-meta">
+        {dateLabel(reply.createdAt, uiLanguage)} · KST
+      </p>
+      {canManage &&
+        !editing &&
+        (deleting ? (
+          <div>
+            <p>{t('이 답글을 삭제할까요?')}</p>
+            <div className="market-reply-actions">
+              <button type="button" onClick={() => apply({ type: 'delete' })}>
+                {t('삭제 확인')}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setDeleting(false)
+                  setError('')
+                }}
+              >
+                {t('취소')}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="market-reply-actions">
+            <button
+              type="button"
+              onClick={() => {
+                setDraft(reply.content)
+                setEditing(true)
+                setError('')
+              }}
+            >
+              {t('수정')}
+            </button>
+            <button type="button" onClick={() => setDeleting(true)}>
+              {t('삭제')}
+            </button>
+          </div>
+        ))}
+      {error && (
+        <p className="market-error" role="alert">
+          {t(error)}
+        </p>
+      )}
+    </article>
+  )
+}
