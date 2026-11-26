@@ -134,7 +134,7 @@ LMS의 원본 오류 본문이나 인증 헤더는 반환하지 않습니다.
 ### 범위
 
 `/api/v1/dev/lms/*`는 한 명의 서버 설정 토큰을 사용하는 개발 검사 API입니다.
-`prod` 프로필에서는 비활성화됩니다. 실제 다중 사용자 서비스에는 로그인·개인별 연동·권한 검사가 추가로 필요합니다.
+`prod` 프로필만 켜면 닫히고, `prod,lms-demo`를 함께 켜면 데모 암호로 열립니다([배포 설정](../deployment.md#공통-계정-lms-데모)). 실제 다중 사용자 서비스에는 로그인·개인별 연동·권한 검사가 추가로 필요합니다.
 학교 본부·국제처·단과대 공개 게시판 수집은 `integrations/school`의 별도 작업입니다.
 
 ## LMS 테스트 페이지의 코드와 동작
@@ -151,7 +151,7 @@ DB 저장·공지 AI 분석·번역·서비스 로그인은 이 검사 도구의
 | --- | --- |
 | `backend/src/main/resources/application.yml` | 실행 디렉터리의 `.env`를 Spring 설정에 포함. `app.lms` 설정 연결 |
 | `backend/src/main/java/com/aix/team03/integrations/lms/LmsProperties.java` | API 기본 주소와 토큰을 서버 메모리에서 관리 |
-| `.../LmsDevController.java` | `/api/v1/dev/lms`의 HTTP GET 요청을 받고 클라이언트 호출. `prod`에서는 비활성 |
+| `.../LmsDevController.java` | `/api/v1/dev/lms`의 HTTP GET 요청을 받고 클라이언트 호출. `prod`만 켜면 닫히고 `prod,lms-demo`면 열림 |
 | `.../HanyangLmsClient.java` | Canvas HTTP 요청, 토큰 헤더, ID/응답 검증, 페이지네이션, 통신 오류 변환 |
 | `.../LmsModels.java` | Course·CourseDetail·Announcement·Assignment·CourseModule·ModuleItem·Page 응답 타입 |
 | `backend/src/main/java/com/aix/team03/global/error/GlobalExceptionHandler.java` | LMS 예외를 안전한 HTTP 상태와 오류 JSON으로 변환 |
