@@ -1,6 +1,6 @@
 # 배포
 
-개발 변경은 `develop`에 통합하고, 검증 후 `develop` → `main` PR을 병합한다.
+개발 변경은 작업 브랜치에서 `main`으로 PR을 보내 병합한다.
 Vercel과 Render의 운영 배포 브랜치는 `main`이다.
 
 ## Render 백엔드
@@ -57,7 +57,7 @@ Render는 비밀 환경변수의 저장·실행 플랫폼이므로 토큰이 로
 - `frontend/vercel.json`에서 `/api/*`를 Render로 전달하고 나머지 경로는 SPA로 처리한다.
 - 로그인은 같은 원본 API와 HttpOnly 세션 쿠키를 사용한다. Render에 `GOOGLE_CLIENT_ID`를
   설정하고 운영에서는 `AUTH_COOKIE_SECURE=true`를 유지한다.
-- Google Cloud 등록 주소와 배포 순서: [로그인 설정](authentication.md).
+- Google Cloud 등록 주소와 배포 순서: [로그인 설정](features/auth.md).
 - 환경변수를 수정하면 프론트를 다시 배포해야 한다.
 
 ## 무료 서비스 제한

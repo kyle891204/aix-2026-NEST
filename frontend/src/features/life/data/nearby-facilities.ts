@@ -1,7 +1,7 @@
 // 한양대학교 ERICA 주변의 실제 병원·마트·약국 정보.
 // 이름·주소·전화·좌표는 카카오 로컬 API, 운영시간은 각 카카오맵 장소 페이지를
 // 확인일 기준으로 옮겨 적었다. 실제 업체 정보는 바뀔 수 있으므로 화면에
-// 확인일과 원본 링크를 함께 보여준다. 갱신 방법은 docs/nearby-facilities.md 참고.
+// 확인일과 원본 링크를 함께 보여준다. 갱신 방법은 docs/features/nearby-facilities.md 참고.
 
 export const FACILITY_TYPES = ['hospital', 'mart', 'pharmacy'] as const
 export type FacilityType = (typeof FACILITY_TYPES)[number]

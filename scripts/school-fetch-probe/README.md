@@ -16,7 +16,7 @@
 서울의 Node.js 함수와 Render의 Java는 위치·출발 IP·TLS 구현이 모두 다르다.
 성공하더라도 리전만 원인이라고 확정하거나 12개 게시판·상세·첨부가 모두 된다고 판단하지 않는다.
 
-Render 코드의 설정·로그 해석은 [공지 수집 진단](../../docs/school-notice-fetch.md)을 참고한다.
+Render 코드의 설정·로그 해석은 [공지 수집 진단](../../docs/features/notices.md)을 참고한다.
 
 공식 문서: [함수 리전](https://vercel.com/docs/functions/configuring-functions/region),
 [Node.js 함수](https://vercel.com/docs/functions/runtimes/node-js).
