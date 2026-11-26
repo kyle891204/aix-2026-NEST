@@ -1,21 +1,21 @@
-import { useLanguage } from '../../shared/i18n/language-context'
+import { useLanguage } from '../../../shared/i18n/language-context'
 import { useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { useAuth } from '../auth/auth-context'
-import { deadlineLabel } from '../schedule/academic-format'
+import { useAuth } from '../../auth/auth-context'
+import { deadlineLabel } from '../../schedule/academic-format'
 import {
   addDeadlineSchedules,
   isSaved,
   loadPersonalSchedules,
   type PersonalSchedule,
-} from '../schedule/personal-schedule-store'
-import { usePersonalSchedules } from '../schedule/usePersonalSchedules'
-import { useDataText } from '../translation/data-text-context'
+} from '../../schedule/personal-schedule-store'
+import { usePersonalSchedules } from '../../schedule/use-personal-schedules'
+import { useDataText } from '../../translation/data-text-context'
 import {
   DataText,
   DataTranslations,
   DataTranslationStatus,
-} from '../translation/DataTranslations'
+} from '../../translation/components/DataTranslations'
 import {
   getCourseNotifications,
   getCourses,
@@ -23,14 +23,14 @@ import {
   type CourseNotification,
   type CourseNotifications,
   type NotificationType,
-} from './api'
+} from '../api'
 import {
   needsDemoPassword,
   useCourseLoad,
   useHistoryState,
   useScrollMemory,
-} from './course-load'
-import { courseLabel } from './course-names'
+} from '../course-load'
+import { courseLabel } from '../course-names'
 import {
   TYPE_LABELS,
   canSave,
@@ -42,9 +42,9 @@ import {
   safeLinkUrl,
   scheduleSource,
   type CourseItemState,
-} from './course-notice-format'
-import { BackLink, CourseFootnote, DemoPasswordForm, Retry } from './course-ui'
-import './courses.css'
+} from '../course-notice-format'
+import { BackLink, CourseFootnote, DemoPasswordForm, Retry } from '../components/CourseUi'
+import '../courses.css'
 
 type Filter = 'ALL' | NotificationType
 

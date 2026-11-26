@@ -1,18 +1,18 @@
-import { useLanguage } from '../../shared/i18n/language-context'
+import { useLanguage } from '../../../shared/i18n/language-context'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ApiError } from '../../shared/api/client'
-import { schoolMessage } from '../../shared/i18n/school-message'
-import { kstLabel } from '../../shared/format/kst'
-import { useAuth } from '../auth/auth-context'
-import { useDataText } from '../translation/data-text-context'
+import { ApiError } from '../../../shared/api/client'
+import { schoolMessage } from '../../../shared/i18n/school-message'
+import { kstLabel } from '../../../shared/format/kst'
+import { useAuth } from '../../auth/auth-context'
+import { useDataText } from '../../translation/data-text-context'
 import {
   DataTranslations,
   DataTranslationStatus,
-} from '../translation/DataTranslations'
-import { noticeProfile } from '../notices/api'
-import { NOTICE_TITLE_CONTEXT } from '../notices/notice-title-translations'
-import type { SignupProfile } from '../profile/demo-profile'
+} from '../../translation/components/DataTranslations'
+import { noticeProfile } from '../../notices/api'
+import { NOTICE_TITLE_CONTEXT } from '../../notices/notice-title-translations'
+import type { SignupProfile } from '../../profile/demo-profile'
 import {
   applicableDashboardNotices,
   dashboardErrorMessage,
@@ -20,12 +20,12 @@ import {
   type DashboardNotice,
   type DashboardRequest,
   type DashboardResult,
-} from './api'
+} from '../api'
 import {
   getDashboardCourseSchedules,
   type DashboardCourseSchedule,
-} from './course-schedules'
-import './dashboard.css'
+} from '../course-schedules'
+import '../dashboard.css'
 
 const HOME_LIMIT = 3
 type NoticeFilter = 'school' | 'course'

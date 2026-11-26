@@ -1,17 +1,17 @@
-import { useLanguage } from '../../shared/i18n/language-context'
+import { useLanguage } from '../../../shared/i18n/language-context'
 import { Link } from 'react-router-dom'
-import { useDataText } from '../translation/data-text-context'
+import { useDataText } from '../../translation/data-text-context'
 import {
   deadlineLabel,
   eventTiming,
   fullDateRangeLabel,
-} from './academic-format'
+} from '../academic-format'
 import {
   removeSchedule,
   type PersonalChange,
   type PersonalSchedule,
   type PersonalSource,
-} from './personal-schedule-store'
+} from '../personal-schedule-store'
 
 const SOURCE_LABELS: Record<PersonalSource, string> = {
   ACADEMIC: '학사일정',

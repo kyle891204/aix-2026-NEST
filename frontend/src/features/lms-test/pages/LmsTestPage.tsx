@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
-import { ApiError } from '../../shared/api/client'
+import { ApiError } from '../../../shared/api/client'
 import {
   getLmsAnnouncements,
   getLmsAssignments,
@@ -10,7 +10,7 @@ import {
   getLmsModules,
   getLmsProfile,
   setLmsDemoPassword,
-} from './api'
+} from '../api'
 import type {
   LmsAnnouncement,
   LmsAssignment,
@@ -20,7 +20,7 @@ import type {
   LmsModuleItem,
   LmsPage,
   LmsProfile,
-} from './api'
+} from '../api'
 
 type Result<T> =
   { data: T; error?: never } | { data?: never; error: string } | null

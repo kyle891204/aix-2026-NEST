@@ -7,7 +7,7 @@ import {
   addDeadlineSchedules,
   isSaved,
 } from '../../schedule/personal-schedule-store'
-import { usePersonalSchedules } from '../../schedule/usePersonalSchedules'
+import { usePersonalSchedules } from '../../schedule/use-personal-schedules'
 import { loadActionChecks, saveActionChecks } from '../action-checks'
 import {
   isSignedOut,
@@ -24,7 +24,7 @@ import {
   postedLabel,
 } from '../notice-display'
 import { schoolMessage } from '../../../shared/i18n/school-message'
-import { NoticeLoading } from '../NoticeLoading'
+import { NoticeLoading } from '../components/NoticeLoading'
 import '../notices.css'
 
 const TRANSLATION_FAILED =

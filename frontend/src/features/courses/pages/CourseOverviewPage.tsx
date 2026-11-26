@@ -1,26 +1,26 @@
 import { useState } from 'react'
 import { Link, Navigate, useSearchParams } from 'react-router-dom'
-import { useLanguage } from '../../shared/i18n/language-context'
-import { deadlineLabel } from '../schedule/academic-format'
-import { useDataText } from '../translation/data-text-context'
+import { useLanguage } from '../../../shared/i18n/language-context'
+import { deadlineLabel } from '../../schedule/academic-format'
+import { useDataText } from '../../translation/data-text-context'
 import {
   DataTranslations,
   DataTranslationStatus,
-} from '../translation/DataTranslations'
+} from '../../translation/components/DataTranslations'
 import {
   getCourseOverview,
   setCourseDemoPassword,
   type CourseNotification,
   type CourseOverview,
   type NotificationType,
-} from './api'
+} from '../api'
 import {
   needsDemoPassword,
   useCourseLoad,
   useHistoryState,
   useScrollMemory,
-} from './course-load'
-import { courseLabel, splitByTerm, type CourseLabel } from './course-names'
+} from '../course-load'
+import { courseLabel, splitByTerm, type CourseLabel } from '../course-names'
 import {
   TYPE_LABELS,
   detailPath,
@@ -28,9 +28,9 @@ import {
   isPastDue,
   kstLabel,
   type CourseItemState,
-} from './course-notice-format'
-import { CourseFootnote, DemoPasswordForm, Retry, TypeIcon } from './course-ui'
-import './courses.css'
+} from '../course-notice-format'
+import { CourseFootnote, DemoPasswordForm, Retry, TypeIcon } from '../components/CourseUi'
+import '../courses.css'
 
 // S08 탭. "전체 과목"은 과목 카드와 모든 알림, 나머지는 그 종류의 알림만 보여준다.
 type Tab = 'COURSES' | 'ANNOUNCEMENT' | 'ASSIGNMENT'

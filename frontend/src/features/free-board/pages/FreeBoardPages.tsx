@@ -1,12 +1,12 @@
-import { useLanguage } from '../../shared/i18n/language-context'
+import { useLanguage } from '../../../shared/i18n/language-context'
 import {
   TranslationText,
   ReplyLanguageSelect,
-} from '../translation/BoardTranslations'
+} from '../../translation/components/BoardTranslations'
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { useFreeBoard } from './free-board-context'
-import { FreeBoardReplyCard } from './FreeBoardReplyCard'
+import { useFreeBoard } from '../free-board-context'
+import { FreeBoardReplyCard } from '../components/FreeBoardReplyCard'
 import {
   addFreeBoardReply,
   createFreeBoardPost,
@@ -15,8 +15,8 @@ import {
   languageLabels,
   type FreeBoardLanguage,
   type FreeBoardPost,
-} from './free-board-store'
-import { formatBoardDate as dateLabel } from '../../shared/i18n/language'
+} from '../free-board-store'
+import { formatBoardDate as dateLabel } from '../../../shared/i18n/language'
 
 export { FreeBoardLayout } from './FreeBoardLayout'
 

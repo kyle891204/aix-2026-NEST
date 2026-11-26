@@ -1,4 +1,4 @@
-import { useLanguage } from '../../shared/i18n/language-context'
+import { useLanguage } from '../../../shared/i18n/language-context'
 import {
   cloneElement,
   createContext,
@@ -8,16 +8,16 @@ import {
   type ReactNode,
 } from 'react'
 import { useLocation } from 'react-router-dom'
-import { useAuth } from '../auth/auth-context'
-import type { Language } from '../../shared/types/language'
+import { useAuth } from '../../auth/auth-context'
+import type { Language } from '../../../shared/types/language'
 import {
   collectBoardItems,
   type Board,
   type TranslatablePost,
-} from './board-translation-items'
-import type { TranslationItem } from './translation-client'
-import { useTranslations, type TranslationState } from './use-translations'
-import './translation.css'
+} from '../board-translation-items'
+import type { TranslationItem } from '../translation-client'
+import { useTranslations, type TranslationState } from '../use-translations'
+import '../translation.css'
 
 const messages = {
   ko: {

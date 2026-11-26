@@ -6,13 +6,13 @@ import {
   QuestionListPage,
   QuestionDetailPage,
   QuestionFormPage,
-} from '../features/questions/QuestionPages'
+} from '../features/questions/pages/QuestionPages'
 import {
   MarketLayout,
   MarketListPage,
   MarketDetailPage,
   MarketFormPage,
-} from '../features/market/MarketPages'
+} from '../features/market/pages/MarketPages'
 import {
   Navigate,
   NavLink,
@@ -23,22 +23,22 @@ import {
 } from 'react-router-dom'
 import { AuthProvider } from '../features/auth/AuthProvider'
 import { useAuth } from '../features/auth/auth-context'
-import { LoginPage } from '../features/auth/LoginPage'
-import { LmsTestPage } from '../features/lms-test/LmsTestPage'
+import { LoginPage } from '../features/auth/pages/LoginPage'
+import { LmsTestPage } from '../features/lms-test/pages/LmsTestPage'
 import { CommunityPage } from '../features/community/pages/CommunityPage'
 import { ChecklistPage } from '../features/immigration/pages/ChecklistPage'
 import { EntryExitPage } from '../features/immigration/pages/EntryExitPage'
 import { NoticeListPage } from '../features/notices/pages/NoticeListPage'
 import { NoticeDetailPage } from '../features/notices/pages/NoticeDetailPage'
-import { CourseItemPage } from '../features/courses/CourseItemPage'
-import { CourseNoticesPage } from '../features/courses/CourseNoticesPage'
-import { CourseOverviewPage } from '../features/courses/CourseOverviewPage'
-import { AcademicSchedulePage } from '../features/schedule/AcademicSchedulePage'
+import { CourseItemPage } from '../features/courses/pages/CourseItemPage'
+import { CourseNoticesPage } from '../features/courses/pages/CourseNoticesPage'
+import { CourseOverviewPage } from '../features/courses/pages/CourseOverviewPage'
+import { AcademicSchedulePage } from '../features/schedule/pages/AcademicSchedulePage'
 import { ProfilePage } from '../features/profile/pages/ProfilePage'
 import { DemoProfileProvider } from '../features/profile/DemoProfileProvider'
 import { useDemoProfile } from '../features/profile/demo-profile-context'
 import { EmptyState } from '../shared/ui/EmptyState'
-import { SignupPage } from '../features/auth/SignupPage.tsx'
+import { SignupPage } from '../features/auth/pages/SignupPage.tsx'
 import { SchoolHomePage } from '../features/school/pages/SchoolHomePage.tsx'
 import { LifeHomePage } from '../features/life/pages/LifeHomePage'
 import { LifeGuidePage } from '../features/life/pages/LifeGuidePage'
@@ -47,7 +47,7 @@ import {
   FreeBoardListPage,
   FreeBoardDetailPage,
   FreeBoardFormPage,
-} from '../features/free-board/FreeBoardPages'
+} from '../features/free-board/pages/FreeBoardPages'
 import './home.css'
 
 // 토글로 전환할떄마다 하단 메뉴도 바뀌게

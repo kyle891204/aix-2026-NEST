@@ -1,32 +1,32 @@
 import { useState } from 'react'
 import { useLocation, useParams } from 'react-router-dom'
-import { useLanguage } from '../../shared/i18n/language-context'
-import { deadlineLabel } from '../schedule/academic-format'
+import { useLanguage } from '../../../shared/i18n/language-context'
+import { deadlineLabel } from '../../schedule/academic-format'
 import {
   getCourseNotifications,
   getCourses,
   setCourseDemoPassword,
   type CourseNotification,
-} from './api'
+} from '../api'
 import {
   needsDemoPassword,
   useCourseLoad,
   useScrollTopOnOpen,
-} from './course-load'
-import { courseLabel } from './course-names'
+} from '../course-load'
+import { courseLabel } from '../course-names'
 import {
   isPastDue,
   kstLabel,
   safeLinkUrl,
   type CourseItemState,
-} from './course-notice-format'
-import { BackLink, DemoPasswordForm, Retry } from './course-ui'
+} from '../course-notice-format'
+import { BackLink, DemoPasswordForm, Retry } from '../components/CourseUi'
 import {
   DataText,
   DataTranslations,
   DataTranslationStatus,
-} from '../translation/DataTranslations'
-import './courses.css'
+} from '../../translation/components/DataTranslations'
+import '../courses.css'
 
 function arrivedState(value: unknown, itemId: string): CourseItemState | null {
   const state = value as Partial<CourseItemState> | null

@@ -1,4 +1,4 @@
-import { useLanguage } from '../../shared/i18n/language-context'
+import { useLanguage } from '../../../shared/i18n/language-context'
 import { useEffect, useRef, useState } from 'react'
 
 interface GoogleIdentity {

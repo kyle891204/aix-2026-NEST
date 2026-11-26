@@ -1,8 +1,8 @@
 import { useState, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useLanguage } from '../../shared/i18n/language-context'
-import { schoolMessage } from '../../shared/i18n/school-message'
-import type { NotificationType } from './api'
+import { useLanguage } from '../../../shared/i18n/language-context'
+import { schoolMessage } from '../../../shared/i18n/school-message'
+import type { NotificationType } from '../api'
 
 export function DemoPasswordForm({
   wrong,

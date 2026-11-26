@@ -1,13 +1,13 @@
-import { LanguageSwitcher } from '../../shared/i18n/LanguageSwitcher'
-import { useLanguage } from '../../shared/i18n/language-context'
+import { LanguageSwitcher } from '../../../shared/i18n/LanguageSwitcher'
+import { useLanguage } from '../../../shared/i18n/language-context'
 import { useRef, useState } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
-import { useAuth } from './auth-context'
-import { authErrorMessage } from './auth-errors'
-import { GoogleSignInButton } from './GoogleSignInButton'
-import { useDemoProfile } from '../profile/demo-profile-context'
-import { authReturnPath } from './return-path'
-import './auth.css'
+import { useAuth } from '../auth-context'
+import { authErrorMessage } from '../auth-errors'
+import { GoogleSignInButton } from '../components/GoogleSignInButton'
+import { useDemoProfile } from '../../profile/demo-profile-context'
+import { authReturnPath } from '../return-path'
+import '../auth.css'
 
 export function LoginPage() {
   const { t } = useLanguage()

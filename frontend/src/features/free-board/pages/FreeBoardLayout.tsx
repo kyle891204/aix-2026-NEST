@@ -1,18 +1,18 @@
-import { useLanguage } from '../../shared/i18n/language-context'
-import { BoardTranslations } from '../translation/BoardTranslations'
+import { useLanguage } from '../../../shared/i18n/language-context'
+import { BoardTranslations } from '../../translation/components/BoardTranslations'
 import { useState } from 'react'
 import { Outlet } from 'react-router-dom'
-import { useAuth } from '../auth/auth-context'
-import { useDemoProfile } from '../profile/demo-profile-context'
-import { FreeBoardContext } from './free-board-context'
+import { useAuth } from '../../auth/auth-context'
+import { useDemoProfile } from '../../profile/demo-profile-context'
+import { FreeBoardContext } from '../free-board-context'
 import {
   loadFreeBoard,
   saveFreeBoard,
   type FreeBoardActor,
   type FreeBoardPost,
-} from './free-board-store'
-import '../market/market.css'
-import './free-board.css'
+} from '../free-board-store'
+import '../../market/market.css'
+import '../free-board.css'
 
 export function FreeBoardLayout() {
   const { session } = useAuth()

@@ -1,18 +1,18 @@
 import type { ReactNode } from 'react'
-import { useLanguage } from '../../shared/i18n/language-context'
-import { useAuth } from '../auth/auth-context'
+import { useLanguage } from '../../../shared/i18n/language-context'
+import { useAuth } from '../../auth/auth-context'
 import {
   collectDataItems,
   dataTranslationStatus,
-} from './data-translation-items'
+} from '../data-translation-items'
 import {
   DataTextContext,
   useDataText,
   useDataTranslationState,
   type TranslateText,
-} from './data-text-context'
-import { useTranslations } from './use-translations'
-import './translation.css'
+} from '../data-text-context'
+import { useTranslations } from '../use-translations'
+import '../translation.css'
 
 /**
  * 화면에 보이는 서버 데이터(공지 제목, 학사일정 이름, 과목명 등)를 선택한 언어로 번역한다.

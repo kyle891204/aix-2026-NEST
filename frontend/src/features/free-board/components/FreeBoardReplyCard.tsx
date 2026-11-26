@@ -1,13 +1,13 @@
-import { useLanguage } from '../../shared/i18n/language-context'
-import { TranslationText } from '../translation/BoardTranslations'
+import { useLanguage } from '../../../shared/i18n/language-context'
+import { TranslationText } from '../../translation/components/BoardTranslations'
 import { useState } from 'react'
-import { useFreeBoard } from './free-board-context'
+import { useFreeBoard } from '../free-board-context'
 import {
   updateFreeBoardReply,
   languageLabels,
   type FreeBoardReply,
-} from './free-board-store'
-import { formatBoardDate as dateLabel } from '../../shared/i18n/language'
+} from '../free-board-store'
+import { formatBoardDate as dateLabel } from '../../../shared/i18n/language'
 
 export function FreeBoardReplyCard({
   postId,

@@ -1,6 +1,6 @@
-import { LanguageSwitcher } from '../../shared/i18n/LanguageSwitcher'
-import { useLanguage } from '../../shared/i18n/language-context'
-import './auth.css'
+import { LanguageSwitcher } from '../../../shared/i18n/LanguageSwitcher'
+import { useLanguage } from '../../../shared/i18n/language-context'
+import '../auth.css'
 
 interface ConsentPageProps {
   basicConsent: boolean

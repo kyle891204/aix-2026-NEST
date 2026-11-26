@@ -1,11 +1,11 @@
-import { formatBoardDate as dateLabel } from '../../shared/i18n/language'
-import { useLanguage } from '../../shared/i18n/language-context'
+import { formatBoardDate as dateLabel } from '../../../shared/i18n/language'
+import { useLanguage } from '../../../shared/i18n/language-context'
 import {
   BoardTranslations,
   TranslationText,
   ReplyLanguageSelect,
-} from '../translation/BoardTranslations'
-import { questionMessages } from './question-messages'
+} from '../../translation/components/BoardTranslations'
+import { questionMessages } from '../question-messages'
 import {
   createContext,
   useContext,
@@ -20,8 +20,8 @@ import {
   useParams,
   useSearchParams,
 } from 'react-router-dom'
-import { useAuth } from '../auth/auth-context'
-import { useDemoProfile } from '../profile/demo-profile-context'
+import { useAuth } from '../../auth/auth-context'
+import { useDemoProfile } from '../../profile/demo-profile-context'
 import {
   editQuestionPost,
   resolveQuestionPost,
@@ -36,8 +36,8 @@ import {
   type QuestionPost,
   type QuestionLanguage,
   type QuestionCategory,
-} from './question-store'
-import '../market/market.css'
+} from '../question-store'
+import '../../market/market.css'
 
 type QuestionContextValue = {
   posts: QuestionPost[]

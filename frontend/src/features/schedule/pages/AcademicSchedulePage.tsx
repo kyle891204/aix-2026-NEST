@@ -1,15 +1,15 @@
-import { useLanguage } from '../../shared/i18n/language-context'
+import { useLanguage } from '../../../shared/i18n/language-context'
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useSearchParams } from 'react-router-dom'
-import { schoolMessage } from '../../shared/i18n/school-message'
-import { ApiError } from '../../shared/api/client'
-import { useAuth } from '../auth/auth-context'
-import { useDataText } from '../translation/data-text-context'
+import { schoolMessage } from '../../../shared/i18n/school-message'
+import { ApiError } from '../../../shared/api/client'
+import { useAuth } from '../../auth/auth-context'
+import { useDataText } from '../../translation/data-text-context'
 import {
   DataTranslations,
   DataTranslationStatus,
-} from '../translation/DataTranslations'
-import { getAcademicSchedules, type AcademicSchedules } from './api'
+} from '../../translation/components/DataTranslations'
+import { getAcademicSchedules, type AcademicSchedules } from '../api'
 import {
   dateRangeLabel,
   eventTiming,
@@ -19,16 +19,16 @@ import {
   msUntilKstMidnight,
   upcomingRange,
   weekDays,
-} from './academic-format'
+} from '../academic-format'
 import {
   addAcademicSchedule,
   isAcademicSaved,
   type PersonalChange,
   type PersonalSchedule,
-} from './personal-schedule-store'
-import { PersonalSchedules } from './PersonalSchedules'
-import { usePersonalSchedules } from './usePersonalSchedules'
-import './schedule.css'
+} from '../personal-schedule-store'
+import { PersonalSchedules } from '../components/PersonalSchedules'
+import { usePersonalSchedules } from '../use-personal-schedules'
+import '../schedule.css'
 
 const OFFICIAL_URL = 'https://www.hanyang.ac.kr/-93'
 

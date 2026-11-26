@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useDemoProfile } from '../../profile/demo-profile-context'
 import { profileDetails } from '../../profile/profile-display'
-import { DashboardNotices } from '../../dashboard/DashboardNotices'
+import { DashboardNotices } from '../../dashboard/components/DashboardNotices'
 import '../school.css'
 
 export function SchoolHomePage() {

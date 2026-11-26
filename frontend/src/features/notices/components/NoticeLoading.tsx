@@ -1,4 +1,4 @@
-import { useLanguage } from '../../shared/i18n/language-context'
+import { useLanguage } from '../../../shared/i18n/language-context'
 // 공지는 학교 홈페이지에서 읽어 오므로 첫 조회가 느릴 수 있어, 화면 가운데에 진행 중임을 보여준다.
 export function NoticeLoading() {
   const { t } = useLanguage()

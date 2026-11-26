@@ -1,17 +1,17 @@
-import { LanguageScope } from '../../shared/i18n/LanguageProvider'
-import { useLanguage } from '../../shared/i18n/language-context'
+import { LanguageScope } from '../../../shared/i18n/LanguageProvider'
+import { useLanguage } from '../../../shared/i18n/language-context'
 import { useState } from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { ConsentPage } from './ConsentPage'
 import { SignupProfilePage } from './SignupProfilePage'
-import { useAuth } from './auth-context'
-import { authReturnPath } from './return-path'
-import { useDemoProfile } from '../profile/demo-profile-context'
+import { useAuth } from '../auth-context'
+import { authReturnPath } from '../return-path'
+import { useDemoProfile } from '../../profile/demo-profile-context'
 import {
   clearPersonalizedFields,
   createEmptyProfile,
-} from '../profile/demo-profile'
-import './auth.css'
+} from '../../profile/demo-profile'
+import '../auth.css'
 
 type SignupStep = 'consent' | 'profile'
 

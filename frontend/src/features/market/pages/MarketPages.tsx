@@ -1,10 +1,10 @@
-import { formatBoardDate as dateLabel } from '../../shared/i18n/language'
-import { useLanguage } from '../../shared/i18n/language-context'
+import { formatBoardDate as dateLabel } from '../../../shared/i18n/language'
+import { useLanguage } from '../../../shared/i18n/language-context'
 import {
   BoardTranslations,
   TranslationText,
   ReplyLanguageSelect,
-} from '../translation/BoardTranslations'
+} from '../../translation/components/BoardTranslations'
 import {
   createContext,
   useContext,
@@ -19,8 +19,8 @@ import {
   useParams,
   useSearchParams,
 } from 'react-router-dom'
-import { useAuth } from '../auth/auth-context'
-import { useDemoProfile } from '../profile/demo-profile-context'
+import { useAuth } from '../../auth/auth-context'
+import { useDemoProfile } from '../../profile/demo-profile-context'
 import {
   editMarketPost,
   updateMarketReply,
@@ -34,8 +34,8 @@ import {
   type MarketLanguage,
   type TradeType,
   type TradeStatus,
-} from './market-store'
-import './market.css'
+} from '../market-store'
+import '../market.css'
 
 type MarketContextValue = {
   posts: MarketPost[]
