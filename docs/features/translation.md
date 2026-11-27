@@ -19,7 +19,8 @@
 - `frontend/src/features/translation/`에 화면 항목 수집, 클라이언트 캐시, 공통 훅, 원문 전환·재시도 UI를 추가했다.
 - 원문 전환·재시도 UI의 안내 문구(번역 보기·원문 보기·재시도 등)는 공통 카탈로그 `shared/i18n/messages.ts`가 아니라 `BoardTranslations.tsx`의 `messages`에 한국어·영어·중국어로 있다.
 - 자유게시판에는 공통 번역 기능을 연결했다. 기존 `title`, `content`, 댓글 `content`는 원문으로 유지한다.
-- 팀원 작성 파일인 `MarketPages.tsx`, `QuestionPages.tsx`는 **추가만 수행**했다. (이후 구조 통일로 두 파일은 `market/pages/`, `questions/pages/`로 옮겨졌다. 번역 provider는 `pages/MarketLayout.tsx`·`pages/QuestionLayout.tsx`, 답글 번역 표시는 `components/MarketReplyCard.tsx`·`components/QuestionReplyCard.tsx`로 나뉘었고, 목록·상세·답글 작성 쪽은 `*Pages.tsx`에 남아 있다.) 기존 줄을 삭제하거나 교체하지 않았다. 공통 provider·표시 컴포넌트, 답글 작성 언어 선택, 선택한 언어를 새 답글에 반영하는 줄을 추가했다. 기존 CRUD 함수와 스토어는 수정하지 않았다.
+- 팀원 작성 파일인 `MarketPages.tsx`, `QuestionPages.tsx`는 **추가만 수행**했다. 기존 줄을 삭제하거나 교체하지 않았다. 공통 provider·표시 컴포넌트, 답글 작성 언어 선택, 선택한 언어를 새 답글에 반영하는 줄을 추가했다. 기존 CRUD 함수와 스토어는 수정하지 않았다.
+- 이후 구조 통일(#83)로 번역 provider는 `pages/MarketLayout.tsx`·`pages/QuestionLayout.tsx`, 답글 번역 표시는 `components/MarketReplyCard.tsx`·`components/QuestionReplyCard.tsx`로 옮겨졌다.
 - 기존 파일을 일괄 포맷하거나 의존성·환경변수 파일·인증·공지·LMS 코드를 변경하지 않았다.
 
 ## 동작
