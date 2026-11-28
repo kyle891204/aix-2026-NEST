@@ -17,7 +17,7 @@ React는 표현 계층, Spring Boot의 서비스는 로직 계층, 저장소·�
 - 게시글·답글 번역: `community/CommunityTranslationController · BatchTranslationController → integrations/ai`
 - 개발 검사: `LmsTestPage → LmsDevController → HanyangLmsClient`, `BackendStatus → HealthController`
 
-LMS 실제 한양대 데이터 반환은 아직 미검증이다. Google 인증과 서버 세션을 이용한 로그인·로그아웃을 사용한다. 회원 DB·가입/동의 이력은 미구현이다.
+Google 인증과 서버 세션을 이용한 로그인·로그아웃을 사용한다. 회원 DB·가입/동의 이력은 미구현이다.
 인증 코드는 `auth` 패키지와 `features/auth`에 있으며 [설정 및 한계](features/auth.md)를 참고한다.
 
 초기 폴더 구성은 [archive/initial-structure.md](archive/initial-structure.md), 검사 코드의 요청 흐름은 [features/lms.md](features/lms.md),
@@ -44,4 +44,4 @@ UI가 DB·LMS·AI 공급자를 직접 호출하지 않는다. 백엔드 서비�
 
 LMS 검증은 다른 개발과 동시에 먼저 착수할 수 있다. 이전 공개 응답 확인만으로 실제 토큰 연동이 성공했다고 보지는 않는다.
 
-2026-11-26 기준: 1~4는 구현했다. 1의 프로필은 서버 API 없이 브라우저에 저장한다. 5는 공통 데모 계정으로 과목알림을 연결했고, 실제 한양대 계정 데이터 반환은 별도 검증이 필요하다.
+2026-11-26 기준: 1~4는 구현했다. 1의 프로필은 서버 API 없이 브라우저에 저장한다. 5는 [과목알림](features/courses.md)을 공통 LMS 데모 계정에 연결했다. 이날 배포본에서 과제 1건의 제출 조건을 원문과 대조하고, 해당 과제의 마감이 개인 일정에 저장되는 것을 확인했다. 개인별 LMS 계정 연동과 전체 수강 데이터의 정확성은 검증하지 않았다.
