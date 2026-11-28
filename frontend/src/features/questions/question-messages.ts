@@ -17,8 +17,7 @@ export const questionMessages = {
     remove: 'Delete question',
     confirm: 'Confirm',
     cancel: 'Cancel',
-    resolvePrompt:
-      'Has your question been resolved?',
+    resolvePrompt: 'Has your question been resolved?',
     deletePrompt: 'Delete this question?',
     locked:
       'Resolved questions cannot be edited, deleted, or marked as unresolved.',

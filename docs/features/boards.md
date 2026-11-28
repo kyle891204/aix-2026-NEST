@@ -104,10 +104,14 @@ LIFE 홈의 장터 카드와 하단 장터 메뉴가 목록에 연결된다. 기
 
 - `free-board-store.ts`: 글·댓글 타입, 예시 글, 저장·복원, 입력 검증 및 작성자 검사
 - `free-board-context.ts`: Context와 `useFreeBoard` 훅
-- `FreeBoardLayout.tsx`: 로그인·프로필의 작성자 정보 연결, 탭 저장 및 저장 실패 처리
-- `FreeBoardPages.tsx`: 목록, 상세, 작성·수정 화면
-- `FreeBoardReplyCard.tsx`: 댓글 표시와 본인 댓글 수정·삭제
+- `pages/FreeBoardLayout.tsx`: 로그인·프로필의 작성자 정보 연결, 탭 저장 및 저장 실패 처리
+- `pages/FreeBoardPages.tsx`: 목록, 상세, 작성·수정 화면
+- `components/FreeBoardReplyCard.tsx`: 댓글 표시와 본인 댓글 수정·삭제
 - `free-board.css`: 자유게시판 전용 스타일. 기존 `market.css`는 import만 한다.
+
+장터(`market/`)·질문게시판(`questions/`)도 같은 구성이다. `market-context.ts`·`question-context.ts`,
+`pages/MarketLayout.tsx`·`pages/QuestionLayout.tsx`, `pages/MarketPages.tsx`·`pages/QuestionPages.tsx`,
+`components/MarketReplyCard.tsx`·`components/QuestionReplyCard.tsx`로 나뉜다.
 
 날짜 표시는 공통 `shared/i18n/language.ts`의 `formatBoardDate`를 사용한다.
 표시 언어는 선호 언어를 따르고 시간대는 한국 시간(`Asia/Seoul`)을 유지한다.
@@ -145,7 +149,7 @@ import {
   FreeBoardListPage,
   FreeBoardDetailPage,
   FreeBoardFormPage,
-} from '../features/free-board/FreeBoardPages'
+} from '../features/free-board/pages/FreeBoardPages'
 ```
 
 `ProtectedApp` 하위에 자유게시판 라우트를 추가한다.

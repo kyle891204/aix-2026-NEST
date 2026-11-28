@@ -13,9 +13,9 @@ import {
 } from '../api'
 import { dateLine, matchLabel, sourceLabel } from '../notice-display'
 import { schoolMessage } from '../../../shared/i18n/school-message'
-import { NoticeLoading } from '../NoticeLoading'
+import { NoticeLoading } from '../components/NoticeLoading'
 import { titleTranslationMessage } from '../notice-title-translations'
-import { useNoticeTitles } from '../useNoticeTitles'
+import { useNoticeTitles } from '../use-notice-titles'
 import '../notices.css'
 
 const SOURCE_FILTERS: { label: string; value: NoticeSource | null }[] = [

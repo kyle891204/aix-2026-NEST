@@ -45,7 +45,7 @@ Google 인증과 서버 세션은 기존 백엔드를 사용한다. 프로필은
 - `DemoProfileProvider.tsx`: 계정별 Context. 계정 ID가 바뀌면 하위 화면까지 새로 만들어 이전 계정의 값이 남지 않는다.
 - `demo-profile-context.ts`: 공통 조회·저장 인터페이스.
 - `profile-display.ts`: 학교 홈과 내 계정 화면에서 사용하는 표시값.
-- `frontend/src/features/auth/SignupPage.tsx`: 로그인 확인, A01/A02, 저장 성공·실패 처리.
+- `frontend/src/features/auth/pages/SignupPage.tsx`: 로그인 확인, A01/A02, 저장 성공·실패 처리.
 
 저장 전용 API, DB 의존성, 백엔드의 가입 완료 권한은 이번 변경에서 추가하지 않는다.
 향후 DB를 도입할 때 계정별 저장·조회 함수를 서버 API로 대체하고, 서버의 가입·동의·소유권 검사를 구현한다.
